@@ -94,7 +94,6 @@ const { Server } = require("ws");
 
 
 
-
 // Connect to MongoDB
 connectDB();
 
@@ -103,11 +102,11 @@ connectToWs();
 
 //simulateMotionSensor();
 // Simulate motion sensor every minute
-setInterval(simulateMotionSensor, 70 * 1000); // 60 * 1000 milliseconds = 1 minute
+// setInterval(simulateMotionSensor, 70 * 1000); // 60 * 1000 milliseconds = 1 minute
 
 //Handle get requests
 server.get("/", function (req, res) {
-  res.json({ message: `Welcome to SmartByte server` });
+  res.json({ message: `Welcome to SmartSchool server` });
 });
 
 /* Handle POST requests */
@@ -190,8 +189,7 @@ server.post("/rules", async (req, res) => {
 });
 
 server.post("/rules/:id", async (req, res) => {
-  // const { isActive } = req.body;
-  const updateFields = { ...req.body };
+  const updateFields = { ...req.body }; // Includes isActive and any other fields
   const id = req.params.id;
   const response = await updateRule(id, updateFields);
   return res.status(response.statusCode).send(response.message);
@@ -212,6 +210,7 @@ server.delete("/rules/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 // --------------------------------- MQTT endpoints ---------------------------------
 server.post('/led-control', function (req, res) {
   const { color, state } = req.body;
@@ -726,22 +725,22 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
 // }, 2000);
 
-setTimeout(async() => {
-  getCurrentSeasonAndHour();
-}, 2000)
+// setTimeout(async() => {
+//   getCurrentSeasonAndHour();
+// }, 2000)
 
 
-setInterval(async () => {
-  //  await addSuggestionsToDatabase();
+// setInterval(async () => {
+//   //  await addSuggestionsToDatabase();
 
-  await getFunctionsFromDB();
+//   await getFunctionsFromDB();
 
-  //   await removeSensorValueByType('temperature');
-  //   await removeSensorValueByType('humidity');
-  //   await removeSensorValueByType('hour')
-  //   await removeSensorValueByType('season')
-    // await parseSensorAndWriteToMongo();
-}, 10 * 1000)
+//   //   await removeSensorValueByType('temperature');
+//   //   await removeSensorValueByType('humidity');
+//   //   await removeSensorValueByType('hour')
+//   //   await removeSensorValueByType('season')
+//     // await parseSensorAndWriteToMongo();
+// }, 10 * 1000)
 
 
 server.listen(port, () => console.log(`listening on port ${port}`));

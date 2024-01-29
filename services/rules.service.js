@@ -264,18 +264,23 @@ const getAllRules = async () => {
 
 const updateRule = async (ruleId, updateFields) => {
   try {
+    // Extract the 'rule' field from updateFields
     let rule = _.get(updateFields, "rule", "");
+
     if (rule !== "") {
+      // Process and validate the 'rule' field
       const formattedRule = await ruleFormatter(rule);
       const ruleValidation = await validateRule(formattedRule);
-      const sensorsValidation = await validateSensor(rule);
+      //waleed enable it because is not work without sensors
 
-      if (sensorsValidation.statusCode === 400) {
-        return {
-          statusCode: sensorsValidation.statusCode,
-          message: sensorsValidation.message,
-        };
-      }
+      // const sensorsValidation = await validateSensor(rule);
+      //
+      // if (sensorsValidation.statusCode === 400) {
+      //   return {
+      //     statusCode: sensorsValidation.statusCode,
+      //     message: sensorsValidation.message,
+      //   };
+      // }
 
       if (ruleValidation.statusCode === 400) {
         return {
@@ -283,12 +288,16 @@ const updateRule = async (ruleId, updateFields) => {
           message: ruleValidation.message,
         };
       }
+
+      // Update the 'rule' field in updateFields
       updateFields = {
         ...updateFields,
         rule: formattedRule,
         normalizedRule: rule,
       };
     }
+
+    // Update the rule in the database
     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
     return {
       statusCode: 200,
@@ -301,7 +310,6 @@ const updateRule = async (ruleId, updateFields) => {
     };
   }
 };
-
 async function deleteRuleById(ruleId) {
   try {
     const result = await Rule.deleteOne({ id: ruleId });
@@ -327,6 +335,7 @@ const removeAllRules = async () => {
 
 const removeUIOnlyRules = async (ruleId) => {
   try {
+    
     await Rule.deleteMany({ id: ruleId });
     // await Rule.deleteMany
   } catch (err) {}
