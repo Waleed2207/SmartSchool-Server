@@ -34,7 +34,6 @@
 // });
 
 
-
 // // A helper function for publishing LED control messages
 // function controlLED(color, state) {
 //     const topic = 'ledControl';

@@ -159,6 +159,43 @@ server.get("/user-role", (req, res) => {
   res.json({ role: "admin" }); 
 });
 
+//-------------------------------- motion-detected by Raspberry Pi --------------------------------
+server.post('/motion-detected', (req, res) => {
+  try {
+    // Check if the request body is present
+    if (!req.body) {
+      throw new Error('No request body found');
+    }
+
+    // Extracting the state from the request body
+    const lightState = req.body.state;
+
+    // Logging the received state
+    console.log('Received request to turn', lightState);
+
+    // Validate the received state
+    if (lightState !== 'on' && lightState !== 'off') {
+      throw new Error(`Invalid light state: ${lightState}`);
+    }
+
+    // Simulate light control logic here or perform actual actions
+    console.log(`Simulated light turned ${lightState}`);
+
+    // Responding to the Flask server
+    res.status(200).send(`Light turned ${lightState}, request received successfully`);
+  } catch (error) {
+    // Log the error and send an appropriate response
+    console.error('Error:', error.message);
+    res.status(500).send(`Server error: ${error.message}`);
+  }
+});
+
+
+
+
+
+
+
 // --------------------------------- Sensors ---------------------------------
 server.get("/sensors", async (req, res) => {
   try {
