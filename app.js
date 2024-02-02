@@ -460,7 +460,15 @@ server.post("/sensibo/mode", async (req, res) => {
     res.status(500).json(result);
   }
 });
-
+// ------------------Change by waleed sensibo ----------------
+server.get('/api/ac-state', async (req, res) => {
+  try {
+    const state = await getAcState(); // Your existing server-side function
+    res.json(state);
+  } catch (error) {
+    res.status(500).send('Unable to fetch AC state');
+  }
+});
 // --------------------------------- Tuya- Heater ---------------------------------
 
 server.post("/heater", async (req, res) => {
@@ -552,7 +560,9 @@ server.get("/room-devices-test/:roomId", async (req, res) => {
 server.put("/room-devices", async (req, res) => {
   try {
     const { state, id } = req.body;
+    //const response = await setRoomDeviceState(id, state);
     const response = await setRoomDeviceState(id, state);
+
     if (response.statusCode !== 200) {
       throw new Error(response.message);
     }
@@ -735,6 +745,9 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
 
   }
 })
+
+
+
 // addSuggestionsToDatabase();
 
 

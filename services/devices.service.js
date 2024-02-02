@@ -170,8 +170,9 @@ const setRoomDeviceState = async (id, state) => {
       { state: state ? "on" : "off" }
     );
     console.log(response);
-
+    
     if (response.modifiedCount === 0) {
+
       throw new Error("Unable to update room device state");
     }
 
@@ -180,6 +181,7 @@ const setRoomDeviceState = async (id, state) => {
       message: "Room device has been updated",
     };
   } catch (err) {
+    console.error(err);
     return {
       statusCode: 500,
       message: err.message,
@@ -190,28 +192,32 @@ const setRoomDeviceState = async (id, state) => {
 const createNewDevice = async (device, roomId) => {
   try {
     const { name } = device;
+    const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
     const newDevice = new Device({
       name,
       state: "off",
+      device_id: newDeviceId, // Assuming you want to set a custom ID
     });
 
-    // add device to devices
-    const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
-    newDevice.device_id = newDeviceId;
-    newDevice.save();
+    // Save the new device and wait for the operation to complete
+    await newDevice.save();
 
-    addDeviceToRoom(newDeviceId, name, roomId, "off");
+    // Ensure addDeviceToRoom is an async function or handles its promises correctly
+    await addDeviceToRoom(newDeviceId, name, roomId, "off");
+
     return {
       statusCode: 200,
       data: "Device created successfully",
     };
   } catch (err) {
+    console.error(err); // Log the error for debugging
     return {
       statusCode: 500,
       message: err.message,
     };
   }
 };
+
 
 const getDeviceIdByDeviceName = async (deviceName) => {
   try{

@@ -63,52 +63,83 @@ const analyzeFunc = async (func) => {
   }
 };
 
-const validateDegree = (degree) => {
-  if (degree > 30 || degree < 16) {
-    return false;
-  }
-  return true;
+// const validateDegree = (degree) => {
+//   if (degree > 30 || degree < 16) {
+//     return false;
+//   }
+//   return true;
+// };
+const validateDegree = (temperature) => {
+  return temperature >= 16 && temperature <= 30;
 };
 
-const switchAcState = async (state, temperature = null) => {
-  console.log("SWITCH AC")
-  try {
-    if (!temperature || validateDegree(temperature)) {
-      // const response = await axios.post(
-      //   `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
-      //   {
-      //     acState: {
-      //       on: state,
-      //       targetTemperature: temperature,
-      //     },
-      //   }
-      // );
-      await Device.updateOne(
-        { device_id: "9EimtVDZ" },
-        { state: state ? "on" : "off" }
-      );
-      console.log("AC ON")
-      console.log("-----------Adding data to csv---------------");
-      // await addingDataToCsv()
-      return { statusCode: 200, data: response.data.result };
-    } else {
-      throw new Error("Temperature has to be between 16 and 30");
-    }
-  } catch (err) {
-    // console.log(err).message;
-    return { statusCode: 403, data: err.message };
-  }
-};
-
+// const switchAcState = async (state, temperature = null) => {
+//   console.log("SWITCH AC")
+//   try {
+//     if (!temperature || validateDegree(temperature)) {
+//       // const response = await axios.post(
+//       //   `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
+//       //   {
+//       //     acState: {
+//       //       on: state,
+//       //       targetTemperature: temperature,
+//       //     },
+//       //   }
+//       // );
+//       await Device.updateOne(
+//         { device_id: "9EimtVDZ" },
+//         { state: state ? "on" : "off" }
+//       );
+//       console.log("AC ON")
+//       console.log("-----------Adding data to csv---------------");
+//       // await addingDataToCsv()
+//       return { statusCode: 200, data: response.data.result };
+//     } else {
+//       throw new Error("Temperature has to be between 16 and 30");
+//     }
+//   } catch (err) {
+//     // console.log(err).message;
+//     return { statusCode: 403, data: err.message };
+//   }
+// };
 const getAcState = async () => {
   try {
     const response = await axios.get(
       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`
     );
+    // Assuming the API returns the correct response, log the state
+    console.log("AC State Retrieved:", response.data);
     const state = response.data.result[0].acState;
     return state;
   } catch (err) {
-    console.log(err + " Invalid read from Sensibo");
+    // Log the error response if the API call fails
+    console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
+    return null; // Return null or a default state object
+  }
+};
+
+
+const switchAcState = async (state, temperature = null) => {
+  console.log("SWITCH AC");
+  try {
+    if (!temperature || validateDegree(temperature)) {
+      const response = await axios.post(
+        `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
+        {
+          acState: {
+            on: state,
+            targetTemperature: temperature,
+          },
+        }
+      );
+      console.log("AC state changed:", response.data);
+      return { statusCode: 200, data: response.data.result };
+    } else {
+      throw new Error("Temperature has to be between 16 and 30");
+    }
+  } catch (err) {
+    console.error("Error switching AC state:", err.response ? err.response.data : err.message);
+    return { statusCode: 403, data: err.message };
   }
 };
 
