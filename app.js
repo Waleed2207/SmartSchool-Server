@@ -429,9 +429,17 @@ server.post("/sensibo", async (req, res) => {
   }
 });
 
-server.get("/sensibo", async (req, res) => {
-  const state = await getAcState();
-  res.json({ state });
+// server.get("/sensibo", async (req, res) => {
+//   const state = await getAcState();
+//   res.json({ state });
+// });
+server.get('/sensibo', async (req, res) => {
+  try {
+    const state = await getAcState(); // Your existing server-side function
+    res.json(state);
+  } catch (error) {
+    res.status(500).send('Unable to fetch AC state');
+  }
 });
 
 server.get("/temperature", async (req, res) => {
@@ -461,14 +469,7 @@ server.post("/sensibo/mode", async (req, res) => {
   }
 });
 // ------------------Change by waleed sensibo ----------------
-server.get('/api/ac-state', async (req, res) => {
-  try {
-    const state = await getAcState(); // Your existing server-side function
-    res.json(state);
-  } catch (error) {
-    res.status(500).send('Unable to fetch AC state');
-  }
-});
+
 // --------------------------------- Tuya- Heater ---------------------------------
 
 server.post("/heater", async (req, res) => {
@@ -636,20 +637,24 @@ server.get("/suggestions", async (req, res) => {
 // --------------------------------- Insights-Graph Data ---------------------------------
 server.get("/graph-data", async (req, res) => {
   try {
-    const device = req.query.device;
-    const time_range = req.query.time_range;
-    const response = await axios.get(
-      `${process.env.PYTHON_SERVER_URL}/graph-data`,
-      {
-        params: { device, time_range },
-      }
-    );
+    const { device, time_range, year } = req.query; // Assuming year might also be required
+
+    // Validate required parameters
+    if (!device || !time_range) {
+      return res.status(400).json({ message: "Missing required query parameters" });
+    }
+
+    const response = await axios.get(`${process.env.PYTHON_SERVER_URL}/graph-data`, {
+      params: { device, time_range, year }, // Include year if it's used by the Python server
+    });
+
     res.status(200).json(response.data);
   } catch (error) {
-    console.error("Error fetching graph data:", error);
+    console.error("Error fetching graph data:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 server.put("/suggestions", async (req, res) => {
   try {
