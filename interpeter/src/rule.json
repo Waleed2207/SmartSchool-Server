@@ -1,0 +1,8 @@
+{
+    "condition": {
+        "variable": "temperature",
+        "operator": "is above",
+        "value": 20
+    },
+    "action": "TURN AC ON 20 DEGREES"
+} 

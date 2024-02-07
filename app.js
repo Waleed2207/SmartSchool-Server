@@ -1,4 +1,3 @@
-require("dotenv").config();
 const getClientDetails = require("./api/smartThings.js");
 const { getLaundryDetails } = require("./api/smartThings.js");
 const express = require("express");
@@ -28,6 +27,7 @@ const {
 } = require("./utils/common.js");
 const {
   insertRuleToDB,
+  add_new_Rule,
   getAllRules,
   updateRule,
   deleteRuleById,
@@ -90,7 +90,12 @@ const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
 const { Server } = require("ws");
 
+//----------------------Interpeter------------------------------------------
 
+// const { tokenize } = require('./interpeter/src/lexer/lexer');
+// const { parse } = require('./interpeter/src/parser/parser');
+// const { execute } = require('./interpeter/src/executor/executor');
+// const { Rules } = require('./models/Rules');
 
 
 
@@ -100,7 +105,7 @@ connectDB();
 connectToWs();
 
 
-//simulateMotionSensor();
+//simulateMotionSensor();x
 // Simulate motion sensor every minute
 // setInterval(simulateMotionSensor, 70 * 1000); // 60 * 1000 milliseconds = 1 minute
 
@@ -247,9 +252,9 @@ server.get("/rules", async (req, res) => {
 
 // Define the route for adding a new rule
 server.post("/rules", async (req, res) => {
-  const { rule, isStrict = false } = req.body;
-  console.log({ rule, isStrict });
-  const response = await insertRuleToDBMiddleware(rule, isStrict);
+  const rule  = req.body;
+  console.log( rule );
+  const response = await add_new_Rule(rule);
   res.status(response.statusCode).send(response.message);
 });
 
@@ -444,18 +449,62 @@ server.post("/laundry/update", async (req, res) => {
 
 // --------------------------------- Sensibo- AC ---------------------------------
 
+// Assuming switchAcState is modified as described earlier
+// and it now accepts a device object as its first parameter
+
+// server.post("/sensibo", async (req, res) => {
+//   const { state, temperature, id } = req.body;
+
+//   // Assuming process.env.SENSIBO_DEVICE_ID and process.env.SENSIBO_API_KEY
+//   // are defined in your environment variables.
+//   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
+//   const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+
+//   try {
+//     // Here, I'm assuming the switchAcState function sends a request to the Sensibo API
+//     // to change the AC state based on the given parameters.
+//     const response = await switchAcState({ id: actualDeviceId, apiKey: actualApiKey }, state, temperature);
+
+//     // Check the response from switchAcState to determine the outcome
+//     if (response.statusCode === 200) {
+//       res.json({ success: true, message: "AC state updated successfully.", data: response.data });
+//     } else {
+//       res.status(response.statusCode).json({ success: false, message: "Failed to update AC state.", data: response.data });
+//     }
+//   } catch (error) {
+//     console.error("Error in /sensibo endpoint:", error);
+//     // Send a generic server error response
+//     res.status(500).json({ success: false, message: "Server error occurred while processing /sensibo request." });
+//   }
+// });
+
+
 server.post("/sensibo", async (req, res) => {
   try {
     console.log("-----------sensibo---------------");
 
-    const state = req.body.state;
-    const temperature = req.body.temperature || null;
-    await switchAcState(state, temperature);
-    res.json({ statusCode: 200 });
+    const { state, temperature, id } = req.body;
+
+    // Determine the actual device ID and API key to use
+    const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
+    const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+
+    // Call the switchAcState function with the correct parameters
+    const switchResponse = await switchAcState({ id: actualDeviceId, apiKey: actualApiKey }, state, temperature);
+
+    // Check the response from the switchAcState function
+    if (switchResponse.statusCode === 200) {
+      res.json({ success: true, data: switchResponse.data });
+    } else {
+      // If the status code isn't 200, send an error response
+      res.status(switchResponse.statusCode).json({ success: false, message: switchResponse.data });
+    }
   } catch (err) {
-    return res.status(400).json({ message: err.message });
+    console.error("Error in /sensibo route:", err);
+    res.status(500).json({ message: "Server error occurred." });
   }
 });
+
 
 // server.get("/sensibo", async (req, res) => {
 //   const state = await getAcState();
@@ -463,16 +512,43 @@ server.post("/sensibo", async (req, res) => {
 // });
 server.get('/sensibo', async (req, res) => {
   try {
-    const state = await getAcState(); // Your existing server-side function
-    res.json(state);
+    const state = await getAcState();
+    console.log("Fetched AC state:", state);
+
+    if (!state) {
+      console.error("Failed to fetch AC state: No state returned");
+      return res.status(500).send('Unable to fetch AC state');
+    }
+    // Optionally, validate/format the state here before sending
+    res.status(200).json(state);
   } catch (error) {
-    res.status(500).send('Unable to fetch AC state');
+    console.error("Error fetching AC state:", error);
+    res.status(500).json({error: 'Unable to fetch AC state', details: error.message});
   }
 });
 
+// server.get('/sensibo', async (req, res) => {
+//   try {
+//     const state = await getAcState(); // Assuming getAcState() is correctly implemented
+//     if (state && state.acState) {
+//       res.json({mode: state.acState.mode}); // Ensure this matches the structure of Sensibo's response
+//     } else {
+//       throw new Error('Invalid response structure from Sensibo');
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Unable to fetch AC state');
+//   }
+// });
+
 server.get("/temperature", async (req, res) => {
-  const response = await getSensiboSensors();
-  res.json(response.data.result);
+  const data = await getSensiboSensors();
+
+  if (data) {
+    res.json(data.result); // Send the result if data is successfully fetched
+  } else {
+    res.status(500).send("Failed to fetch sensor data");
+  }
 });
 
 // server.post("/sensibo/mode", async (req, res) => {

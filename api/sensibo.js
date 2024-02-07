@@ -69,9 +69,7 @@ const analyzeFunc = async (func) => {
 //   }
 //   return true;
 // };
-const validateDegree = (temperature) => {
-  return temperature >= 16 && temperature <= 30;
-};
+
 
 // const switchAcState = async (state, temperature = null) => {
 //   console.log("SWITCH AC")
@@ -102,6 +100,26 @@ const validateDegree = (temperature) => {
 //     return { statusCode: 403, data: err.message };
 //   }
 // };
+
+
+// const getAcState = async () => {
+//   try {
+//     const response = await axios.get(
+//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`
+//     );
+//       // Use .find() to get the first success result
+//       const successResults = response.data.result.filter((entry) => entry.status === 'Success');
+//       const state = successResults.find((entry) => entry.acState.on && entry.acState.mode).acState;
+//       console.log("First Success Result:", state);
+//       console.log("results: ",successResults);
+//       return state; 
+//   } catch (err) {
+//     // Log the error response if the API call fails
+//     console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
+//     return null; // Return null or a default state object
+//   }
+// };
+
 const getAcState = async () => {
   try {
     const response = await axios.get(
@@ -119,12 +137,86 @@ const getAcState = async () => {
 };
 
 
-const switchAcState = async (state, temperature = null) => {
-  console.log("SWITCH AC");
+// const getAcState = async () => {
+
+//   try {
+//     const response = await axios.get(
+//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements?apiKey=${process.env.SENSIBO_API_KEY}`
+//     );
+//     console.log("AC State Retrieved:", response.data);
+//     // Assuming 'result' is an array and we want the first item
+//     const measurements = response.data.result[0];
+//     const temperature = measurements.temperature;
+//     const humidity = measurements.humidity;
+//     // Add other properties as needed
+
+//     return { temperature, humidity }; // Return an object with the temperature and humidity
+//   } catch (err) {
+//     console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
+//     return null;
+//   }
+// };
+const validateDegree = (temperature) => {
+  return temperature >= 16 && temperature <= 30;
+};
+
+// const switchAcState = async (deviceId, state, temperature = null) => {
+//   // Define the actual device ID and API key based on the provided device ID
+//   const actualDeviceId = deviceId === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
+//   const actualApiKey = deviceId === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+
+//   console.log("Attempting to switch AC state:", state, "with temperature:", temperature);
+
+//   try {
+//     // Validate the temperature if it's provided
+//     if (temperature === null || validateDegree(temperature)) {
+//       // Send the request to the Sensibo API
+//       const response = await axios.post(
+//         `https://home.sensibo.com/api/v2/pods/${actualDeviceId}/acStates?apiKey=${actualApiKey}`,
+//         { acState: { on: state, targetTemperature: temperature } }
+//       );
+
+//       // Check the response status
+//       if (response.data.status === 'Success') {
+//         try {
+//           // Update the device state in your local database
+//           const updateResult = await Device.updateOne(
+//             { device_id: actualDeviceId },
+//             { $set: { state: state ? "on" : "off" } }
+//           );
+//           console.log("AC state changed:", response.data);
+//           console.log("Database update result:", updateResult);
+//           return { statusCode: 200, data: response.data.result };
+//         } catch (dbError) {
+//           // Handle any errors that occur during the database update
+//           console.error("Database update error:", dbError);
+//           throw dbError; // Rethrow the error to be caught by the outer catch block
+//         }
+//       } else {
+//         // Handle the case where the API call did not return a 'Success' status
+//         throw new Error("Failed to update AC state via API.");
+//       }
+//     } else {
+//       // Handle invalid temperature values
+//       throw new Error("Temperature has to be between 16 and 30 degrees.");
+//     }
+//   } catch (err) {
+//     // Catch any errors from the API call or database update
+//     console.error("Error switching AC state:", err);
+//     return { statusCode: err.response?.status || 500, data: err.message };
+//   }
+// };
+
+const switchAcState = async (id, state, temperature = null) => {
+  const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
+  const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+
+  console.log("Attempting to switch AC state:", state, "with temperature:", temperature);
+
   try {
-    if (!temperature || validateDegree(temperature)) {
+    if (temperature === null || validateDegree(temperature)) {
       const response = await axios.post(
-        `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`,
+        `https://home.sensibo.com/api/v2/pods/${actualDeviceId}/acStates?apiKey=${actualApiKey}`,
         {
           acState: {
             on: state,
@@ -132,27 +224,91 @@ const switchAcState = async (state, temperature = null) => {
           },
         }
       );
-      console.log("AC state changed:", response.data);
-      return { statusCode: 200, data: response.data.result };
+
+      // Check if the API call was successful
+      if (response.data.status === 'Success') {
+        // Update the device state in your local database
+        const updateResult = await Device.updateOne(
+          { device_id: actualDeviceId },
+          { state: state ? "on" : "off" } 
+        );
+        console.log("AC state changed:", response.data);
+        console.log("Database update result:", updateResult);
+        return { statusCode: 200, data: response.data.result };
+      } else {
+        throw new Error("Failed to update AC state via API.");
+      }
     } else {
       throw new Error("Temperature has to be between 16 and 30");
     }
   } catch (err) {
-    console.error("Error switching AC state:", err.response ? err.response.data : err.message);
-    return { statusCode: 403, data: err.message };
+    console.error("Error switching AC state:", err);
+    return { statusCode: err.response?.status || 500, data: err.message };
   }
 };
 
+
+
+
+
+// const getSensiboSensors = async () => {
+//   try {
+//     const response = await axios.get(
+//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements?fields=temperature,humidity&apiKey=${process.env.SENSIBO_API_KEY}`
+//     );
+//     return response;
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
 const getSensiboSensors = async () => {
   try {
     const response = await axios.get(
-      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements?fields=temperature,humidity&apiKey=${process.env.SENSIBO_API_KEY}`
+      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements`,
+      {
+        params: {
+          fields: 'temperature,humidity',
+          apiKey: process.env.SENSIBO_API_KEY,
+        },
+      }
     );
-    return response;
+    
+    // Assuming that the first item in the result array contains the latest measurements
+    const latestMeasurements = response.data.result[0];
+    if (latestMeasurements) {
+      // Return an object with just the temperature and humidity
+      return {
+        temperature: latestMeasurements.temperature,
+        humidity: latestMeasurements.humidity
+      };
+    } else {
+      console.log('No measurements found.');
+      return null; // Return null to indicate no data found
+    }
   } catch (err) {
-    console.log(err);
+    console.error("Error fetching sensor data from Sensibo:", err.message);
+    return null; // Return null to indicate failure
   }
 };
+
+
+// const getSensiboSensors = async () => {
+//   try {
+//     const response = await axios.get(
+//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements`,
+//       {
+//         params: {
+//           fields: 'temperature,humidity',
+//           apiKey: process.env.SENSIBO_API_KEY,
+//         },
+//       }
+//     );
+//     return response.data; // Return the data directly
+//   } catch (err) {
+//     console.error("Error fetching sensor data from Sensibo:", err.message);
+//     return null; // Return null to indicate failure
+//   }
+// };
 
 const parseSensorAndWriteToMongo = async () => {
   try {
