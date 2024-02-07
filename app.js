@@ -484,24 +484,26 @@ server.post("/sensibo", async (req, res) => {
     console.log("-----------sensibo---------------");
 
     const { state, temperature, id } = req.body;
-
-    // Determine the actual device ID and API key to use
     const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
     const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
 
-    // Call the switchAcState function with the correct parameters
-    const switchResponse = await switchAcState({ id: actualDeviceId, apiKey: actualApiKey }, state, temperature);
+    // Debugging: Log the environment variables to ensure they're being read correctly
+    console.log("Device ID:", actualDeviceId, "API Key:", actualApiKey);
+
+    // Adjusted call to match the switchAcState function signature
+    const switchResponse = await switchAcState(actualDeviceId, state, temperature);
 
     // Check the response from the switchAcState function
     if (switchResponse.statusCode === 200) {
       res.json({ success: true, data: switchResponse.data });
     } else {
       // If the status code isn't 200, send an error response
-      res.status(switchResponse.statusCode).json({ success: false, message: switchResponse.data });
+      res.status(switchResponse.statusCode).json({ success: false, message: "Failed to update AC state via API." });
     }
   } catch (err) {
     console.error("Error in /sensibo route:", err);
-    res.status(500).json({ message: "Server error occurred." });
+    // Send a structured error response
+    res.status(500).json({ success: false, message: err.message || "Server error occurred." });
   }
 });
 

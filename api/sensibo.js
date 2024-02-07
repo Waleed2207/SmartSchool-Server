@@ -123,16 +123,24 @@ const analyzeFunc = async (func) => {
 const getAcState = async () => {
   try {
     const response = await axios.get(
-      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`
+      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}&limit=1`
     );
-    // Assuming the API returns the correct response, log the state
+
+    // Debug log to see the full structure of the response data
     console.log("AC State Retrieved:", response.data);
-    const state = response.data.result[0].acState;
-    return state;
+
+    // Ensure to correctly navigate through the response structure
+    // The actual path to the state might differ; adjust according to the actual API response
+    if (response.data && response.data.result && response.data.result.length > 0) {
+      const state = response.data.result[0].acState; // Adjust if the path differs
+      return state;
+    } else {
+      console.log("No AC state found in the response");
+      return null; // Consider returning a default state or null if no state is found
+    }
   } catch (err) {
-    // Log the error response if the API call fails
     console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
-    return null; // Return null or a default state object
+    return null; // Return null or a default state object in case of an error
   }
 };
 
@@ -210,43 +218,54 @@ const validateDegree = (temperature) => {
 const switchAcState = async (id, state, temperature = null) => {
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
   const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+  const deviceUrl = `https://home.sensibo.com/api/v2/pods/${actualDeviceId}/acStates?apiKey=${actualApiKey}`;
+  
+  const payload = {
+    acState: {
+      on: state,
+      targetTemperature: temperature,
+      mode: "cool"
+    }
+  };
 
   console.log("Attempting to switch AC state:", state, "with temperature:", temperature);
 
   try {
-    if (temperature === null || validateDegree(temperature)) {
-      const response = await axios.post(
-        `https://home.sensibo.com/api/v2/pods/${actualDeviceId}/acStates?apiKey=${actualApiKey}`,
-        {
-          acState: {
-            on: state,
-            targetTemperature: temperature,
-          },
-        }
-      );
-
-      // Check if the API call was successful
-      if (response.data.status === 'Success') {
-        // Update the device state in your local database
-        const updateResult = await Device.updateOne(
-          { device_id: actualDeviceId },
-          { state: state ? "on" : "off" } 
-        );
-        console.log("AC state changed:", response.data);
-        console.log("Database update result:", updateResult);
-        return { statusCode: 200, data: response.data.result };
-      } else {
-        throw new Error("Failed to update AC state via API.");
-      }
-    } else {
+    // Validate the temperature if it's not null
+    if (temperature !== null && !validateDegree(temperature)) {
       throw new Error("Temperature has to be between 16 and 30");
     }
+
+    const response = await axios.post(deviceUrl, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Check if the API call was successful
+    if (response.status === 200) {
+      console.log("AC state changed successfully", response.data);
+      
+      // Update the device state in your local database
+      const updateResult = await Device.updateOne(
+        { 
+          $set: { 
+            state: state ? "on" : "off", // Update state field
+            // mode: { on: state, targetTemperature: temperature, mode: "cool" }, // Update mode field as a document
+            lastUpdated: new Date() // Optional: track when the update was made
+          } 
+        }// Also consider adding a timestamp for the last update
+      );
+
+      console.log("Database update result:", updateResult);
+
+      return { statusCode: 200, data: response.data }; // Adjust according to your data handling needs
+    } else {
+      throw new Error("Failed to update AC state via API.");
+    }
   } catch (err) {
-    console.error("Error switching AC state:", err);
+    console.error("Error switching AC state:", err.message);
     return { statusCode: err.response?.status || 500, data: err.message };
   }
 };
-
 
 
 
