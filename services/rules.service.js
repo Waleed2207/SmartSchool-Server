@@ -1,6 +1,6 @@
 const Rule = require("../models/Rule");
 const ActionRole = require('../models/ActionRule');
-
+const Device = require('../models/Device');
 const { ObjectId, Int32 } = require("bson");
 const { getSensors } = require("./sensors.service");
 const { createRegexPattern, replaceWords } = require("../utils/utils");
@@ -246,20 +246,30 @@ async function interpretRuleByName(ruleDescription, context) {
       const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
       interpret(input, context);
       
-      // Assuming 'role' is part of the context, otherwise, adjust as needed
-      const role = context.role; // This is an example; adjust based on your actual context structure
+      const role = context.role; // Example, adjust based on your context structure
 
-      // Create an instance of the ActionRole model with the action and role
-      const actionRole = new ActionRole({
+      // Check if an ActionRole with the same action, role, and condition already exists
+      const existingActionRole = await ActionRole.findOne({
         action: rule.action,
-        role: role, // This needs to be determined based on your application's logic
+        role: role,
         condition: JSON.stringify(rule.condition) // Assuming condition is an object and needs to be stringified
       });
-      
-      // Save the actionRole instance to the database
-      await actionRole.save();
 
-      return `Rule "${ruleDescription}" interpreted and saved successfully. Context: ${JSON.stringify(context)}`;
+      if (!existingActionRole) {
+        // Create an instance of the ActionRole model with the action and role only if it does not already exist
+        const actionRole = new ActionRole({
+          action: rule.action,
+          role: role,
+          condition: JSON.stringify(rule.condition)
+        });
+        
+        await actionRole.save();
+        console.log(`Rule "${ruleDescription}" interpreted and saved successfully.`);
+      } else {
+        console.log(`Rule "${ruleDescription}" already exists and was not saved again.`);
+      }
+
+      return `Rule "${ruleDescription}" processed. Context: ${JSON.stringify(context)}`;
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
       return `Rule "${ruleDescription}" not found.`;
@@ -269,6 +279,7 @@ async function interpretRuleByName(ruleDescription, context) {
     return `Error fetching or saving rule - ${error}`;
   }
 }
+
 
 (async () => {
   const data = await getSensiboSensors();
@@ -483,7 +494,60 @@ const getAllRules = async () => {
 //     // await Rule.deleteMany
 //   } catch (err) {}
 // };
+//Sameer test
+/*
+async function applyRulesToDevice(deviceId) {
+  try {
+    // Fetch the specific device by its unique identifier
+    const device = await Device.findOne({ device_id: deviceId });
+    if (!device) {
+      console.log(`Device with ID ${deviceId} not found.`);
+      return;
+    }
 
+    // Fetch all rules (assuming rules are not device-specific in the database)
+    const rules = await Rule.find({});
+
+    // Iterate over each rule and evaluate its condition against the device
+    rules.forEach(rule => {
+      // Evaluating the condition based on the rule's and device's details
+      if (evaluateRuleCondition(rule.condition, device)) {
+        // Log or perform the action if the rule's condition is met
+        console.log(`Action to perform for device ${deviceId}: ${rule.action}`);
+        // Implement the action (e.g., update device state, notify user, etc.)
+      }
+    });
+
+    console.log(`Rules evaluated for device ${deviceId}.`);
+  } catch (error) {
+    console.error(`Error applying rules to device ${deviceId} - ${error}`);
+  }
+}
+
+function evaluateRuleCondition(condition, device) {
+  // Access the device's attribute based on the rule's condition.variable
+  const deviceValue = device[condition.variable];
+  if (deviceValue === undefined) {
+    console.warn(`Variable ${condition.variable} not found on device.`);
+    return false;
+  }
+
+  // Compare the device's attribute value against the rule's condition value
+  switch (condition.operator) {
+    case '>':
+      return deviceValue > condition.value;
+    case '<':
+      return deviceValue < condition.value;
+    case '==':
+      return deviceValue == condition.value;
+    // Add more cases for other operators as needed
+    default:
+      console.warn(`Unsupported operator ${condition.operator}.`);
+      return false;
+  }
+
+}
+  */
 module.exports = {
   // insertRuleToDB,
   add_new_Rule,
@@ -494,4 +558,5 @@ module.exports = {
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
+  //applyRulesToDevice,
 };

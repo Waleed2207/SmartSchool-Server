@@ -31,6 +31,7 @@ const {
   getAllRules,
   updateRule,
   deleteRuleById,
+ // applyRulesToDevice,
   checkIfRuleIsAlreadyExists,
   operatorFormatter,
   validateRule,
@@ -103,7 +104,7 @@ const { Server } = require("ws");
 connectDB();
 
 connectToWs();
-
+//applyRulesToDevice("YNahUQcM");
 
 //simulateMotionSensor();x
 // Simulate motion sensor every minute
@@ -855,6 +856,7 @@ server.get('/devices/rooms/:deviceName', async (req, res) => {
   } catch (err) {
 
   }
+  
 })
 
 
