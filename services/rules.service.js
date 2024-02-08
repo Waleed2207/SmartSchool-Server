@@ -1,4 +1,6 @@
 const Rule = require("../models/Rule");
+const ActionRole = require('../models/ActionRule');
+
 const { ObjectId, Int32 } = require("bson");
 const { getSensors } = require("./sensors.service");
 const { createRegexPattern, replaceWords } = require("../utils/utils");
@@ -213,7 +215,7 @@ function interpret(input, context) {
 
 // Function to interpret a rule by its description
 // Function to interpret a rule by its description
-async function interpretRuleByName(ruleDescription, context) {
+/*async function interpretRuleByName(ruleDescription, context) {
   console.log("interpretRuleByName");
 
   try {
@@ -231,6 +233,40 @@ async function interpretRuleByName(ruleDescription, context) {
   } catch (error) {
     console.error(`Error fetching rule - ${error}`);
     return `Error fetching rule - ${error}`; // Return an error message
+  }
+}
+*/
+async function interpretRuleByName(ruleDescription, context) {
+  console.log("interpretRuleByName");
+
+  try {
+    const rule = await Rule.findOne({ description: ruleDescription });
+
+    if (rule) {
+      const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      interpret(input, context);
+      
+      // Assuming 'role' is part of the context, otherwise, adjust as needed
+      const role = context.role; // This is an example; adjust based on your actual context structure
+
+      // Create an instance of the ActionRole model with the action and role
+      const actionRole = new ActionRole({
+        action: rule.action,
+        role: role, // This needs to be determined based on your application's logic
+        condition: JSON.stringify(rule.condition) // Assuming condition is an object and needs to be stringified
+      });
+      
+      // Save the actionRole instance to the database
+      await actionRole.save();
+
+      return `Rule "${ruleDescription}" interpreted and saved successfully. Context: ${JSON.stringify(context)}`;
+    } else {
+      console.log(`Rule "${ruleDescription}" not found.`);
+      return `Rule "${ruleDescription}" not found.`;
+    }
+  } catch (error) {
+    console.error(`Error fetching or saving rule - ${error}`);
+    return `Error fetching or saving rule - ${error}`;
   }
 }
 
