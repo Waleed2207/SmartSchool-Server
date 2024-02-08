@@ -7,6 +7,6 @@ const ActionRuleSchema = new mongoose.Schema({
   // You can add other fields as necessary
 });
 
-const ActionRule = mongoose.model('ActionRules', ActionRuleSchema);
+const ActionRule = mongoose.model('Action-Rules', ActionRuleSchema);
 
 module.exports = ActionRule;
