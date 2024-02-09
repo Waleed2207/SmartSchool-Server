@@ -18,7 +18,7 @@ class TurnDeviceOnCommand extends BaseCommand {
         const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
         console.log(targetTemperature)
         // // Use default values or values from parsed details
-        // const { device_id = '4ahpAkJ9', apiKey = '4yBVKxwgGQ5ctusFFpnGXplO04u73M', mode = 'cool' } = this.details; // Assuming you add device_id and apiKey to this.details if necessary
+        // const { device_id = `${process.env.SENSIBO_DEVICE_ID}`, apiKey = `${process.env.SENSIBO_API_KEY}` } = this.details; // Assuming you add device_id and apiKey to this.details if necessary
     
         // const deviceUrl = `https://home.sensibo.com/api/v2/pods/${device_id}/acStates?apiKey=${apiKey}`;
         // const state = true; // Since we're turning the device on
