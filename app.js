@@ -484,6 +484,7 @@ server.post("/sensibo", async (req, res) => {
     console.log("-----------sensibo---------------");
 
     const { state, temperature, id } = req.body;
+    console.log(id);
     const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
     const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
 
