@@ -1,8 +1,9 @@
 
-const BaseCommand = require('./baseCommand');
+const { BaseCommand } = require('./baseCommand');
 
 
-class TurnDeviceOnCommand extends BaseCommand {
+
+class TurnDeviceOffCommand extends BaseCommand {
     constructor(device, details) {
         super();
         this.device = device;
@@ -15,4 +16,4 @@ class TurnDeviceOnCommand extends BaseCommand {
     }
 }
 
-module.exports = TurnDeviceOnCommand;
+module.exports = {TurnDeviceOffCommand};
