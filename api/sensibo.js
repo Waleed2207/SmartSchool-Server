@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const Device = require("../models/Device");
+const RoomDevice = require("../models/RoomDevice");
 const { updateDeviceModeInDatabase } = require("../services/devices.service");
 const { addingDataToCsv } = require("../utils/machineLearning.js");
 const SensorValue = require("../models/SensorValue");
@@ -120,7 +121,7 @@ const analyzeFunc = async (func) => {
 //   }
 // };
 
-const getAcState = async () => {
+const  getAcState = async () => {
   try {
     const response = await axios.get(
       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}&limit=1`
@@ -254,8 +255,16 @@ const switchAcState = async (id, state, temperature = null) => {
           } 
         }// Also consider adding a timestamp for the last update
       );
-
-      console.log("Database update result:", updateResult);
+      const updateResultRoomDevices = await RoomDevice.updateOne(
+        { device_id: actualDeviceId }, // Use device_id to find the document
+        { 
+          $set: { 
+            state: state ? "on" : "off", // Update state field
+            lastUpdated: new Date() // Optional: track when the update was made
+          } 
+        }
+      );  
+      console.log("Database update result:", updateResult,updateResultRoomDevices);
 
       return { statusCode: 200, data: response.data }; // Adjust according to your data handling needs
     } else {
@@ -268,18 +277,6 @@ const switchAcState = async (id, state, temperature = null) => {
 };
 
 
-
-
-// const getSensiboSensors = async () => {
-//   try {
-//     const response = await axios.get(
-//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements?fields=temperature,humidity&apiKey=${process.env.SENSIBO_API_KEY}`
-//     );
-//     return response;
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
 const getSensiboSensors = async () => {
   try {
     const response = await axios.get(
@@ -309,25 +306,6 @@ const getSensiboSensors = async () => {
     return null; // Return null to indicate failure
   }
 };
-
-
-// const getSensiboSensors = async () => {
-//   try {
-//     const response = await axios.get(
-//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements`,
-//       {
-//         params: {
-//           fields: 'temperature,humidity',
-//           apiKey: process.env.SENSIBO_API_KEY,
-//         },
-//       }
-//     );
-//     return response.data; // Return the data directly
-//   } catch (err) {
-//     console.error("Error fetching sensor data from Sensibo:", err.message);
-//     return null; // Return null to indicate failure
-//   }
-// };
 
 const parseSensorAndWriteToMongo = async () => {
   try {
