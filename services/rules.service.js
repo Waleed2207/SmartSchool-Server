@@ -10,6 +10,7 @@ const { getSensiboSensors } = require('../api/sensibo')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -197,7 +198,62 @@ const { execute } = require('../interpeter/src/executor/executor');
 //   humidity: 40
 // };
 
+const getAllRulesDescription = async () => {
+  try {
+    // Fetch all rules without any condition
+    const rules = await Rule.find({}); // Use an empty object {} to fetch all documents
 
+    // Extract descriptions from each rule
+    const descriptions = rules.map(rule => rule.description);
+
+    console.log(descriptions); // Log descriptions to console
+
+    return {
+      statusCode: 200,
+      data: descriptions, // Return the descriptions
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      message: `Error fetching rules - ${error}`,
+    };
+  }
+};
+
+
+getAllRulesDescription().then((result) => {
+  console.log("descriptions : " + result.data);
+  return result.data;
+}).catch((error) => {
+  console.error(error);
+});
+
+async function processAllRules(context) {
+  try {
+    // Await the promise to get the result object
+    const descriptionResult = await getAllRulesDescription();
+
+    // Check if the operation was successful
+    if (descriptionResult.statusCode === 200) {
+      // Extract the descriptions array
+      const descriptions = descriptionResult.data;
+
+      // Iterate over each description and interpret it
+      for (const description of descriptions) {
+        // Await the interpretation of each rule description
+        const interpretResult = await interpretRuleByName(description, context);
+        console.log(interpretResult);
+      }
+    } else {
+      console.error('Failed to get rule descriptions:', descriptionResult.message);
+    }
+  } catch (error) {
+    console.error('Error processing rule descriptions:', error);
+  }
+}
+
+// Call the function with the context
+ // Ensure 'context' is defined appropriately
 
 
 // Function to handle rule objects directly
@@ -293,7 +349,8 @@ async function interpretRuleByName(ruleDescription, context) {
     console.log("Fetched context:", context);
 
     // Ensure that interpretRuleByName is awaited
-    const result = await interpretRuleByName("If temperature is above 19°C, then turn AC heat to 26°C.", context);
+    const result = processAllRules(context);
+    
     console.log(result); // Now this will wait for interpretRuleByName to complete
   } else {
     console.log('Failed to fetch sensor data or no data available.');
