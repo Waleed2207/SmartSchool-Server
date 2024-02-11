@@ -205,7 +205,7 @@ const getAllRulesDescription = async () => {
     const descriptions = rules.map(rule => rule.description);
 
     console.log(descriptions); // Log descriptions to console
-
+   
     return {
       statusCode: 200,
       data: descriptions, // Return the descriptions
@@ -220,6 +220,7 @@ const getAllRulesDescription = async () => {
 
 
 getAllRulesDescription().then((result) => {
+  
   console.log("descriptions : " + result.data);
   return result.data;
 }).catch((error) => {
@@ -241,11 +242,14 @@ async function processAllRules(context) {
         // Await the interpretation of each rule description
         const interpretResult = await interpretRuleByName(description, context);
         console.log(interpretResult);
+       
       }
     } else {
+      
       console.error('Failed to get rule descriptions:', descriptionResult.message);
     }
   } catch (error) {
+   
     console.error('Error processing rule descriptions:', error);
   }
 }
@@ -302,9 +306,8 @@ async function interpretRuleByName(ruleDescription, context) {
     console.log("Fetched context:", context);
 
     // Ensure that interpretRuleByName is awaited
-    const result = processAllRules(context);
-    
-    console.log(result); // Now this will wait for interpretRuleByName to complete
+    await processAllRules(context);
+
   } else {
     console.log('Failed to fetch sensor data or no data available.');
   }
