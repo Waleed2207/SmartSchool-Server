@@ -16,7 +16,7 @@ class TurnDeviceOnCommand extends BaseCommand {
         console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
         // Assuming this.details is a string like "25 DEGREES"
     
-       // Extract the numeric part from the string
+        //Extract the numeric part from the string
         const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
         console.log(targetTemperature)
         // // Use default values or values from parsed details
