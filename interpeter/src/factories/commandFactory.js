@@ -13,17 +13,21 @@ class CommandFactory {
         }
 
         const commandType = parts[0]; // Already converted to uppercase
+        console.log(commandType);
         const device = parts[1].toLowerCase(); // Devices may be case-sensitive
+        console.log(device);
         const state = parts[2]; // Already uppercase
-        const details = parts.slice(3).join(' '); // Any additional details after the state
+        console.log(state);
+        const mode = parts[3]; //
+        const details = parts.slice(6).join(' '); // Any additional details after the state
 
         switch (commandType) {
             case 'TURN':
                 // Based on the state, return the corresponding command
                 if (state === 'ON') {
-                    return new TurnDeviceOnCommand(device, details);
+                    return new TurnDeviceOnCommand(device,state,mode, details);
                 } else if (state === 'OFF') {
-                    return new TurnDeviceOffCommand(device, details);
+                    return new TurnDeviceOffCommand(device,state,mode, details);
                 } else {
                     // Handle other states or return an error
                     throw new Error(`Unknown state for TURN command: ${state}`);

@@ -246,7 +246,7 @@ async function interpretRuleByName(ruleDescription, context) {
     console.log("Fetched context:", context);
 
     // Ensure that interpretRuleByName is awaited
-    const result = await interpretRuleByName("burn the room", context);
+    const result = await interpretRuleByName("If temperature is above 19°C, then turn AC heat to 26°C.", context);
     console.log(result); // Now this will wait for interpretRuleByName to complete
   } else {
     console.log('Failed to fetch sensor data or no data available.');

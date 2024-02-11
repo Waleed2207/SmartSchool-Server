@@ -89,7 +89,8 @@ const { simulateMotionSensor } = require("./services/motion.service.js");
 const { controlLED } = require("./services/mqtt.service.js");
 const mqttService = require("./services/mqtt.service.js");
 const { Server } = require("ws");
-
+const Room = require("./models/Room");
+const RoomDevice = require("./models/RoomDevice");
 //----------------------Interpeter------------------------------------------
 
 // const { tokenize } = require('./interpeter/src/lexer/lexer');
@@ -164,65 +165,44 @@ server.get("/user-role", (req, res) => {
   res.json({ role: "admin" }); 
 });
 
-//-------------------------------- motion-detected by Raspberry Pi --------------------------------
-// server.post('/motion-detected', (req, res) => {
-//   try {
-//     // Check if the request body is present
-//     if (!req.body) {
-//       throw new Error('No request body found');
-//     }
-
-//     // Extracting the state from the request body
-//     const lightState = req.body.state;
-
-//     // Logging the received state
-//     console.log('Received request to turn', lightState);
-
-//     // Validate the received state
-//     if (lightState !== 'on' && lightState !== 'off') {
-//       throw new Error(`Invalid light state: ${lightState}`);
-//     }
-
-//     // Simulate light control logic here or perform actual actions
-//     console.log(`Simulated light turned ${lightState}`);
-
-//     // Responding to the Flask server
-//    // res.status(200).send(`Light turned ${lightState}, request received successfully`);
-//   } catch (error) {
-//     // Log the error and send an appropriate response
-//     console.error('Error:', error.message);
-//     res.status(500).send(`Server error: ${error.message}`);
-//   }
-// });
-
-
-
-
-
-
-
-
-
+//-------------------------------- motion-detected by Raspberry Pi -------------------------------
 // --------------------------------- Sensors ---------------------------------
-  server.post('/motion-detected', (req, res) => {
+
+
+  server.post('/motion-detected',async (req, res) => {
     try {
       const lightState = req.body.state;
       motionState = lightState === 'on'; // Update the motionState
-
+  
       console.log('Received request to turn', lightState);
-
+  
       if (lightState !== 'on' && lightState !== 'off') {
         throw new Error(`Invalid light state: ${lightState}`);
       }
-
+  
       console.log(`Simulated light turned ${lightState}`);
+      const roomId = "38197016"; // Example roomId
+      const deviceId = "65109692"; // Example deviceId
+
+       // Update the room's 'motionDetected' field
+       await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
+  
+       // Update the specific device's state
+       await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+   
+       // Additionally, update the RoomDevice state
+       await RoomDevice.updateOne(
+         { room_id: roomId, device_id: deviceId },
+         { $set: { state: lightState } }
+       );
+
+      console.log(`Motion state updated for room ${roomId} to ${motionState}`);
       res.status(200).send(`Light turned ${lightState}, request received successfully`);
     } catch (error) {
       console.error('Error:', error.message);
       res.status(500).send(`Server error: ${error.message}`);
     }
   });
-
   let motionState = false; // This should reflect the real motion state, possibly stored in a database
 
   server.get('/motion-state', (req, res) => {
@@ -630,9 +610,7 @@ server.put("/devices/mode", async (req, res) => {
     await updateDeviceModeInDatabase(deviceId, mode);
     res.status(200).json({ success: true });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Error updating mode in the database" });
+    res.status(500).json({ success: false, message: "Error updating mode in the database" });
   }
 });
 

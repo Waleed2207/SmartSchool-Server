@@ -13,6 +13,18 @@ const ruleSchema = new mongoose.Schema({
     required: true
   },
   action: String,
+  isStrict: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  isHidden: {
+    type: Boolean,
+    default: false
+  },
 });
 
 const Rule = mongoose.model('rules', ruleSchema);
