@@ -165,50 +165,51 @@ server.get("/user-role", (req, res) => {
   res.json({ role: "admin" }); 
 });
 
-//-------------------------------- motion-detected by Raspberry Pi -------------------------------
+//-------------------------------- motion-detected by Raspberry Pi --------------------------------
 // --------------------------------- Sensors ---------------------------------
 
 
-  server.post('/motion-detected',async (req, res) => {
-    try {
-      const lightState = req.body.state;
-      motionState = lightState === 'on'; // Update the motionState
-  
-      console.log('Received request to turn', lightState);
-  
-      if (lightState !== 'on' && lightState !== 'off') {
-        throw new Error(`Invalid light state: ${lightState}`);
-      }
-  
-      console.log(`Simulated light turned ${lightState}`);
-      const roomId = "38197016"; // Example roomId
-      const deviceId = "65109692"; // Example deviceId
 
-       // Update the room's 'motionDetected' field
-       await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
-  
-       // Update the specific device's state
-       await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-   
-       // Additionally, update the RoomDevice state
-       await RoomDevice.updateOne(
-         { room_id: roomId, device_id: deviceId },
-         { $set: { state: lightState } }
-       );
+server.post('/motion-detected',async (req, res) => {
+  try {
+    const lightState = req.body.state;
+    motionState = lightState === 'on'; // Update the motionState
 
-      console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-      res.status(200).send(`Light turned ${lightState}, request received successfully`);
-    } catch (error) {
-      console.error('Error:', error.message);
-      res.status(500).send(`Server error: ${error.message}`);
+    console.log('Received request to turn', lightState);
+
+    if (lightState !== 'on' && lightState !== 'off') {
+      throw new Error(`Invalid light state: ${lightState}`);
     }
-  });
-  let motionState = false; // This should reflect the real motion state, possibly stored in a database
 
-  server.get('/motion-state', (req, res) => {
-    res.status(200).json({ motionDetected: motionState });
-  });
-  
+    console.log(`Simulated light turned ${lightState}`);
+    const roomId = "38197016"; // Example roomId
+    const deviceId = "65109692"; // Example deviceId
+
+     // Update the room's 'motionDetected' field
+     await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
+
+     // Update the specific device's state
+     await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+ 
+   // Additionally, update the RoomDevice state
+   await RoomDevice.updateOne(
+    { room_id: roomId, device_id: deviceId },
+    { $set: { state: lightState } }
+  );
+
+
+    console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+    res.status(200).send(`Light turned ${lightState}, request received successfully`);
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).send(`Server error: ${error.message}`);
+  }
+});
+let motionState = false; // This should reflect the real motion state, possibly stored in a database
+
+server.get('/motion-state', (req, res) => {
+  res.status(200).json({ motionDetected: motionState });
+});
 
 server.get("/sensors", async (req, res) => {
   try {
