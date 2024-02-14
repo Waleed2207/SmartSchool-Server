@@ -8,7 +8,6 @@ const { getSensiboSensors } = require('../api/sensibo')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
-
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -196,6 +195,8 @@ const { execute } = require('../interpeter/src/executor/executor');
 //   humidity: 40
 // };
 
+
+
 const getAllRulesDescription = async () => {
   try {
     // Fetch all rules without any condition
@@ -205,7 +206,7 @@ const getAllRulesDescription = async () => {
     const descriptions = rules.map(rule => rule.description);
 
     console.log(descriptions); // Log descriptions to console
-   
+
     return {
       statusCode: 200,
       data: descriptions, // Return the descriptions
@@ -213,14 +214,12 @@ const getAllRulesDescription = async () => {
   } catch (error) {
     return {
       statusCode: 500,
-      message: `Error fetching rules - ${error}`,
-    };
+      message: `Error fetching rules - ${error}`,    };
   }
 };
 
 
 getAllRulesDescription().then((result) => {
-  
   console.log("descriptions : " + result.data);
   return result.data;
 }).catch((error) => {
@@ -242,21 +241,14 @@ async function processAllRules(context) {
         // Await the interpretation of each rule description
         const interpretResult = await interpretRuleByName(description, context);
         console.log(interpretResult);
-       
       }
     } else {
-      
       console.error('Failed to get rule descriptions:', descriptionResult.message);
     }
   } catch (error) {
-   
     console.error('Error processing rule descriptions:', error);
   }
 }
-
-// Call the function with the context
- // Ensure 'context' is defined appropriately
-
 
 // Function to handle rule objects directly
 function stringifyCondition(condition) {
@@ -296,22 +288,18 @@ async function interpretRuleByName(ruleDescription, context) {
 
 (async () => {
   const data = await getSensiboSensors();
-
   if (data) {
     const context = {
       temperature: data.temperature,
       humidity: data.humidity
     };
-
     console.log("Fetched context:", context);
-
-    // Ensure that interpretRuleByName is awaited
-    await processAllRules(context);
-
+    await processAllRules(context); // Properly await the processing of rules
   } else {
     console.log('Failed to fetch sensor data or no data available.');
   }
 })();
+
 
 
 

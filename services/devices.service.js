@@ -2,6 +2,7 @@ const Device = require("../models/Device");
 const RoomDevice = require("../models/RoomDevice");
 const Room = require("../models/Room");
 
+
 const getDevices = async () => {
   try {
     const devices = await Device.find();
