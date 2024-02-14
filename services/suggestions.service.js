@@ -257,7 +257,7 @@ async function addSuggestionsToDatabase() {
 
     // Call the recommend_device function with the evidence
     const response = await axios.post(
-      "http://127.0.0.1:5000/recommend_device",
+      "http://127.0.0.1:5001/recommend_device",
       {
         devices: devicesArr,
         evidence: evidence,

@@ -1,14 +1,18 @@
 const mongoose = require('mongoose');
 
 const ruleSchema = new mongoose.Schema({
-  rule: {
+
+  description: String,
+  condition: {
+      variable: String,
+      operator: String,
+      value: Number
+  },
+  id: {
     type: String,
     required: true
   },
-  normalizedRule: {
-    type: String,
-    required: true
-  },
+  action: String,
   isStrict: {
     type: Boolean,
     default: false
@@ -17,22 +21,10 @@ const ruleSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  id: {
-    type: String,
-    required: true
-  },
   isHidden: {
     type: Boolean,
     default: false
   },
-  relatedRule: {
-    type: String,
-    default: null
-  },
-  isUIOnly: {
-    type: Boolean,
-    defaulr: false
-  }
 });
 
 const Rule = mongoose.model('rules', ruleSchema);
