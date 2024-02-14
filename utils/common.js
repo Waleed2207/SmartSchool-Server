@@ -5,7 +5,7 @@ const { switchAcState, analyzeFunc } = require("../api/sensibo");
 const { getRoomIdByRoomName } = require("../services/rooms.service");
 const { getDeviceIdByDeviceName, setRoomDeviceState } = require("../services/devices.service");
 const RoomDevice = require("../models/RoomDevice");
-const { controlPump } = require("../services/mqtt.service");
+//const { controlPump } = require("../services/mqtt.service");
 
 
 const removeSensorValueByType = async (sensorType) => {

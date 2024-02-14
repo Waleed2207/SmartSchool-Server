@@ -389,7 +389,7 @@ const updateSensiboMode = async (deviceId, mode) => {
     const updateDB = await updateDeviceModeInDatabase(deviceId, mode);
 
     if ((response.status == 200) && updateDB) {
-      await addingDataToCsv()
+      // await addingDataToCsv()
       return { success: true, data: response.data };
     }
 
