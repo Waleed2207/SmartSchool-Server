@@ -465,6 +465,28 @@ const updateRule = async (ruleId, updateFields) => {
     };
   }
 };
+
+
+// Inside RuleSwitch or a similar component/function
+
+const toggleActiveStatus = async (ruleId, isActive) => {
+  try {
+    // Assuming updateRuleActiveStatus is an imported function from your services
+    const updatedRule = await updateRuleActiveStatus(ruleId, !isActive); // Toggle the isActive value
+    if (updatedRule) {
+      toast.success("Rule status updated successfully!");
+      // Update the local state in RulesTable to reflect this change
+      const updatedRules = currentRules.map(rule =>
+        rule.id === ruleId ? { ...rule, isActive: !rule.isActive } : rule
+      );
+      setCurrentRules(updatedRules);
+    }
+  } catch (error) {
+    console.error("Failed to update rule active status:", error);
+    toast.error("Failed to update rule status.");
+  }
+};
+
 async function deleteRuleById(ruleId) {
   try {
     const result = await Rule.deleteOne({ id: ruleId });
@@ -503,6 +525,7 @@ module.exports = {
    updateRule,
    removeRuleFromDB,
    deleteRuleById,
+   toggleActiveStatus,
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
