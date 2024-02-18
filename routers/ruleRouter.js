@@ -8,7 +8,7 @@ ruleRouter.get('/rules', ruleControllers.get_Rules);
 
 //POST
 ruleRouter.post('/rules', ruleControllers.add_Rule);
-
+ruleRouter.post('/rules/:id', ruleControllers.update_Rule);
 //PUT
 ruleRouter.put('/rules/:id', ruleControllers.update_Rule);
 

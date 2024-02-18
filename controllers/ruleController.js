@@ -10,7 +10,7 @@ const {
     insertRuleToDBMiddleware,
     removeAllRules,
     removeRuleFromDB,
-  } = require("./../services/rules.service.js");
+  } = require("../services/rules.service.js");
 
   
 exports.ruleControllers={

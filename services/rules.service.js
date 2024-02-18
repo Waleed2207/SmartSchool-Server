@@ -398,87 +398,87 @@ const getAllRules = async () => {
 //   }
 // };
 
-// const removeRuleFromDB = async (id) => {
-//   try {
-//     console.log("--------Delete Rule--------", id);
-//     await Rule.deleteOne({ id: id });
-//     await Rule.deleteMany({ relatedRule: id });
-//     return {
-//       statusCode: 200,
-//       message: "Rule deleted successfully",
-//     };
-//   } catch (err) {
-//     return {
-//       statusCode: 500,
-//       message: `Error deleting rule - ${err}`,
-//     };
-//   }
-// };
+const removeRuleFromDB = async (id) => {
+  try {
+    console.log("--------Delete Rule--------", id);
+    await Rule.deleteOne({ id: id });
+    await Rule.deleteMany({ relatedRule: id });
+    return {
+      statusCode: 200,
+      message: "Rule deleted successfully",
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      message: `Error deleting rule - ${err}`,
+    };
+  }
+};
 
 
 
-// const updateRule = async (ruleId, updateFields) => {
-//   try {
-//     // Extract the 'rule' field from updateFields
-//     let rule = _.get(updateFields, "rule", "");
+const updateRule = async (ruleId, updateFields) => {
+  try {
+    // Extract the 'rule' field from updateFields
+    let rule = _.get(updateFields, "rule", "");
 
-//     if (rule !== "") {
-//       // Process and validate the 'rule' field
-//       const formattedRule = await ruleFormatter(rule);
-//       const ruleValidation = await validateRule(formattedRule);
-//       //waleed enable it because is not work without sensors
+    if (rule !== "") {
+      // Process and validate the 'rule' field
+      const formattedRule = await ruleFormatter(rule);
+      const ruleValidation = await validateRule(formattedRule);
+      //waleed enable it because is not work without sensors
 
-//       // const sensorsValidation = await validateSensor(rule);
-//       //
-//       // if (sensorsValidation.statusCode === 400) {
-//       //   return {
-//       //     statusCode: sensorsValidation.statusCode,
-//       //     message: sensorsValidation.message,
-//       //   };
-//       // }
+      // const sensorsValidation = await validateSensor(rule);
+      //
+      // if (sensorsValidation.statusCode === 400) {
+      //   return {
+      //     statusCode: sensorsValidation.statusCode,
+      //     message: sensorsValidation.message,
+      //   };
+      // }
 
-//       if (ruleValidation.statusCode === 400) {
-//         return {
-//           statusCode: ruleValidation.statusCode,
-//           message: ruleValidation.message,
-//         };
-//       }
+      if (ruleValidation.statusCode === 400) {
+        return {
+          statusCode: ruleValidation.statusCode,
+          message: ruleValidation.message,
+        };
+      }
 
-//       // Update the 'rule' field in updateFields
-//       updateFields = {
-//         ...updateFields,
-//         rule: formattedRule,
-//         normalizedRule: rule,
-//       };
-//     }
+      // Update the 'rule' field in updateFields
+      updateFields = {
+        ...updateFields,
+        rule: formattedRule,
+        normalizedRule: rule,
+      };
+    }
 
-//     // Update the rule in the database
-//     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
-//     return {
-//       statusCode: 200,
-//       message: "Rule updated successfully",
-//     };
-//   } catch (error) {
-//     return {
-//       statusCode: 500,
-//       message: `Error updating rule - ${error}`,
-//     };
-//   }
-// };
-// async function deleteRuleById(ruleId) {
-//   try {
-//     const result = await Rule.deleteOne({ id: ruleId });
-//     await Rule.deleteMany({ relatedRule: ruleId });
-//     if (result.deletedCount === 1) {
-//       return { status: 200 };
-//     } else {
-//       return { status: 400 };
-//     }
-//   } catch (error) {
-//     console.error("Error deleting rule:", error);
-//     return { status: 500 };
-//   }
-// }
+    // Update the rule in the database
+    await Rule.updateOne({ id: ruleId }, { $set: updateFields });
+    return {
+      statusCode: 200,
+      message: "Rule updated successfully",
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      message: `Error updating rule - ${error}`,
+    };
+  }
+};
+async function deleteRuleById(ruleId) {
+  try {
+    const result = await Rule.deleteOne({ id: ruleId });
+    await Rule.deleteMany({ relatedRule: ruleId });
+    if (result.deletedCount === 1) {
+      return { status: 200 };
+    } else {
+      return { status: 400 };
+    }
+  } catch (error) {
+    console.error("Error deleting rule:", error);
+    return { status: 500 };
+  }
+}
 
 // const removeAllRules = async () => {
 //   try {
@@ -500,9 +500,9 @@ module.exports = {
   // insertRuleToDB,
   add_new_Rule,
   getAllRules,
-  // updateRule,
-  // removeRuleFromDB,
-  // deleteRuleById,
+   updateRule,
+   removeRuleFromDB,
+   deleteRuleById,
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
