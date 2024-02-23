@@ -3,7 +3,8 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 
 
-function evaluateCondition({ variable, operator, value }, context) {
+function evaluateCondition({ variable, operator, value }, context) 
+{
     console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
     console.log("evaluateConditioDedection checkkkkkkkkkkkkkkkkkkkkkkkkkkk");
     
@@ -15,35 +16,22 @@ function evaluateCondition({ variable, operator, value }, context) {
     const conditionValue = parseFloat(value);
 
     console.log("evaluateConditioDedection check");
-
-    if (variable === 'detection' && operator === 'is equal to' && conditionValue === 1 ) {
+    /*
+    if (variable === 'detection' && operator === 'is equal to' && conditionValue === 1 ) 
+    {
         console.log("evaluateConditioDedection it ok");
         return true;
-    } else {
-        if (variable !== 'detection') {
-            console.log("problem with variable!!!!!!!!!!!!!!");
-        }
-        if (operator !== 'is equal to') {
-            console.log("problem with operator&&&&&&&&&&&&&&&&");
-        }
-        if (value !== '1') {
-            console.log("problem with value++++++++++++++++++++++++");
-        }
-        console.log("evaluateConditioDedection it not ok")
-        return false;
-    }
+    } 
+    */
     
-    
-
-    
-   
 
     console.log({varValue})
     console.log({conditionValue});
 
     
 
-    switch (operator) {
+    switch (operator) 
+    {
         case 'is above':
             return varValue > conditionValue;
         case 'is below':
@@ -63,11 +51,12 @@ function evaluateCondition({ variable, operator, value }, context) {
     }
 }
 
+/*
 
 // Modify your execute function or similar to handle the new rule
 function DedectionEvaluat({variable, operator, value } ,context) {
 
-    console.log("evaluateConditioDedection checkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+    console.log("evaluateConditioDedection");
     
     let TempValue = parseInt(value);
     console.log({variable});
@@ -97,11 +86,12 @@ function DedectionEvaluat({variable, operator, value } ,context) {
     }
 }
 
+*/
 
 function execute(parsed, context) {
     
     if (parsed.condition && parsed.condition.operator) {
-        if (evaluateCondition(parsed.condition, context) || DedectionEvaluat(parsed.condition, context) ) {
+        if (evaluateCondition(parsed.condition, context)  ) {
             console.log(`Condition met, executing action: ${parsed.action}`);
             
             // Check if the action is defined

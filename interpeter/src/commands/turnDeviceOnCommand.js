@@ -19,10 +19,12 @@ class TurnDeviceOnCommand extends BaseCommand
         console.log(this.device)
         switch (this.device.toLowerCase()) {
            
-            case 'light':
-                console.log(`${this.device} State: ${this.state}, Details: ${this.details}`);
+            case 'lights':
+                console.log(`device : ${this.device}  , State: ${this.state} , Details: ${this.details}`);
                 break;
-            case 'AirCondition' : 
+            case 'AirCondition' :
+                console.log(`device : ${this.device} State: ${this.state}, Details: ${this.details}`);
+                break; 
             // You can add more cases here for other devices
         }
          
