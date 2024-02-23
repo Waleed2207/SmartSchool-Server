@@ -4,6 +4,7 @@ const TurnDeviceOffCommand = require('../commands/turnDeviceOffCommand'); // Ass
 
 class CommandFactory {
     static createCommand(action) {
+        console.log("we are in the CommandFactory!!!!!!!")
         // Split the action into parts by space
         const parts = action.toUpperCase().split(' '); // Convert action to uppercase for case-insensitive comparison
 
@@ -13,13 +14,16 @@ class CommandFactory {
         }
 
         const commandType = parts[0]; // Already converted to uppercase
-        console.log(commandType);
+        console.log({commandType})
         const device = parts[1].toLowerCase(); // Devices may be case-sensitive
-        console.log(device);
-        const state = parts[2]; // Already uppercase
-        console.log(state);
+        console.log({device})
+        const state = parts[2]; // Already uppercase;
+        console.log({state})
         const mode = parts[3]; //
+        console.log({mode})
         const details = parts.slice(6).join(' '); // Any additional details after the state
+        console.log({commandType});
+        console.log(device)
 
         switch (commandType) {
             case 'TURN':

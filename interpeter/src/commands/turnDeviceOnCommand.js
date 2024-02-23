@@ -3,7 +3,8 @@ const Device = require("../../../models/Device");
 const RoomDevice = require("../../../models/RoomDevice");
 const axios = require('axios'); 
 
-class TurnDeviceOnCommand extends BaseCommand {
+class TurnDeviceOnCommand extends BaseCommand 
+{
     constructor(device,state , mode, details) {
         super();
         this.device = device;
@@ -12,8 +13,21 @@ class TurnDeviceOnCommand extends BaseCommand {
         this.details = details;
     }
 
-    async execute() {
-        console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
+    async execute() 
+    {
+        console.log("we are going to turn device");
+        console.log(this.device)
+        switch (this.device.toLowerCase()) {
+           
+            case 'lights':
+                console.log(`device : ${this.device}  , State: ${this.state} , Details: ${this.details}`);
+                break;
+            case 'AirCondition' :
+                console.log(`device : ${this.device} State: ${this.state}, Details: ${this.details}`);
+                break; 
+            // You can add more cases here for other devices
+        }
+         
         // Assuming this.details is a string like "25 DEGREES"
     
         // //Extract the numeric part from the string

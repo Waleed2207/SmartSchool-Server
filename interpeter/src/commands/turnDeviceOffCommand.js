@@ -11,6 +11,7 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     execute() 
     {
+        
         console.log(`Turning ${this.device} Off with details: ${this.details}`);
     }
 }

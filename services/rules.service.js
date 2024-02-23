@@ -201,11 +201,12 @@ const getAllRulesDescription = async () => {
   try {
     // Fetch all rules without any condition
     const rules = await Rule.find({}); // Use an empty object {} to fetch all documents
-
     // Extract descriptions from each rule
     const descriptions = rules.map(rule => rule.description);
-
-    console.log(descriptions); // Log descriptions to console
+   
+    console.log({descriptions})
+    
+    
 
     return {
       statusCode: 200,
@@ -220,7 +221,7 @@ const getAllRulesDescription = async () => {
 
 
 getAllRulesDescription().then((result) => {
-  console.log("descriptions : " + result.data);
+ 
   return result.data;
 }).catch((error) => {
   console.error(error);
@@ -230,17 +231,19 @@ async function processAllRules(context) {
   try {
     // Await the promise to get the result object
     const descriptionResult = await getAllRulesDescription();
-
     // Check if the operation was successful
     if (descriptionResult.statusCode === 200) {
       // Extract the descriptions array
       const descriptions = descriptionResult.data;
-
+      
+      
+      console.log({descriptions});
       // Iterate over each description and interpret it
       for (const description of descriptions) {
         // Await the interpretation of each rule description
+        console.log({description})
         const interpretResult = await interpretRuleByName(description, context);
-        console.log(interpretResult);
+        
       }
     } else {
       console.error('Failed to get rule descriptions:', descriptionResult.message);
@@ -259,14 +262,14 @@ function stringifyCondition(condition) {
 function interpret(input, context) {
   const tokens = tokenize(input);
   const parsed = parse(tokens); // Ensure this returns the correct structure
-  console.log(parsed);
+  
   execute(parsed, context); // `parsed` should include condition and action
 }
 
 // Function to interpret a rule by its description
 // Function to interpret a rule by its description
 async function interpretRuleByName(ruleDescription, context) {
-  console.log("interpretRuleByName");
+
 
   try {
     // Find the rule by its description using await for the asynchronous operation
@@ -274,11 +277,11 @@ async function interpretRuleByName(ruleDescription, context) {
 
     if (rule) {
       const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      console.log({input})
       interpret(input, context);
       return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
-      console.log(`Rule "${ruleDescription}" not found.`);
-      return `Rule "${ruleDescription}" not found.`; // Return an error message
+            return `Rule "${ruleDescription}" not found.`; // Return an error message
     }
   } catch (error) {
     console.error(`Error fetching rule - ${error}`);
@@ -293,7 +296,7 @@ async function interpretRuleByName(ruleDescription, context) {
       temperature: data.temperature,
       humidity: data.humidity
     };
-    console.log("Fetched context:", context);
+    
     await processAllRules(context); // Properly await the processing of rules
   } else {
     console.log('Failed to fetch sensor data or no data available.');
@@ -304,7 +307,7 @@ async function interpretRuleByName(ruleDescription, context) {
 
 
 const add_new_Rule = async (ruleData) => {
-  console.log("add new Rule");
+ 
   
   // Assuming ruleData is structured correctly according to your ruleSchema,
   // e.g., ruleData has description, condition (with variable, operator, value), action, and id
@@ -319,7 +322,7 @@ const add_new_Rule = async (ruleData) => {
     action: ruleData.action,
   });
 
-  console.log("rule going to save in the database");
+  
 
   try {
     await newRule.save();
