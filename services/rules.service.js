@@ -1,3 +1,4 @@
+/*
 const Rule = require("../models/Rule");
 const { ObjectId, Int32 } = require("bson");
 const { getSensors } = require("./sensors.service");
@@ -196,7 +197,7 @@ const { execute } = require('../interpeter/src/executor/executor');
 // };
 
 
-
+/*
 const getAllRulesDescription = async () => {
   try {
     // Fetch all rules without any condition
@@ -252,23 +253,46 @@ async function processAllRules(context) {
     console.error('Error processing rule descriptions:', error);
   }
 }
+*/
 
+/*------------------------------interpret and interpretRuleByName--------------------------------------- */
+/*
 // Function to handle rule objects directly
 function stringifyCondition(condition) {
   return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
 }
 
-// Function to pass this context to the executor
+// Executes a parsed rule within the given context
 function interpret(input, context) {
   const tokens = tokenize(input);
-  const parsed = parse(tokens); // Ensure this returns the correct structure
-  
-  execute(parsed, context); // `parsed` should include condition and action
+  const parsed = parse(tokens);
+  execute(parsed, context);
 }
 
 // Function to interpret a rule by its description
 // Function to interpret a rule by its description
+/*new code try  */
+/*
 async function interpretRuleByName(ruleDescription, context) {
+  try {
+      const rule = await Rule.findOne({ description: ruleDescription });
+      if (rule) {
+          const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+          console.log({input});
+          interpret(input, context);
+          return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`;
+      } else {
+          return `Rule "${ruleDescription}" not found.`;
+      }
+  } catch (error) {
+      console.error(`Error fetching rule - ${error}`);
+      return `Error fetching rule - ${error}`;
+  }
+}
+
+/*
+async function interpretRuleByName(ruleDescription, context) 
+{
 
 
   try {
@@ -288,7 +312,108 @@ async function interpretRuleByName(ruleDescription, context) {
     return `Error fetching rule - ${error}`; // Return an error message
   }
 }
+*/
 
+/*----------------------------------proccess all rule function -----------------------------------*/
+/*new code try*/
+// Processes all rules with the given context
+/*
+async function processRulesAndInterpretDescriptions(context) {
+  console.log("Starting processRulesAndInterpretDescriptions");
+  const rules = await Rule.find({});
+  const descriptions = rules.map(rule => rule.description);
+  console.log("Fetched descriptions:", descriptions);
+
+  for (const description of descriptions) {
+      console.log("Interpreting description:", description);
+      await interpretRuleByName(description, context);
+  }
+}
+
+/* Old processRulesAndInterpretDescriptions
+async function processRulesAndInterpretDescriptions(context) {
+  console.log("the function : processRulesAndInterpretDescriptions!!!!!!")
+  // Part equivalent to getAllRulesDescription
+  async function getAllRulesDescription() 
+  {
+    console.log("Starting getAllRulesDescription");
+    try {
+      const rules = await Rule.find({});
+      const descriptions = rules.map(rule => rule.description);
+      console.log("Fetched descriptions:", { descriptions });
+      return {
+        statusCode: 200,
+        data: descriptions,
+      };
+    } catch (error) {
+      console.error("Error in getAllRulesDescription:", error);
+      return {
+        statusCode: 500,
+        message: `Error fetching rules - ${error}`,
+      };
+    }
+  }
+
+*/
+
+/*
+  // Part equivalent to the processing logic after fetching descriptions
+  async function processAllRules(context) 
+  {
+    console.log("Starting processAllRules");
+    try {
+      const descriptionResult = await getAllRulesDescription();
+      if (descriptionResult.statusCode === 200) {
+        const descriptions = descriptionResult.data;
+        console.log("Processing descriptions:", { descriptions });
+        for (const description of descriptions) {
+          console.log("Interpreting description:", { description });
+          const interpretResult = await interpretRuleByName(description, context);
+          // Handle the interpretResult if needed
+        }
+      } else {
+        console.error('Failed to get rule descriptions:', descriptionResult.message);
+      }
+    } catch (error) {
+      console.error('Error in processAllRules:', error);
+    }
+  }
+
+  // Starting the entire process
+  console.log("Initiating processRulesAndInterpretDescriptions");
+  try {
+    await processAllRules();
+    console.log("Finished processRulesAndInterpretDescriptions");
+  } catch (error) {
+    console.error("Error in processRulesAndInterpretDescriptions:", error);
+  }
+
+
+// Main function to fetch sensor data and process rules
+async function fetchAndProcessRules() {
+  try {
+      const data = await getSensiboSensors();
+      if (data) {
+          const context = {
+              temperature: data.temperature,
+              humidity: data.humidity
+          };
+          await processRulesAndInterpretDescriptions(context);
+      } else {
+          console.log('Failed to fetch sensor data or no data available.');
+      }
+  } catch (error) {
+      console.error("An error occurred:", error);
+  }
+}
+
+fetchAndProcessRules(); // Initiates the rule processing with fetched sensor data
+
+/*--------------------------------------------------------------------------------------------------*/
+
+
+
+/*
 (async () => {
   const data = await getSensiboSensors();
   if (data) {
@@ -302,7 +427,23 @@ async function interpretRuleByName(ruleDescription, context) {
     console.log('Failed to fetch sensor data or no data available.');
   }
 })();
+*/
 
+/*
+(async () => {
+  const data = await getSensiboSensors();
+  if (data) {
+    const context = {
+      temperature: data.temperature,
+      humidity: data.humidity
+    };
+    
+    // Now, call the function with the fetched context
+    await processRulesAndInterpretDescriptions(context);
+  } else {
+    console.log('Failed to fetch sensor data or no data available.');
+  }
+})();
 
 
 
@@ -510,3 +651,107 @@ module.exports = {
   // insertRuleToDBMiddleware,
   // removeAllRules,
 };
+
+*/
+
+/*------------------new code ------------*/
+
+
+
+const Rule = require("../models/Rule");
+const { ObjectId, Int32 } = require("bson");
+const { getSensors } = require("./sensors.service");
+const { createRegexPattern, replaceWords } = require("../utils/utils");
+const { getUsers } = require("./users.service");
+const _ = require("lodash");
+const { getSensiboSensors } = require('../api/sensibo')
+const { tokenize } = require('../interpeter/src/lexer/lexer');
+const { parse } = require('../interpeter/src/parser/parser');
+const { execute } = require('../interpeter/src/executor/executor');
+// const { Rules } = require('../models/Rules');
+
+// Helper function to stringify a condition object for interpretation
+function stringifyCondition(condition) {
+  console.log("stringifyCondition")
+    return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
+}
+
+// Executes the interpreted rule within the given context
+function interpret(input, context) {
+  console.log("Interpret ")
+    const tokens = tokenize(input);
+    const parsed = parse(tokens);
+    execute(parsed, context);
+}
+
+// Asynchronously finds and interprets a rule by its description
+async function interpretRuleByName(ruleDescription, context) {
+  console.log("interpretRuleByName")
+    try {
+        const rule = await Rule.findOne({ description: ruleDescription });
+        if (rule) {
+            const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+            console.log({input});
+            interpret(input, context);
+            return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`;
+        } else {
+            return `Rule "${ruleDescription}" not found.`;
+        }
+    } catch (error) {
+        console.error(`Error fetching rule - ${error}`);
+        return `Error fetching rule - ${error}`;
+    }
+}
+
+// Processes all rules with the given context
+async function processRulesAndInterpretDescriptions(context) {
+  console.log("Starting to process rules and interpret descriptions");
+  const rules = await Rule.find({});
+  for (const rule of rules) {
+      if (rule.isActive) { // Check if the rule is active
+          console.log(`Interpreting rule: ${rule.description}`);
+          await interpretRuleByName(rule.description, context);
+      } else {
+          console.log(`Rule: ${rule.description} is not active and will not be interpreted.`);
+      }
+  }
+}
+// Main function to fetch sensor data and initiate rule processing
+async function fetchAndProcessRules() {
+  console.log("Fetching sensor data and processing rules...");
+  try {
+      const data = await getSensiboSensors();
+      if (data) {
+          const context = {
+              temperature: data.temperature,
+              humidity: data.humidity
+          };
+          await processRulesAndInterpretDescriptions(context);
+      } else {
+          console.log('Failed to fetch sensor data or no data available.');
+      }
+  } catch (error) {
+      console.error("An error occurred during sensor data fetch:", error);
+  }
+}
+
+
+/*
+// Initiates the rule processing with fetched sensor data
+fetchAndProcessRules().then(() => console.log("Finished processing rules."))
+.catch(error => console.error("An error occurred during rule processing:", error));
+*/
+setInterval(() => {
+  const now = new Date();
+  console.log(`Triggering fetchAndProcessRules at ${now.toLocaleTimeString()}`);
+  fetchAndProcessRules();
+}, 30000)
+
+module.exports = {
+    add_new_Rule: async (ruleData) => { /* Implementation here */ },
+    getAllRules: async () => { /* Implementation here */ },
+    // Further functions can be exported here
+};
+
+
+

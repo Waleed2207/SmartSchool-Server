@@ -1,7 +1,9 @@
 const BaseCommand = require('./baseCommand');
 const Device = require("../../../models/Device");
+const deviceDictionary = require("../../../controllers/devivcedictionary")
 const RoomDevice = require("../../../models/RoomDevice");
 const axios = require('axios'); 
+
 
 class TurnDeviceOnCommand extends BaseCommand 
 {
@@ -17,9 +19,11 @@ class TurnDeviceOnCommand extends BaseCommand
     {
         console.log("we are going to turn device");
         console.log(this.device)
+        console.log(deviceDictionary[this.device.toLowerCase()]);
+
         switch (this.device.toLowerCase()) {
            
-            case 'lights':
+            case deviceDictionary[this.device.toLowerCase()]:
                 console.log(`device : ${this.device}  , State: ${this.state} , Details: ${this.details}`);
                 break;
             case 'AirCondition' :
