@@ -10,6 +10,8 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const devicesController = require("../controllers/devicesController");
+const fs = require('fs').promises;
+const JsonfilePath = './motionState.json'
 //const DeviceDictionary = require('../controllers/DeviceDictionary');
 // const { Rules } = require('../models/Rules');
 // const {
@@ -250,9 +252,22 @@ async function processAllRules() {
     console.log("processAllRules in " + Currenttime );
     // Fetch sensor data
     const data = await getSensiboSensors();
-    const data2 = await sensorControllers.update_Motion_DetectedState(req, res);
+    
+    try{
+      console.log("try read json")
+      
+      const jsonString = await fs.readFile(filePath, 'utf8');
+      const jsonObj = JSON.parse(jsonString);
+      console.log("Motion State Object:", jsonObj);
+      console.log("JSON Object:", jsonObj);
+    }
+    catch (err) {
+      console.error("Error reading or parsing file:", err);
+  }
+    
+    //const data2 = await sensorControllers.update_Motion_DetectedState(req, res);
 
-    console.log({data2})
+    
     if (!data) {
       console.log('Failed to fetch sensor data or no data available.');
       return;
@@ -261,7 +276,7 @@ async function processAllRules() {
     const context = {
       temperature: data.temperature,
       humidity: data.humidity,
-      Detection : data2.Detection,
+      //Detection : data2.Detection,
     };
     console.log("Fetched context:", context);
     // Proceed with processing using the new context
