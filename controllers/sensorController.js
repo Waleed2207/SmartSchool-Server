@@ -13,6 +13,7 @@ const {
 } = require("./../api/sensibo.js");
 const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/rooms.service.js");
 const _ = require("lodash");
+const fs = require('fs').promises;
 
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
 
@@ -32,10 +33,24 @@ exports.sensorControllers={
             }
     },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
-    async get_MotionState (req, res) {
-        res.status(200).json({ motionDetected: motionState });
+    // Assuming this function updates the motion state
+    async update_Motion_DetectedState(req, res) 
+    {
+        try {
+            // ... your existing logic to update the motion state
+
+            // After updating the motion state, save it to a file
+            const stateObject = { motionDetected: motionState };
+            await fs.writeFile('./motionState.json', JSON.stringify(stateObject, null, 2), 'utf8');
+
+            res.status(200).send(`Motion state updated and saved successfully.`);
+        } catch (error) {
+            console.error('Error updating motion state:', error);
+            res.status(500).send(`Server error: ${error.message}`);
+        }
     },
 
+    /*
     async update_Motion_DetectedState(req, res) 
     {
 
@@ -71,8 +86,8 @@ exports.sensorControllers={
         res.status(500).send(`Server error: ${error.message}`);
       }
   },
-
-    // --------------------------------- Sensibo- AC ---------------------------------
+  */
+    // --------------------------------- Sensibo- AC ---------------------------------//
       async get_SensiboAC_State(req, res) {
           try {
               const state = await getAcState();

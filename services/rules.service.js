@@ -10,6 +10,8 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const devicesController = require("../controllers/devicesController");
+const fs = require('fs').promises;
+const JsonfilePath = './motionState.json'
 //const DeviceDictionary = require('../controllers/DeviceDictionary');
 // const { Rules } = require('../models/Rules');
 // const {
@@ -250,9 +252,22 @@ async function processAllRules() {
     console.log("processAllRules in " + Currenttime );
     // Fetch sensor data
     const data = await getSensiboSensors();
-  //  const data2 = await sensorControllers.update_Motion_DetectedState(req, res);
+    
+    try{
+      console.log("try read json")
+      
+      const jsonString = await fs.readFile(filePath, 'utf8');
+      const jsonObj = JSON.parse(jsonString);
+      console.log("Motion State Object:", jsonObj);
+      console.log("JSON Object:", jsonObj);
+    }
+    catch (err) {
+      console.error("Error reading or parsing file:", err);
+  }
+    
+    //const data2 = await sensorControllers.update_Motion_DetectedState(req, res);
 
-    //console.log({data2})
+    
     if (!data) {
       console.log('Failed to fetch sensor data or no data available.');
       return;
@@ -261,7 +276,7 @@ async function processAllRules() {
     const context = {
       temperature: data.temperature,
       humidity: data.humidity,
-     // Detection : data2.Detection,
+      //Detection : data2.Detection,
     };
     console.log("Fetched context:", context);
     // Proceed with processing using the new context
@@ -382,9 +397,9 @@ const getAllRules = async () => {
   }
 };
 
-// setInterval(() => {
-//   processAllRules();
-// }, 10000);
+setInterval(() => {
+  processAllRules();
+}, 10000);
 
 
 /*----------------check for gbd-------------*/
@@ -471,109 +486,87 @@ fetchDevicesAndProcessRules();
 //   }
 // };
 
-const removeRuleFromDB = async (id) => {
-  try {
-    console.log("--------Delete Rule--------", id);
-    await Rule.deleteOne({ id: id });
-    await Rule.deleteMany({ relatedRule: id });
-    return {
-      statusCode: 200,
-      message: "Rule deleted successfully",
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      message: `Error deleting rule - ${err}`,
-    };
-  }
-};
+// const removeRuleFromDB = async (id) => {
+//   try {
+//     console.log("--------Delete Rule--------", id);
+//     await Rule.deleteOne({ id: id });
+//     await Rule.deleteMany({ relatedRule: id });
+//     return {
+//       statusCode: 200,
+//       message: "Rule deleted successfully",
+//     };
+//   } catch (err) {
+//     return {
+//       statusCode: 500,
+//       message: `Error deleting rule - ${err}`,
+//     };
+//   }
+// };
 
 
 
-const updateRule = async (ruleId, updateFields) => {
-  try {
-    // Extract the 'rule' field from updateFields
-    let rule = _.get(updateFields, "rule", "");
+// const updateRule = async (ruleId, updateFields) => {
+//   try {
+//     // Extract the 'rule' field from updateFields
+//     let rule = _.get(updateFields, "rule", "");
 
-    if (rule !== "") {
-      // Process and validate the 'rule' field
-      const formattedRule = await ruleFormatter(rule);
-      const ruleValidation = await validateRule(formattedRule);
-      //waleed enable it because is not work without sensors
+//     if (rule !== "") {
+//       // Process and validate the 'rule' field
+//       const formattedRule = await ruleFormatter(rule);
+//       const ruleValidation = await validateRule(formattedRule);
+//       //waleed enable it because is not work without sensors
 
-      // const sensorsValidation = await validateSensor(rule);
-      //
-      // if (sensorsValidation.statusCode === 400) {
-      //   return {
-      //     statusCode: sensorsValidation.statusCode,
-      //     message: sensorsValidation.message,
-      //   };
-      // }
+//       // const sensorsValidation = await validateSensor(rule);
+//       //
+//       // if (sensorsValidation.statusCode === 400) {
+//       //   return {
+//       //     statusCode: sensorsValidation.statusCode,
+//       //     message: sensorsValidation.message,
+//       //   };
+//       // }
 
-      if (ruleValidation.statusCode === 400) {
-        return {
-          statusCode: ruleValidation.statusCode,
-          message: ruleValidation.message,
-        };
-      }
+//       if (ruleValidation.statusCode === 400) {
+//         return {
+//           statusCode: ruleValidation.statusCode,
+//           message: ruleValidation.message,
+//         };
+//       }
 
-      // Update the 'rule' field in updateFields
-      updateFields = {
-        ...updateFields,
-        rule: formattedRule,
-        normalizedRule: rule,
-      };
-    }
+//       // Update the 'rule' field in updateFields
+//       updateFields = {
+//         ...updateFields,
+//         rule: formattedRule,
+//         normalizedRule: rule,
+//       };
+//     }
 
-    // Update the rule in the database
-    await Rule.updateOne({ id: ruleId }, { $set: updateFields });
-    return {
-      statusCode: 200,
-      message: "Rule updated successfully",
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      message: `Error updating rule - ${error}`,
-    };
-  }
-};
-
-
-// Inside RuleSwitch or a similar component/function
-
-const toggleActiveStatus = async (ruleId, isActive) => {
-  try {
-    // Assuming updateRuleActiveStatus is an imported function from your services
-    const updatedRule = await updateRuleActiveStatus(ruleId, !isActive); // Toggle the isActive value
-    if (updatedRule) {
-      toast.success("Rule status updated successfully!");
-      // Update the local state in RulesTable to reflect this change
-      const updatedRules = currentRules.map(rule =>
-        rule.id === ruleId ? { ...rule, isActive: !rule.isActive } : rule
-      );
-      setCurrentRules(updatedRules);
-    }
-  } catch (error) {
-    console.error("Failed to update rule active status:", error);
-    toast.error("Failed to update rule status.");
-  }
-};
-
-async function deleteRuleById(ruleId) {
-  try {
-    const result = await Rule.deleteOne({ id: ruleId });
-    await Rule.deleteMany({ relatedRule: ruleId });
-    if (result.deletedCount === 1) {
-      return { status: 200 };
-    } else {
-      return { status: 400 };
-    }
-  } catch (error) {
-    console.error("Error deleting rule:", error);
-    return { status: 500 };
-  }
-}
+//     // Update the rule in the database
+//     await Rule.updateOne({ id: ruleId }, { $set: updateFields });
+//     return {
+//       statusCode: 200,
+//       message: "Rule updated successfully",
+//     };
+//   } catch (error) {
+//     return {
+//       statusCode: 500,
+//       message: `Error updating rule - ${error}`,
+//     };
+//   }
+// };
+// async function deleteRuleById(ruleId) {
+//   try {
+//     const result = await Rule.deleteOne({ id: ruleId });
+//     await Rule.deleteMany({ relatedRule: ruleId });
+//     if (result.deletedCount === 1) {
+//       return { status: 200 };
+//     } else {
+//       return { status: 400 };
+//     }
+//   } catch (error) {
+//     console.error("Error deleting rule:", error);
+//     return { status: 500 };
+//   }
+// }
 
 // const removeAllRules = async () => {
 //   try {
@@ -595,10 +588,9 @@ module.exports = {
   // insertRuleToDB,
   add_new_Rule,
   getAllRules,
-   updateRule,
-   removeRuleFromDB,
-   deleteRuleById,
-   toggleActiveStatus,
+  // updateRule,
+  // removeRuleFromDB,
+  // deleteRuleById,
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
