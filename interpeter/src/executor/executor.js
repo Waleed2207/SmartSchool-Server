@@ -5,17 +5,16 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 function evaluateCondition({ variable, operator, value }, context) 
 {
+    console.log({context});
     console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
-    console.log("evaluateConditioDedection checkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+    console.log("we check evaluateConditioDedection");
     
     let TempValue = parseInt(value);
-    console.log({variable});
-    console.log({operator});
-    console.log({value});
+    console.log(`variable: ${variable} , opraotor: ${operator} , Value : ${value}`);
     const varValue = parseFloat(context[variable]);
     const conditionValue = parseFloat(value);
 
-    console.log("evaluateConditioDedection check");
+
     /*
     if (variable === 'detection' && operator === 'is equal to' && conditionValue === 1 ) 
     {
@@ -25,8 +24,8 @@ function evaluateCondition({ variable, operator, value }, context)
     */
     
 
-    console.log({varValue})
-    console.log({conditionValue});
+    //console.log({varValue})
+    //console.log({conditionValue});
 
     
 
@@ -90,6 +89,7 @@ function DedectionEvaluat({variable, operator, value } ,context) {
 
 function execute(parsed, context) {
     
+    console.log("execute");
     if (parsed.condition && parsed.condition.operator) {
         if (evaluateCondition(parsed.condition, context)  ) {
             console.log(`Condition met, executing action: ${parsed.action}`);
@@ -102,6 +102,7 @@ function execute(parsed, context) {
             
             const command = CommandFactory.createCommand(parsed.action);
             if (command) {
+                console.log("command.execute()");
                 command.execute();
             } else {
                 console.log('Action could not be executed:', parsed.action);

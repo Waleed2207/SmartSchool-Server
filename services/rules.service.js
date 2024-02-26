@@ -5,9 +5,12 @@ const { createRegexPattern, replaceWords } = require("../utils/utils");
 const { getUsers } = require("./users.service");
 const _ = require("lodash");
 const { getSensiboSensors } = require('../api/sensibo')
+const { sensorControllers } = require('../controllers/sensorController');
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+const devicesController = require("../controllers/devicesController");
+//const DeviceDictionary = require('../controllers/DeviceDictionary');
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -199,51 +202,73 @@ const { execute } = require('../interpeter/src/executor/executor');
 
 const getAllRulesDescription = async () => {
   try {
+    console.log("GetAllRulesDescription");
     // Fetch all rules without any condition
-    const rules = await Rule.find({}); // Use an empty object {} to fetch all documents
-    // Extract descriptions from each rule
-    const descriptions = rules.map(rule => rule.description);
-   
-    console.log({descriptions})
+    const rules = await Rule.find({}); // Correctly fetch all rules
     
-    
+    // Initialize an array to store descriptions of active rules
+    let descriptions = []; // Use let since this will be modified
+
+    for (const rule of rules) { // Correct syntax for iterating over items in an array
+      if (rule.isActive) {
+        descriptions.push(rule.description);
+      }
+    }
+
+    console.log(descriptions); // Log descriptions to console
 
     return {
       statusCode: 200,
-      data: descriptions, // Return the descriptions
+      data: descriptions, // Return the descriptions of active rules
     };
   } catch (error) {
     return {
       statusCode: 500,
-      message: `Error fetching rules - ${error}`,    };
+      message: `Error fetching rules - ${error}`,
+    };
   }
 };
 
 
+/*
 getAllRulesDescription().then((result) => {
- 
+  console.log("descriptions : " + result.data);
   return result.data;
 }).catch((error) => {
   console.error(error);
 });
+*/
+const getCurrentTimestamp = () => {
+  const now = new Date();
+  return now.toLocaleTimeString(); // This will give you the time in hour:min:sec based on your system's locale
+};
 
-async function processAllRules(context) {
+// Adjusted processAllRules to not expect context as a parameter
+async function processAllRules() {
   try {
-    // Await the promise to get the result object
+    const Currenttime =  getCurrentTimestamp();
+    console.log("processAllRules in " + Currenttime );
+    // Fetch sensor data
+    const data = await getSensiboSensors();
+  //  const data2 = await sensorControllers.update_Motion_DetectedState(req, res);
+
+    //console.log({data2})
+    if (!data) {
+      console.log('Failed to fetch sensor data or no data available.');
+      return;
+    }
+    // Create context with the fetched data
+    const context = {
+      temperature: data.temperature,
+      humidity: data.humidity,
+     // Detection : data2.Detection,
+    };
+    console.log("Fetched context:", context);
+    // Proceed with processing using the new context
     const descriptionResult = await getAllRulesDescription();
-    // Check if the operation was successful
     if (descriptionResult.statusCode === 200) {
-      // Extract the descriptions array
-      const descriptions = descriptionResult.data;
-      
-      
-      console.log({descriptions});
-      // Iterate over each description and interpret it
-      for (const description of descriptions) {
-        // Await the interpretation of each rule description
-        console.log({description})
-        const interpretResult = await interpretRuleByName(description, context);
-        
+      for (const description of descriptionResult.data) {
+        console.log(await interpretRuleByName(description, context));
       }
     } else {
       console.error('Failed to get rule descriptions:', descriptionResult.message);
@@ -260,16 +285,17 @@ function stringifyCondition(condition) {
 
 // Function to pass this context to the executor
 function interpret(input, context) {
+  console.log("interpret");
   const tokens = tokenize(input);
   const parsed = parse(tokens); // Ensure this returns the correct structure
-  
+  console.log(parsed);
   execute(parsed, context); // `parsed` should include condition and action
 }
 
 // Function to interpret a rule by its description
 // Function to interpret a rule by its description
 async function interpretRuleByName(ruleDescription, context) {
-
+  console.log("interpretRuleByName");
 
   try {
     // Find the rule by its description using await for the asynchronous operation
@@ -277,18 +303,18 @@ async function interpretRuleByName(ruleDescription, context) {
 
     if (rule) {
       const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      console.log({input})
       interpret(input, context);
       return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
-            return `Rule "${ruleDescription}" not found.`; // Return an error message
+      console.log(`Rule "${ruleDescription}" not found.`);
+      return `Rule "${ruleDescription}" not found.`; // Return an error message
     }
   } catch (error) {
     console.error(`Error fetching rule - ${error}`);
     return `Error fetching rule - ${error}`; // Return an error message
   }
 }
-
+/*
 (async () => {
   const data = await getSensiboSensors();
   if (data) {
@@ -296,18 +322,19 @@ async function interpretRuleByName(ruleDescription, context) {
       temperature: data.temperature,
       humidity: data.humidity
     };
-    
+    console.log("Fetched context:", context);
     await processAllRules(context); // Properly await the processing of rules
   } else {
     console.log('Failed to fetch sensor data or no data available.');
   }
 })();
+*/
 
 
 
 
 const add_new_Rule = async (ruleData) => {
- 
+  console.log("add new Rule");
   
   // Assuming ruleData is structured correctly according to your ruleSchema,
   // e.g., ruleData has description, condition (with variable, operator, value), action, and id
@@ -322,7 +349,7 @@ const add_new_Rule = async (ruleData) => {
     action: ruleData.action,
   });
 
-  
+  console.log("rule going to save in the database");
 
   try {
     await newRule.save();
@@ -355,7 +382,50 @@ const getAllRules = async () => {
   }
 };
 
+// setInterval(() => {
+//   processAllRules();
+// }, 10000);
 
+
+/*----------------check for gbd-------------*/
+
+/*
+
+async function fetchDevicesAndProcessRules() 
+{
+  try {
+    // Create a mock `res` object with a json method to capture the response
+    const mockRes = {
+      json: (data) => data,
+      status: function (statusCode) {
+        this.statusCode = statusCode;
+        // Return this to allow chaining with .json
+        return this; 
+      }
+    };
+
+    // Call the getDevices method with a mock `req` and the mock `res`
+    const devices = await devicesController.devicescontrollers.getDevices({}, mockRes);
+    console.log(devices);
+
+    const deviceDictionary = devices.reduce((dict, device) => {
+      dict[device.device_id] = device.name;
+      return dict;
+    }, {});
+    console.log(deviceDictionary);
+    // At this point, devices should contain the response data you would send in an Express app
+    
+    // Process the devices as needed
+  } catch (error) {
+    console.error('Failed to get devices:', error);
+  }
+}
+// Call the function
+fetchDevicesAndProcessRules();
+ 
+*/
+
+// 30000 milliseconds = 30 seconds
 // const add_new_Rule = async (rule, isStrict, isHidden, relatedRule = null) => {
 //   // console.log({rule})
 //   try {

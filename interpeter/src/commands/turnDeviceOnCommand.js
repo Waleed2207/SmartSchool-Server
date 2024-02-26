@@ -1,28 +1,35 @@
 const BaseCommand = require('./baseCommand');
 const Device = require("../../../models/Device");
 const RoomDevice = require("../../../models/RoomDevice");
-const axios = require('axios'); 
+const axios = require('axios');
+const DeviceDictionary = require('../../../controllers/DeviceDictionary');
+
 
 class TurnDeviceOnCommand extends BaseCommand 
 {
+
+    
     constructor(device,state , mode, details) {
         super();
         this.device = device;
         this.state = state;
         this.mode = mode;
         this.details = details;
+        
     }
 
     async execute() 
     {
-        console.log("we are going to turn device");
+        console.log("we are going to turn On device");
         console.log(this.device)
+        
+
         switch (this.device.toLowerCase()) {
            
-            case 'lights':
+            case 'light':
                 console.log(`device : ${this.device}  , State: ${this.state} , Details: ${this.details}`);
                 break;
-            case 'AirCondition' :
+            case 'Ac' :
                 console.log(`device : ${this.device} State: ${this.state}, Details: ${this.details}`);
                 break; 
             // You can add more cases here for other devices

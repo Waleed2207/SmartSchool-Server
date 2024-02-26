@@ -36,35 +36,41 @@ exports.sensorControllers={
         res.status(200).json({ motionDetected: motionState });
     },
 
-    async update_Motion_DetectedState(req, res) {
+    async update_Motion_DetectedState(req, res) 
+    {
 
-        try {
-    const lightState = req.body.state;
-    motionState = lightState === 'on'; // Update global motionState
+      try 
+      {
+        const lightState = req.body.state;
+        motionState = lightState === 'on'; // Update global motionState
 
-    // Log received state for debugging
-    console.log(`Received request to turn ${lightState}`);
+        // Log received state for debugging
+        console.log(`Received request to turn ${lightState}`);
 
-    if (lightState !== 'on' && lightState !== 'off') {
-      throw new Error(`Invalid light state: ${lightState}`);
-    }
+        if (lightState !== 'on' && lightState !== 'off') {
+          throw new Error(`Invalid light state: ${lightState}`);
+        }
 
-    // Example roomId and deviceId for MongoDB operations
-    const roomId = "38197016";
-    const deviceId = "65109692";
+        // Example roomId and deviceId for MongoDB operations
+        const roomId = "38197016";
+        const deviceId = "65109692";
 
-    // Update MongoDB documents (ensure your models and IDs are correct)
-    await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
-    await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-    await RoomDevice.updateOne({ room_id: roomId, device_id: deviceId }, { $set: { state: lightState } });
+        // Update MongoDB documents (ensure your models and IDs are correct)
+        await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
+        await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+        await RoomDevice.updateOne({ room_id: roomId, device_id: deviceId }, { $set: { state: lightState } });
 
-    console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-    res.status(200).send(`Light turned ${lightState}, request received successfully`);
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).send(`Server error: ${error.message}`);
-  }
-    },
+
+        console.log(`motion state ${motionState}`)
+        console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+        res.status(200).send(`Light turned ${lightState}, request received successfully`);
+      } 
+      catch (error) 
+      {
+        console.error('Error:', error.message);
+        res.status(500).send(`Server error: ${error.message}`);
+      }
+  },
 
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {
