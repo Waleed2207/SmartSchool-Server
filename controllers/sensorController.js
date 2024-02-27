@@ -18,24 +18,21 @@ let motionState = false; // This should reflect the real motion state, possibly 
 
 exports.sensorControllers={
 
-    async getSensor(req, res) {
-        try {
-            const sensors = await getSensors();
-            if (sensors) {
-                res.json(sensors);
-            } else {
-                res.status(500).json({ message: "Could not retrieve sensors." });
-            }
-            } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Server error." });
-            }
-    },
+    // async getSensor(req, res) {
+    //     try {
+    //         const sensors = await getSensors();
+    //         if (sensors) {
+    //             res.json(sensors);
+    //         } else {
+    //             res.status(500).json({ message: "Could not retrieve sensors." });
+    //         }
+    //         } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ message: "Server error." });
+    //         }
+    // },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
-    async get_MotionState (req, res) {
-      res.status(200).json({ motionDetected: motionState });
-    },
-
+  
     async update_Motion_DetectedState(req, res) 
     {
 
@@ -139,5 +136,16 @@ exports.sensorControllers={
         }
 
       },
+      
 
+}
+
+
+
+const get_MotionState = async (req, res) =>{
+  res.status(200).json({ motionDetected: motionState });
+  console.log(motionState);
+}
+module.exports={
+  get_MotionState
 }

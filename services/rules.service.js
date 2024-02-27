@@ -6,6 +6,7 @@ const { getUsers } = require("./users.service");
 const _ = require("lodash");
 const { getSensiboSensors } = require('../api/sensibo')
 const { sensorControllers } = require('../controllers/sensorController');
+const { get_MotionState } = require('../controllers/sensorController');
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
@@ -82,7 +83,7 @@ const JsonfilePath = './motionState.json'
 
 
 //   if (
-//     !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(
+
 //       rule
 //     )
 //   ) {
@@ -244,7 +245,12 @@ const getCurrentTimestamp = () => {
   const now = new Date();
   return now.toLocaleTimeString(); // This will give you the time in hour:min:sec based on your system's locale
 };
-
+async function get_MotionStateDirectly() {
+  const state = await get_MotionState();
+  console.log(state);
+  return { motionDetected: state };
+  
+}
 // Adjusted processAllRules to not expect context as a parameter
 async function processAllRules() {
   try {
@@ -252,12 +258,12 @@ async function processAllRules() {
     console.log("processAllRules in " + Currenttime );
     // Fetch sensor data
     const data = await getSensiboSensors();
-    
+    const motaion_data = await get_MotionStateDirectly();
     try{
       console.log("try read json")
       
       
-      const jsonObj = JSON.parse(sensorControllers.get_MotionState());
+     
       console.log("Motion State Object:", jsonObj);
       console.log("JSON Object:", jsonObj);
     }
@@ -397,11 +403,11 @@ const getAllRules = async () => {
   }
 };
 
-setInterval(() => {
-  processAllRules();
-}, 10000);
+// setInterval(() => {
+//   processAllRules();
+// }, 10000);
 
-
+processAllRules();
 /*----------------check for gbd-------------*/
 
 /*

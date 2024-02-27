@@ -3,7 +3,7 @@ const {Router} = require("express");
 const sensorRouter = new Router();
 
 // GET /sensor from Rassparypi
-sensorRouter.get('/sensors', sensorControllers.getSensor);
+//sensorRouter.get('/sensors', sensorControllers.getSensor);
 sensorRouter.get('/motion-state', sensorControllers.get_MotionState);
 
 // GET /sensor from Sensibo
