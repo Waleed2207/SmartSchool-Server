@@ -256,8 +256,8 @@ async function processAllRules() {
     try{
       console.log("try read json")
       
-      const jsonString = await fs.readFile(filePath, 'utf8');
-      const jsonObj = JSON.parse(jsonString);
+      
+      const jsonObj = JSON.parse(sensorControllers.get_MotionState());
       console.log("Motion State Object:", jsonObj);
       console.log("JSON Object:", jsonObj);
     }
