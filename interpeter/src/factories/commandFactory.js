@@ -18,8 +18,9 @@ class CommandFactory {
         console.log(device);
         const state = parts[2]; // Already uppercase
         console.log(state);
-        const mode = parts[3]; //
-        const details = parts.slice(6).join(' '); // Any additional details after the state
+        const mode = parts[4]; //
+        const details = parts.slice(7).join(' '); // Any additional details after the state
+        console.log(details);
 
         switch (commandType) {
             case 'TURN':

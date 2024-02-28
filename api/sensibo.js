@@ -271,9 +271,22 @@ const switchAcState = async (id, state, temperature = null) => {
       throw new Error("Failed to update AC state via API.");
     }
   } catch (err) {
-    console.error("Error switching AC state:", err.message);
-    return { statusCode: err.response?.status || 500, data: err.message };
+    const statusCode = err.response?.status || 500;
+    let errorMessage = err.message;
+    let detailedError = {};
+  
+    if (err.response && err.response.data) {
+      errorMessage = `Error switching AC state: ${err.response.statusText}`;
+      detailedError = err.response.data; // Assuming Sensibo API error details are in data
+  
+      // Log detailed error message if available
+      console.error("Detailed Sensibo API error:", detailedError);
+    }
+  
+    console.error(errorMessage);
+    return { statusCode, data: detailedError };
   }
+  
 };
 
 

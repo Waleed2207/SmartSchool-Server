@@ -40,6 +40,7 @@ exports.sensorControllers={
 
         try {
             const lightState = req.body.state;
+            
             motionState = lightState === 'on'; // Update the motionState
         
             console.log('Received request to turn', lightState);
@@ -104,14 +105,23 @@ exports.sensorControllers={
       
           // Adjusted call to match the switchAcState function signature
           const switchResponse = await switchAcState(actualDeviceId, state, temperature);
-      
-          // Check the response from the switchAcState function
-          if (switchResponse.statusCode === 200) {
-            res.json({ success: true, data: switchResponse.data });
-          } else {
-            // If the status code isn't 200, send an error response
-            res.status(switchResponse.statusCode).json({ success: false, message: "Failed to update AC state via API." });
+          // This is where you should insert the detailed error logging
+          if (switchResponse.statusCode !== 200) {
+            if (switchResponse.data && typeof switchResponse.data === 'string') {
+              try {
+                const errorDetails = JSON.parse(switchResponse.data);
+                console.error("Detailed error from Sensibo API:", errorDetails);
+              } catch (e) {
+                console.error("Error parsing Sensibo API response:", switchResponse.data);
+              }
+            }
+            // Respond with the error to the client
+            res.status(switchResponse.statusCode).json({ success: false, message: "Failed to update AC state via API.", details: switchResponse.data });
+            return;
           }
+
+          // Handle successful response
+          res.json({ success: true, data: switchResponse.data });
         } catch (err) {
           console.error("Error in /sensibo route:", err);
           // Send a structured error response

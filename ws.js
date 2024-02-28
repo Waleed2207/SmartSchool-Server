@@ -26,7 +26,7 @@ const WebSocket = require("ws");
 const clients = [];
 
 const connectToWs = () => {
-  const wss = new WebSocket.Server({ port: 8080 });
+  const wss = new WebSocket.Server({ port: 8002 });
 
   wss.on("connection", (ws) => {
     clients.push(ws);
@@ -55,7 +55,7 @@ const connectToWs = () => {
     });
   });
 
-  console.log("WebSocket server started on port 8080");
+  console.log("WebSocket server started on port 8002");
 };
 
 // Function to broadcast messages to all connected clients
