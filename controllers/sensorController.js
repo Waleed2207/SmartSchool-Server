@@ -36,41 +36,42 @@ exports.sensorControllers={
         res.status(200).json({ motionDetected: motionState });
     },
 
-    async update_Motion_DetectedState(req, res) 
-    {
+    async update_Motion_DetectedState(req, res) {
 
-      try 
-      {
-        const lightState = req.body.state;
-        motionState = lightState === 'on'; // Update global motionState
-
-        // Log received state for debugging
-        console.log(`Received request to turn ${lightState}`);
-
-        if (lightState !== 'on' && lightState !== 'off') {
-          throw new Error(`Invalid light state: ${lightState}`);
-        }
-
-        // Example roomId and deviceId for MongoDB operations
-        const roomId = "38197016";
-        const deviceId = "65109692";
-
-        // Update MongoDB documents (ensure your models and IDs are correct)
-        await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
-        await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-        await RoomDevice.updateOne({ room_id: roomId, device_id: deviceId }, { $set: { state: lightState } });
-
-
-        console.log(`motion state ${motionState}`)
-        console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-        res.status(200).send(`Light turned ${lightState}, request received successfully`);
-      } 
-      catch (error) 
-      {
-        console.error('Error:', error.message);
-        res.status(500).send(`Server error: ${error.message}`);
-      }
-  },
+        try {
+            const lightState = req.body.state;
+            
+            motionState = lightState === 'on'; // Update the motionState
+        
+            console.log('Received request to turn', lightState);
+        
+            if (lightState !== 'on' && lightState !== 'off') {
+              throw new Error(`Invalid light state: ${lightState}`);
+            }
+        
+            console.log(`Simulated light turned ${lightState}`);
+            const roomId = "38197016"; // Example roomId
+            const deviceId = "65109692"; // Example deviceId
+        
+             // Update the room's 'motionDetected' field
+             await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
+        
+             // Update the specific device's state
+             await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+         
+           // Additionally, update the RoomDevice state
+           await RoomDevice.updateOne(
+            { room_id: roomId, device_id: deviceId },
+            { $set: { state: lightState } }
+          );
+    
+            console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+            res.status(200).send(`Light turned ${lightState}, request received successfully`);
+          } catch (error) {
+            console.error('Error:', error.message);
+            res.status(500).send(`Server error: ${error.message}`);
+          }  
+    },
 
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {
@@ -104,14 +105,23 @@ exports.sensorControllers={
       
           // Adjusted call to match the switchAcState function signature
           const switchResponse = await switchAcState(actualDeviceId, state, temperature);
-      
-          // Check the response from the switchAcState function
-          if (switchResponse.statusCode === 200) {
-            res.json({ success: true, data: switchResponse.data });
-          } else {
-            // If the status code isn't 200, send an error response
-            res.status(switchResponse.statusCode).json({ success: false, message: "Failed to update AC state via API." });
+          // This is where you should insert the detailed error logging
+          if (switchResponse.statusCode !== 200) {
+            if (switchResponse.data && typeof switchResponse.data === 'string') {
+              try {
+                const errorDetails = JSON.parse(switchResponse.data);
+                console.error("Detailed error from Sensibo API:", errorDetails);
+              } catch (e) {
+                console.error("Error parsing Sensibo API response:", switchResponse.data);
+              }
+            }
+            // Respond with the error to the client
+            res.status(switchResponse.statusCode).json({ success: false, message: "Failed to update AC state via API.", details: switchResponse.data });
+            return;
           }
+
+          // Handle successful response
+          res.json({ success: true, data: switchResponse.data });
         } catch (err) {
           console.error("Error in /sensibo route:", err);
           // Send a structured error response

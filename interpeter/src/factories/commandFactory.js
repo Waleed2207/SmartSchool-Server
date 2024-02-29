@@ -4,7 +4,6 @@ const TurnDeviceOffCommand = require('../commands/turnDeviceOffCommand'); // Ass
 
 class CommandFactory {
     static createCommand(action) {
-        console.log("we are in the CommandFactory!!!!!!!")
         // Split the action into parts by space
         const parts = action.toUpperCase().split(' '); // Convert action to uppercase for case-insensitive comparison
 
@@ -14,28 +13,21 @@ class CommandFactory {
         }
 
         const commandType = parts[0]; // Already converted to uppercase
-        //console.log({commandType})
+        console.log(commandType);
         const device = parts[1].toLowerCase(); // Devices may be case-sensitive
-        //console.log({device})
-        const state = parts[2]; // Already uppercase;
-        //console.log({state})
-        const mode = parts[3]; //
-        //console.log({mode})
-        const details = parts.slice(6).join(' '); // Any additional details after the state
-        //console.log({commandType});
-        //console.log(device)
-
-        console.log("commandTYpe : " + commandType + "," + " device : "+ device + ","  + " state : "  + state + " , " + "  mode : " +   mode + ","   + " details :  " + details ); 
-        console.log("before CommandType");
+        console.log(device);
+        const state = parts[2]; // Already uppercase
+        console.log(state);
+        const mode = parts[4]; //
+        const details = parts.slice(7).join(' '); // Any additional details after the state
+        console.log(details);
 
         switch (commandType) {
             case 'TURN':
                 // Based on the state, return the corresponding command
                 if (state === 'ON') {
-                    console.log("Sate On");
                     return new TurnDeviceOnCommand(device,state,mode, details);
                 } else if (state === 'OFF') {
-                    console.log("Sate Off");
                     return new TurnDeviceOffCommand(device,state,mode, details);
                 } else {
                     // Handle other states or return an error
