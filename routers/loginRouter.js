@@ -1,23 +1,23 @@
 const {loginControllers} = require('../controllers/loginController')
 const {Router} = require("express");
-const loginRouter = new Router();
+const router = new Router();
 
 
 //GET 
-loginRouter.get('/', loginControllers.handleGetRequest);
-loginRouter.get('/homeConnect', loginControllers.homeConnect_Auth);
-loginRouter.get('/homeConnect/callback', loginControllers.homeConnect_Auth_callback);
-loginRouter.get('/user-role', loginControllers.getUserRole);
+router.get('/', loginControllers.handleGetRequest);
+router.get('/homeConnect', loginControllers.homeConnect_Auth);
+router.get('/homeConnect/callback', loginControllers.homeConnect_Auth_callback);
+router.get('/user-role', loginControllers.getUserRole);
 
 //POST
-loginRouter.post('/', loginControllers.handleHttp_Callback);
-loginRouter.post('/register', loginControllers.RegesterUSER);
-loginRouter.post('/login', loginControllers.SINGIN_USER);
-loginRouter.post('/notifyadmin', loginControllers.NOTIFICATION_ADMIN);
-loginRouter.post('/location', loginControllers.Location_USER);
+router.post('/', loginControllers.handleHttp_Callback);
+router.post('/register', loginControllers.RegesterUSER);
+router.post('/login', loginControllers.SINGIN_USER);
+router.post('/notifyadmin', loginControllers.NOTIFICATION_ADMIN);
+router.post('/location', loginControllers.Location_USER);
 
 
 
 
+module.exports = router;
 
-module.exports = { loginRouter };

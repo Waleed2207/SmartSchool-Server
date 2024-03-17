@@ -1,21 +1,21 @@
 const {ruleControllers} = require('../controllers/ruleController')
 const {Router} = require("express");
-const ruleRouter = new Router();
+const router = new Router();
 
 
 //GET 
-ruleRouter.get('/rules', ruleControllers.get_Rules);
+router.get('/rules', ruleControllers.get_Rules);
 
 //POST
-ruleRouter.post('/rules', ruleControllers.add_Rule);
-ruleRouter.post('/rules/:id', ruleControllers.update_Rule);
+router.post('/rules', ruleControllers.add_Rule);
+router.post('/rules/:id', ruleControllers.update_Rule);
 //PUT
-ruleRouter.put('/rules/:id', ruleControllers.update_Rule);
+router.put('/rules/:id', ruleControllers.update_Rule);
 
-ruleRouter.post('/rules/:id', ruleControllers.update_Rule);
+router.post('/rules/:id', ruleControllers.update_Rule);
 
 //DELETE
-ruleRouter.delete('/rules/:id', ruleControllers.delete_Rule_ByID);
+router.delete('/rules/:id', ruleControllers.delete_Rule_ByID);
 
 
-module.exports = { ruleRouter };
+module.exports = router;

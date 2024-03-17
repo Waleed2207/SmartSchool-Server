@@ -1,29 +1,24 @@
-const {devicescontrollers} = require('../controllers/devicesController')
-const {Router} = require("express");
-const devicesRouter = new Router();
+const express = require('express');
+const devicesController = require('../controllers/devicesController');
 
+// Initialize the router
+const router = express.Router();
 
-//GET 
-devicesRouter.get('/devices', devicescontrollers.getDevices);
-devicesRouter.get('/device/:name', devicescontrollers.getDeviceByName);
-devicesRouter.get('/devices_with_thresholds', devicescontrollers.getDevicesWithThresholds);
-devicesRouter.get('/devices-by-room/:roomId', devicescontrollers.getDeviceByRoomID);
-devicesRouter.get('/room-devices/:roomId', devicescontrollers.getRoomDeviceByRoomID);
-devicesRouter.get('/room-devices-test/:roomId', devicescontrollers.getRoomDeviceTESTByRoomID);
+// Define GET routes
+router.get('/', devicesController.getMindolifeAllDevices); // Assuming getMindolifeAllDevices is correctly defined in devicesController
+router.get('/devices', devicesController.getDevices); // Fetch all devices
+router.get('/device/:name', devicesController.getDeviceByName); // Fetch device by name
+router.get('/devices-with-thresholds', devicesController.getDevicesWithThresholds); // Fetch devices with their thresholds
+router.get('/devices-by-room/:roomId', devicesController.getDeviceByRoomID); // Fetch devices by room ID
+//devicesRouter.get('/room-devices/:roomId', devicesController.getRoomDeviceByRoomID); // Fetch room devices by room ID
+//devicesRouter.get('/room-devices-test/:roomId', devicesController.getRoomDeviceTESTByRoomID); // Fetch room devices (test endpoint)
 
-//POST
-devicesRouter.post('/devices', devicescontrollers.createDevice);
-devicesRouter.post('/room-device', devicescontrollers.createDeviceTORooom);
+// Define POST routes
+router.post('/', devicesController.createDevice); // Create a new device
+//devicesRouter.post('/room-device', devicesController.createDeviceToRoom); // Add an existing device to a room
 
+// Define PUT routes
+router.put('/devices/mode', devicesController.updateDeviceMode); // Update device mode
+router.put('/room-devices', devicesController.updateRoomDeviceState); // Update state of a device in a room
 
-//PUT
-devicesRouter.put('/devices/mode', devicescontrollers.updateDeviceMode);
-devicesRouter.put('/room-devices', devicescontrollers.updateRoomDeviceState);
-
-
-
-
-
-
-
-module.exports = { devicesRouter };
+module.exports = router;

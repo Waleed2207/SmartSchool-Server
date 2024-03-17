@@ -1,7 +1,18 @@
 const Device = require("../models/Device");
 const RoomDevice = require("../models/RoomDevice");
 const Room = require("../models/Room");
+const api = require('../api/MindolifeAPIClient');
+const qs = require('qs');
 
+const getMindolifeDevices = async(gatewayId) => {
+  try {
+    const response = await api.get(`Gateway/getIoTDevices?${qs.stringify({gatewayId})}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching devices: ${error.message}`);
+    throw error;
+  }
+}
 
 const getDevices = async () => {
   try {
@@ -254,5 +265,6 @@ module.exports = {
   createNewDevice,
   getRoomDevicesTest,
   getDeviceIdByDeviceName,
-  getRoomsByDeviceName
+  getRoomsByDeviceName,
+  getMindolifeDevices
 };
