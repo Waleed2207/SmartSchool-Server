@@ -1,107 +1,90 @@
-// devicesController.js
-
 const Device = require("../models/Device");
 const RoomDevice = require("../models/RoomDevice");
-// Assuming deviceService encapsulates calls to the Mindolife API
-
-const deviceService = require('../services/devices.service'); // Make sure this path is correct
-
-// Make sure each of these methods is correctly implemented in devices.service
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const {
-  getMindolifeAllDevices,
-  getDevices,
-  getDeviceByName,
-  getDevicesWithThresholds,
-  getDeviceByRoomId, // Ensure naming consistency
-  createNewDevice,
-  // Other service methods
-} = require("../services/devices.service");
+    getDevices,
+    updateDeviceModeInDatabase,
+    getDeviceByName,
+    addDeviceToRoom,
+    getDevicesByRoomId,
+    setRoomDeviceState,
+    createNewDevice,
+    getRoomDevicesTest,
+  } = require("./../services/devices.service.js");
 
-exports.getMindolifeAllDevices = async (req, res) => {
-  try {
-      const devices = await getMindolifeAllDevices();
-      sendJsonResponse(res, 200, devices);
-  } catch (error) {
-      sendJsonResponse(res, 500, { "message": error.message });
-  }
-};
-exports.getDevices = async (req, res) => {
-    try {
-        const devices = await getDevices();
-        sendJsonResponse(res, 200, devices);
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+exports.devicescontrollers = {
 
-exports.getDeviceByName = async (req, res) => {
-    try {
-        const device = await getDeviceByName(req.params.name);
-        if (device) {
-            sendJsonResponse(res, 200, device);
-        } else {
-            sendJsonResponse(res, 404, { "message": "Device not found" });
-        }
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+  // Get all devices from DB
+  async getDevices(req, res) {
+    const devices = await getDevices();
+    return res.json(devices);
+  },
+  async getDeviceByName(req, res) {
+    const device = await getDeviceByName(req.params.name);
+    return res.json(device);
+  },
+  async getDevicesWithThresholds(req, res) {
+    const devices = await Device.find({}, { device_id: 1, threshold: 1, _id: 0 });
+    return res.json(devices);
+  },
+  async getDeviceByRoomID(req, res) {
+    const roomId = req.params.roomId;
+    const devices = await getDevicesByRoomId(roomId);
+    return res.json(devices);
 
-exports.getDevicesWithThresholds = async (req, res) => {
-    try {
-        const devices = await Device.find({}, { device_id: 1, threshold: 1, _id: 0 });
-        sendJsonResponse(res, 200, devices);
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+  },
+  async getRoomDeviceByRoomID(req, res) {
+    const roomId = req.params.roomId;
+    const devices = await getRoomDevicesTest(roomId);
+    return res.json(devices);
 
-exports.getDeviceByRoomID = async (req, res) => {
-    try {
-        const roomId = req.params.roomId;
-        const devices = await getDevicesByRoomId(roomId);
-        sendJsonResponse(res, 200, devices);
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+  },
+  async getRoomDeviceTESTByRoomID(req, res) {
+    const roomId = req.params.roomId;
+    const devices = await getRoomDevicesTest(roomId);
+    return res.json(devices);
 
-exports.createDevice = async (req, res) => {
+  },
+  async createDevice(req, res) {
     try {
         const { device, room_id } = req.body;
         const response = await createNewDevice(device, room_id);
-        sendJsonResponse(res, 200, response);
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+        return res.status(200).send(response.data);
+      } catch (err) {
+        return res.status(500).send(err.message);
+      }
+  },
+  async createDeviceTORooom(req, res) {
+    const { device_id, room_id, device_state } = req.body;
+    const response = await addDeviceToRoom(device_id, room_id, device_state);
+    return res.json(response);
 
-exports.updateDeviceMode = async (req, res) => {
+  },
+  async updateDeviceMode(req, res) {
+    const { deviceId, mode } = req.body;
     try {
-        const { deviceId, mode } = req.body;
-        const success = await updateDeviceModeInDatabase(deviceId, mode);
-        if (success) {
-            sendJsonResponse(res, 200, { "message": "Device mode updated successfully" });
-        } else {
-            sendJsonResponse(res, 404, { "message": "Device not found" });
-        }
+      await updateDeviceModeInDatabase(deviceId, mode);
+      res.status(200).json({ success: true });
     } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
+      res.status(500).json({ success: false, message: "Error updating mode in the database" });
     }
-};
 
-exports.updateRoomDeviceState = async (req, res) => {
+  },
+  async updateRoomDeviceState(req, res) {
     try {
         const { state, id } = req.body;
+        //const response = await setRoomDeviceState(id, state);
         const response = await setRoomDeviceState(id, state);
-
+    
         if (response.statusCode !== 200) {
-            throw new Error(response.message);
+          throw new Error(response.message);
         }
-        sendJsonResponse(res, 200, { "message": "Room device state updated" });
-    } catch (error) {
-        sendJsonResponse(res, 500, { "message": error.message });
-    }
-};
+        res.send(response);
+      } catch (err) {
+        return res.status(500).send(err.message);
+      }
+  },
+    
 
-// Implement the rest of the endpoints similarly.
+}  

@@ -20,13 +20,13 @@ server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 
 // Use routers
-server.use('/api/login', loginRouter);
-server.use('/api/devices', devicesRouter);
-server.use('/api/sensors', sensorRouter);
-server.use('/api/rules', ruleRouter);
-server.use('/api/rooms', roomRouter);
-server.use('/api/suggestions', suggestionsRouter);
-server.use('/api/gateways', gatewaysRouter);
+server.use('/api-login', loginRouter);
+server.use('/api-device', devicesRouter);
+server.use('/api-sensors', sensorRouter);
+server.use('/api-rules', ruleRouter);
+server.use('/api-room', roomRouter);
+server.use('/api-suggestion', suggestionsRouter);
+server.use('/api-gateways', gatewaysRouter);
 
 // Default route for handling undefined routes
 server.use((req, res) => {
