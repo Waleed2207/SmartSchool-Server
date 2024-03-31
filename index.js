@@ -26,7 +26,7 @@ server.use('/api-sensors', sensorRouter);
 server.use('/api-rules', ruleRouter);
 server.use('/api-room', roomRouter);
 server.use('/api-suggestion', suggestionsRouter);
-server.use('/api-gateways', gatewaysRouter);
+server.use('/api-mindolife', gatewaysRouter);
 
 // Default route for handling undefined routes
 server.use((req, res) => {

@@ -2,6 +2,45 @@ const Device = require("../models/Device");
 const RoomDevice = require("../models/RoomDevice");
 const Room = require("../models/Room");
 
+const axios = require('axios');
+
+const fetchIoTDevicesData = async () => {
+  try {
+    const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
+      params: {
+        developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+        dataType: 'json',
+        client: 'web',
+        jsonResponse: true,
+        getFullData: true,
+        daysOfHistory: 30,
+        sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+      }
+    });
+    console.log(response.data);
+    return response.data; // axios wraps the response data in a data property
+  } catch (error) {
+    console.error(`Error fetching IoT devices: ${error.message}`);
+    throw error; // Rethrow or handle as needed
+  }
+};
+
+const MindolifefetchAndTransformIoTDevicesData = async () => {
+  try {
+    const data = await fetchIoTDevicesData();
+    console.log(data); // Log the full data object
+    
+   const devices = data.map(device => ({
+      id: device.id,
+      name: device.name
+    }));
+    return devices;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 
 const getDevices = async () => {
   try {
@@ -254,5 +293,7 @@ module.exports = {
   createNewDevice,
   getRoomDevicesTest,
   getDeviceIdByDeviceName,
-  getRoomsByDeviceName
+  getRoomsByDeviceName,
+  MindolifefetchAndTransformIoTDevicesData,
+  fetchIoTDevicesData
 };

@@ -1,14 +1,14 @@
 const express = require('express');
-const router = express.Router();
+const gatewaysRouter = express.Router();
 const gatewayController = require('../controllers/gatewaysController');
 
 
-router.get('/:gatewayId/devices', gatewayController.getDevices);
-router.get('/', gatewayController.getAllGateways);
-router.get('/:id', gatewayController.getGatewayById);
-router.post('/login', gatewayController.loginGateway);
-router.get('/:id/endpoints', gatewayController.getGatewayEndpoints);
-router.post('/:id/bind', gatewayController.bindGateway);
-router.delete('/:id/unbind', gatewayController.unbindGateway);
+gatewaysRouter.get('/:gatewayId/devices', gatewayController.getDevices);
+gatewaysRouter.get('/', gatewayController.getAllGateways);
+gatewaysRouter.get('/:id', gatewayController.getGatewayById);
+gatewaysRouter.post('/login', gatewayController.loginGateway);
+gatewaysRouter.get('/:id/endpoints', gatewayController.getGatewayEndpoints);
+gatewaysRouter.post('/:id/bind', gatewayController.bindGateway);
+gatewaysRouter.delete('/:id/unbind', gatewayController.unbindGateway);
 
-module.exports = router;
+module.exports = gatewaysRouter;

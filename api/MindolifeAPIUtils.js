@@ -1,12 +1,7 @@
 const qs = require('qs');
 const MindolifeAPIClient = require('./MindolifeAPIClient');
 
-function generateWuertStringBaseParams(params) {
-  params['developerKey'] = process.env.DEVELOPER_KEY;
-  params['dataType'] = 'json';
-  params['client'] = process.env.CLIENT_APP_NAME;
-  return `?${qs.stringify(params)}`;
-}
+
 
 async function analyzeResults(serviceName, params = {}, auth) {
   const httpParams = generateWuertStringBaseParams(params);

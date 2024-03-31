@@ -13,28 +13,38 @@ const getDevicesServiceName = 'v1/Gateway/getDevices'; // Adjust based on your A
  * @param {String} userSessionKey - The session key for the authenticated user, for authorization.
  * @returns {Promise} - A promise that resolves with the devices associated with the gateway.
  */
-async function getDevices(gatewayId, userSessionKey) {
-    try {
-        // Construct the request URL with query parameters as needed
-        const url = `${getDevicesServiceName}?gatewayId=${encodeURIComponent(gatewayId)}`;
+async function getDevices(gatewayId) {
+  try {
+      // Define the base URL and the required query parameters
+      const baseURL = 'https://api.mindolife.com/API/Gateway/getIoTDevices';
+      const developerKey = 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc';
+      const dataType = 'json';
+      const client = 'web';
+      const jsonResponse = true;
+      const getFullData = true;
+      const daysOfHistory = 30;
+      const sessionKey = '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689';
 
-        // Make a GET request to fetch devices
-        const response = await MindolifeAPIClient.get(url, {
-            headers: { Authorization: `Bearer ${userSessionKey}` },
-        });
+      // Construct the full request URL with query parameters
+      const url = `${baseURL}?developerKey=${encodeURIComponent(developerKey)}&dataType=${encodeURIComponent(dataType)}&client=${encodeURIComponent(client)}&jsonResponse=${jsonResponse}&getFullData=${getFullData}&daysOfHistory=${daysOfHistory}&sessionKey=${encodeURIComponent(sessionKey)}&gatewayId=${encodeURIComponent(gatewayId)}`;
+      console.log(url);
 
-        // Check if the request was successful
-        if (response.data && response.data.error) {
-            throw new Error(response.data.error);
-        }
+      // Make a GET request to fetch devices
+      const response = await MindolifeAPIClient.get(url);
 
-        // Return the devices fetched from the API
-        return response.data;
-    } catch (error) {
-        // If an error occurs, throw it for the caller to handle
-        throw new Error(`Failed to fetch devices: ${error.message}`);
-    }
+      // Check if the request was successful
+      if (response.data && response.data.error) {
+          throw new Error(response.data.error);
+      }
+      console.log(response);
+      // Return the devices fetched from the API
+      return response.data;
+  } catch (error) {
+      // If an error occurs, throw it for the caller to handle
+      throw new Error(`Failed to fetch devices: ${error.message}`);
+  }
 }
+
 /**
  * Attempts to log in to a gateway and updates the session key upon success.
  * 
@@ -74,25 +84,35 @@ async function loginGateway(username, password, sessionKey, gateway) {
  * Fetches the endpoints for a specific gateway.
  * 
  * @param {String} gatewayId - The ID of the gateway whose endpoints are being fetched.
- * @param {String} userSessionKey - The session key for the authenticated user, for authorization.
+ * @param {String} userSessionKey= - The session key for the authenticated user, for authorization.
  * @returns {Promise} - A promise that resolves with the gateway endpoints.
  */
+
+userSessionKey= '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689'
 async function getGatewayEndpoints(gatewayId, userSessionKey) {
-    try {
-      // Construct the request URL with query parameters as needed
+  try {
+      // Assuming getGatewayEndpointsServiceName is a variable that contains the base URL/service name
       const url = `${getGatewayEndpointsServiceName}?gatewayId=${encodeURIComponent(gatewayId)}`;
-  
-      const response = await MindolifeAPIClient.get(url, {
-        headers: { Authorization: `Bearer ${userSessionKey}` },
-      });
-  
-      console.log('Gateway endpoints fetched successfully:', response.data);
-      return response.data; // You may want to further process this data before returning
-    } catch (error) {
+      console.log(url);
+
+      // It seems getAuthorized method should properly handle the authorization process, including headers.
+      // Therefore, we only pass the URL. Ensure getAuthorized is implemented to use the userSessionKey for authorization.
+      const response = await MindolifeAPIClient.getAuthorized(url, userSessionKey);
+
+      // Assuming response structure has .data that contains the actual response body you're interested in.
+      // Adjust logging and response handling based on actual structure and requirements.
+      console.log('Full response:', response);
+      if (response.data) {
+          console.log('Gateway endpoints fetched successfully:', response.data);
+      } else {
+          console.log('Response data is undefined. Response object:', response);
+      }
+  } catch (error) {
       console.error('Failed to fetch gateway endpoints:', error);
       throw error; // Rethrow or handle as needed for the caller to catch
-    }
   }
+}
+
 /**
  * Unbinds a gateway from the current user's account.
  * 
