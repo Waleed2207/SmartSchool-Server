@@ -13,6 +13,7 @@ devicesRouter.get('/room-devices/:roomId', devicescontrollers.getRoomDeviceByRoo
 devicesRouter.get('/room-devices-test/:roomId', devicescontrollers.getRoomDeviceTESTByRoomID);
 
 // POST requests
+devicesRouter.post('/change-feature-state', devicescontrollers.changeFeature);
 devicesRouter.post('/devices', devicescontrollers.createDevice);
 devicesRouter.post('/room-device', devicescontrollers.createDeviceTORooom);
 

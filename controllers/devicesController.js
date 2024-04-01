@@ -11,10 +11,23 @@ const {
     setRoomDeviceState,
     createNewDevice,
     getRoomDevicesTest,
-    MindolifefetchAndTransformIoTDevicesData
+    MindolifefetchAndTransformIoTDevicesData,
+    changeFeatureState
   } = require("./../services/devices.service.js");
 
 exports.devicescontrollers = {
+  async changeFeature(req, res) {
+    try {
+      const { deviceId, state } = req.body;
+      console.log("Sameeer",deviceId ,state);
+      const result = await changeFeatureState(deviceId, state); // directly call the imported function
+      res.json(result);
+      console.log("Sameer222",result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   async extractIoTDevices(req, res) {
     try {
         const devices = await MindolifefetchAndTransformIoTDevicesData(); // Assuming a mock function for demonstration

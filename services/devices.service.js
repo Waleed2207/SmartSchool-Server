@@ -3,7 +3,32 @@ const RoomDevice = require("../models/RoomDevice");
 const Room = require("../models/Room");
 
 const axios = require('axios');
+const querystring = require('querystring');
+const changeFeatureState = async (deviceId, state) => {
+  const baseUrl = 'https://api.mindolife.com/API/Gateway/changeFeatureValue';
+  const params = {
+    developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+    dataType: 'json',
+    client: 'web',
+    jsonResponse: 'true',
+    iotDeviceID: deviceId,
+    featureSetID: '1',
+    featureID: '1',
+    value: JSON.stringify({ value: state }), // This will be encoded in the query string
+    sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689'
+  };
 
+  const queryString = querystring.stringify(params);
+  const urlWithParams = `${baseUrl}?${queryString}`;
+
+  try {
+    const response = await axios.get(urlWithParams);
+    return response.data;
+  } catch (error) {
+    console.error(`Error changing feature state for device ID ${deviceId}:`, error.message);
+    throw error;
+  }
+}
 const fetchIoTDevicesData = async () => {
   try {
     const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
@@ -32,7 +57,8 @@ const MindolifefetchAndTransformIoTDevicesData = async () => {
     
    const devices = data.map(device => ({
       id: device.id,
-      name: device.name
+      name: device.name,
+      feature: device.feature.name
     }));
     return devices;
   } catch (error) {
@@ -295,5 +321,6 @@ module.exports = {
   getDeviceIdByDeviceName,
   getRoomsByDeviceName,
   MindolifefetchAndTransformIoTDevicesData,
-  fetchIoTDevicesData
+  fetchIoTDevicesData,
+  changeFeatureState
 };
