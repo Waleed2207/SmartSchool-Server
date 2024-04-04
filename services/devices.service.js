@@ -50,23 +50,36 @@ const fetchIoTDevicesData = async () => {
   }
 };
 
+
 const MindolifefetchAndTransformIoTDevicesData = async () => {
   try {
-    const data = await fetchIoTDevicesData();
-    console.log(data); // Log the full data object
-    
-   const devices = data.map(device => ({
-      id: device.id,
-      name: device.name,
-      feature: device.feature.name
-    }));
+    const fetchedData = await fetchIoTDevicesData(); // Now this calls the actual API
+    console.log(fetchedData); // Log the full fetchedData object
+
+    const devices = fetchedData.map(device => {
+      const features = Object.keys(device.feature || {}).map(featureKey => {
+        const feature = device.feature[featureKey];
+        return {
+          jsonResponse: "true",
+          iotDeviceID: device.id,
+          featureSetID: featureKey.split('.')[0], // Assuming the featureSetID is the first part of the featureKey
+          featureID: featureKey.split('.')[1], // Assuming the featureID is the second part of the featureKey
+          name: feature.name, 
+          value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
+        };
+      });
+      return {
+        id: device.id,
+        name: device.name,
+        features: features
+      };
+    });
     return devices;
   } catch (error) {
-    console.error(error);
+    console.error(`Error transforming IoT devices data: ${error.message}`);
     throw error;
   }
 };
-
 
 const getDevices = async () => {
   try {
