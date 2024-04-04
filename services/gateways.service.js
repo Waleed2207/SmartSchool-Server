@@ -5,6 +5,13 @@ const unbindGatewayServiceName = 'Session/unbindGateway'; // Adjust based on you
 const getGatewayEndpointsServiceName = "v1/Gateway/getEndpoints"; // Adjust based on your API's actual endpoint
 const loginGatewayServiceName = 'v2/User/login'; // Adjust this endpoint as needed
 const getDevicesServiceName = 'v1/Gateway/getDevices'; // Adjust based on your API's actual endpoint
+const Room = require("./../models/Room");
+const Device = require("./../models/Device.js");
+const RoomDevice = require("./../models/RoomDevice");
+const axios = require("axios");
+const https = require('https');
+const querystring = require('querystring');
+const agent = new https.Agent({ family: 4 }); // Force IPv4
 
 /**
  * Fetches the devices associated with a specific gateway.
@@ -13,37 +20,6 @@ const getDevicesServiceName = 'v1/Gateway/getDevices'; // Adjust based on your A
  * @param {String} userSessionKey - The session key for the authenticated user, for authorization.
  * @returns {Promise} - A promise that resolves with the devices associated with the gateway.
  */
-async function getDevices(gatewayId) {
-  try {
-      // Define the base URL and the required query parameters
-      const baseURL = 'https://api.mindolife.com/API/Gateway/getIoTDevices';
-      const developerKey = 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc';
-      const dataType = 'json';
-      const client = 'web';
-      const jsonResponse = true;
-      const getFullData = true;
-      const daysOfHistory = 30;
-      const sessionKey = '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689';
-
-      // Construct the full request URL with query parameters
-      const url = `${baseURL}?developerKey=${encodeURIComponent(developerKey)}&dataType=${encodeURIComponent(dataType)}&client=${encodeURIComponent(client)}&jsonResponse=${jsonResponse}&getFullData=${getFullData}&daysOfHistory=${daysOfHistory}&sessionKey=${encodeURIComponent(sessionKey)}&gatewayId=${encodeURIComponent(gatewayId)}`;
-      console.log(url);
-
-      // Make a GET request to fetch devices
-      const response = await MindolifeAPIClient.get(url);
-
-      // Check if the request was successful
-      if (response.data && response.data.error) {
-          throw new Error(response.data.error);
-      }
-      console.log(response);
-      // Return the devices fetched from the API
-      return response.data;
-  } catch (error) {
-      // If an error occurs, throw it for the caller to handle
-      throw new Error(`Failed to fetch devices: ${error.message}`);
-  }
-}
 
 /**
  * Attempts to log in to a gateway and updates the session key upon success.
@@ -54,7 +30,8 @@ async function getDevices(gatewayId) {
  * @param {Object} gateway - The gateway object to update with the session key.
  * @returns {Promise<boolean>} - A promise that resolves to true if login is successful, false otherwise.
  */
-async function loginGateway(username, password, sessionKey, gateway) {
+
+  const loginGateway = async (username, password, sessionKey, gateway)=> {
     const params = {
         username,
         password,
@@ -79,40 +56,31 @@ async function loginGateway(username, password, sessionKey, gateway) {
         console.error('Login request failed:', error);
         return false;
     }
-}
+};
 /**
  * Fetches the endpoints for a specific gateway.
  * 
  * @param {String} gatewayId - The ID of the gateway whose endpoints are being fetched.
- * @param {String} userSessionKey= - The session key for the authenticated user, for authorization.
+ * @param {String} userSessionKey - The session key for the authenticated user, for authorization.
  * @returns {Promise} - A promise that resolves with the gateway endpoints.
  */
 
-userSessionKey= '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689'
-async function getGatewayEndpoints(gatewayId, userSessionKey) {
-  try {
-      // Assuming getGatewayEndpointsServiceName is a variable that contains the base URL/service name
+const getGatewayEndpoints = async(gatewayId, userSessionKey)=> {
+    try {
+      // Construct the request URL with query parameters as needed
       const url = `${getGatewayEndpointsServiceName}?gatewayId=${encodeURIComponent(gatewayId)}`;
       console.log(url);
-
-      // It seems getAuthorized method should properly handle the authorization process, including headers.
-      // Therefore, we only pass the URL. Ensure getAuthorized is implemented to use the userSessionKey for authorization.
-      const response = await MindolifeAPIClient.getAuthorized(url, userSessionKey);
-
-      // Assuming response structure has .data that contains the actual response body you're interested in.
-      // Adjust logging and response handling based on actual structure and requirements.
-      console.log('Full response:', response);
-      if (response.data) {
-          console.log('Gateway endpoints fetched successfully:', response.data);
-      } else {
-          console.log('Response data is undefined. Response object:', response);
-      }
-  } catch (error) {
+      const response = await MindolifeAPIClient.get(url, {
+        headers: { Authorization: `Bearer ${userSessionKey}` },
+      });
+  
+      console.log('Gateway endpoints fetched successfully:', response.data);
+      return response.data; // You may want to further process this data before returning
+    } catch (error) {
       console.error('Failed to fetch gateway endpoints:', error);
       throw error; // Rethrow or handle as needed for the caller to catch
-  }
-}
-
+    }
+  };
 /**
  * Unbinds a gateway from the current user's account.
  * 
@@ -120,7 +88,8 @@ async function getGatewayEndpoints(gatewayId, userSessionKey) {
  * @param {String} userSessionKey - The session key for the authenticated user.
  * @returns {Promise} - A promise that resolves with the result of the unbind operation.
  */
-async function unbindGateway(gatewayId, userSessionKey) {
+
+const unbindGateway = async(gatewayId, userSessionKey)=> {
     try {
       // Constructing the full URL or endpoint. Adjust as necessary.
       const url = `${unbindGatewayServiceName}?sessionKey=${encodeURIComponent(userSessionKey)}&gatewayId=${encodeURIComponent(gatewayId)}`;
@@ -136,7 +105,7 @@ async function unbindGateway(gatewayId, userSessionKey) {
       console.error('Failed to unbind gateway:', error);
       throw error; // Rethrow or handle as needed for caller to catch
     }
-  }
+  };
 /**
  * Binds a gateway to the current user's account.
  * 
@@ -144,7 +113,8 @@ async function unbindGateway(gatewayId, userSessionKey) {
  * @param {String} userSessionKey - The session key for the authenticated user.
  * @returns {Promise} - A promise that resolves with the result of the bind operation.
  */
-async function bindGateway(gateway, userSessionKey) {
+
+const bindGateway= async (gateway, userSessionKey)=> {
   const params = {
     sessionKey: userSessionKey, // Authentication session key
     // Add other necessary parameters according to your API's requirement
@@ -163,13 +133,13 @@ async function bindGateway(gateway, userSessionKey) {
     console.error('Failed to bind gateway:', error);
     throw error; // Rethrow or handle as needed
   }
-}
+};
 
 // Assuming MindolifeAPIClient is a configured Axios instance or similar
 // If it's not used, you might want to remove it to clean up your code
 // const MindolifeAPIClient = require('./MindolifeAPIClient');
 
-async function isGatewayLoggedIn(gateway) {
+const isGatewayLoggedIn =async(gateway) =>{
   const params = {
     jsonResponse: 'true',
     getContract: 'true',
@@ -199,7 +169,7 @@ async function isGatewayLoggedIn(gateway) {
     // Adjust according to how you handle errors. Throwing for caller to decide.
     throw error;
   }
-}
+};
 
 // Sample data representing gateways
 let gateways = [
@@ -250,6 +220,158 @@ const deleteGateway = (id) => {
     return true; // Deletion successful
 };
 
+const fetchIoTDevicesData = async () => {
+  try {
+    const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
+      httpsAgent: agent,
+      params: {
+        developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+        dataType: 'json',
+        client: 'web',
+        jsonResponse: true,
+        getFullData: true,
+        daysOfHistory: 30,
+        sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+      }
+    });
+    console.log(response.data);
+    return response.data; // axios wraps the response data in a data property
+  } catch (error) {
+    console.error(`Error fetching IoT devices: ${error.message}`);
+    throw error; // Rethrow or handle as needed
+  }
+};
+const MindolifefetchAndTransformIoTDevicesData = async () => {
+  try {
+    const fetchedData = await fetchIoTDevicesData(); // Assume this returns an array of devices
+    console.log(fetchedData); // Log the full fetchedData object
+
+    const devices = fetchedData.map(device => {
+      // Assuming 'feature' is an object with feature IDs as keys
+      // and the features themselves contain the desired information
+      const feature = device.feature && device.feature['1.1']; // Example to access a specific feature
+      return {
+        id: device.id,
+        name: device.name,
+        // Assuming 'value' in your structure is related to the specific feature you're interested in
+        // You might need to adjust based on your actual data structure
+        featureDetails: feature ? {
+          jsonResponse: "true", // This seems static, based on your example
+          iotDeviceID: device.id, // Assuming the 'iotDeviceID' corresponds to the device's 'id'
+          featureSetID: "1", // This and the next are static, based on your example
+          featureID: "1",
+          value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
+        } : undefined
+      };
+    });
+    return devices;
+  } catch (error) {
+    console.error(`Error transforming IoT devices data: ${error.message}`);
+    throw error;
+  }
+};
+const fetchIoTDeviceDataById = async (deviceId) => {
+  try {
+    const url = `https://api.mindolife.com/API/Gateway/getIoTDevice/${deviceId}`;
+    const params = {
+      developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+      dataType: 'json',
+      client: 'web',
+      jsonResponse: true,
+      getFullData: true,
+      daysOfHistory: 30,
+      sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+    };
+    const response = await axios.get(url, { httpsAgent: agent,
+      params });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching IoT device data for device ID ${deviceId}: ${error.message}`);
+    throw error;
+  }
+};
+
+
+const MindolifefetchAndTransformIoTDeviceDataById = async (req, res) => {
+  try {
+      // Assuming the device ID is passed as a URL parameter named 'deviceId'
+      const deviceId = req.params.deviceId;
+
+      // Fetch a single device by its ID. This requires a method in IoTDeviceModel that fetches a device by ID.
+      const device = await fetchIoTDeviceDataById(deviceId);
+      
+      if (!device) {
+        return res.status(404).json({ message: 'IoT device not found' });
+      }
+
+      const transformedDevice = {
+        id: device.id,
+        name: device.name,
+        featureDetails: device.feature && device.feature['1.1'] ? {
+          jsonResponse: "true",
+          iotDeviceID: device.id.toString(),
+          featureSetID: "1",
+          featureID: "1",
+          value: device.feature['1.1'].value ? JSON.stringify({ value: device.feature['1.1'].value }) : undefined
+        } : undefined
+      };
+
+      res.json(transformedDevice);
+    } catch (error) {
+      console.error(`Error in controller: ${error.message}`);
+      res.status(500).json({ message: `Internal server error: ${error.message}` });
+    }
+};
+
+const changeFeatureState = async (deviceId, state) => {
+  console.log(deviceId);
+
+  const baseUrl = 'https://api.mindolife.com/API/Gateway/changeFeatureValue';
+  
+  try {
+    const valueToPost = state ? 'on' : 'off'; // Prepare the value for the external API
+    // Parameters sent in the request body for a POST request
+    const response = await axios.post(baseUrl, querystring.stringify({
+      developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+      dataType: 'json',
+      client: 'web',
+      jsonResponse: 'true',
+      iotDeviceID: deviceId,
+      featureSetID: '1',
+      featureID: '1',
+      value: JSON.stringify({ value: state }), // Set the value as a string 'on' or 'off'
+      sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689'
+    }), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      httpsAgent: agent
+    });
+
+    if (response.status === 200) {
+      console.log("Feature state changed successfully", response.data);
+      const roomId = "38197016"; // Example roomId
+
+      // Determine the string representation of the state
+      // Update the device state in your local database for both Device and RoomDevice
+      const updateResultDevice = await Device.updateOne(
+        { device_id: deviceId }, // Use the correct property name as per your schema
+        { $set: { state: valueToPost, lastUpdated: new Date() } }
+      );
+      const updateResultRoomDevice = await RoomDevice.updateOne(
+        { room_id: roomId,device_id: deviceId }, // Use the correct property name as per your schema
+        { $set: { state: valueToPost, lastUpdated: new Date() } }
+      );
+      console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
+      return { statusCode: 200, data: response.data };
+    } else {
+      throw new Error("Failed to change feature state via API.");
+    }
+  } catch (error) {
+    console.error(`Error changing feature state for device ID ${deviceId}: ${error.message}`);
+    throw error; // Rethrow the error to handle it outside this function or to inform the caller.
+  }
+};
+
 module.exports = {
     getAllGateways,
     getGatewayById,
@@ -261,5 +383,7 @@ module.exports = {
     unbindGateway,
     getGatewayEndpoints,
     loginGateway,
-    getDevices,
+    MindolifefetchAndTransformIoTDevicesData,
+    MindolifefetchAndTransformIoTDeviceDataById,
+    changeFeatureState
 };

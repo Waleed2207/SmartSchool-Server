@@ -1,14 +1,22 @@
-const express = require('express');
-const gatewaysRouter = express.Router();
-const gatewayController = require('../controllers/gatewaysController');
+const {gatewayController} = require('../controllers/gatewaysController')
+const {Router} = require("express");
+const mindolifeRouter = new Router();
+
+// GET
+mindolifeRouter.get('/getIoTDevices', gatewayController.extractIoTDevices);
+mindolifeRouter.get('/getIoTDevices/:deviceId', gatewayController.extractIoTDevicesByID);
+
+mindolifeRouter.get('/', gatewayController.getAllGateways);
+mindolifeRouter.get('/:id', gatewayController.getGatewayById);
+mindolifeRouter.get('/:id/endpoints', gatewayController.getGatewayEndpoints);
+
+// POST
+mindolifeRouter.post('/change-feature-state', gatewayController.changeFeature);
+mindolifeRouter.post('/login', gatewayController.loginGateway);
+mindolifeRouter.post('/:id/bind', gatewayController.bindGateway);
+
+// DELETE
+mindolifeRouter.delete('/:id/unbind', gatewayController.unbindGateway);
 
 
-gatewaysRouter.get('/:gatewayId/devices', gatewayController.getDevices);
-gatewaysRouter.get('/', gatewayController.getAllGateways);
-gatewaysRouter.get('/:id', gatewayController.getGatewayById);
-gatewaysRouter.post('/login', gatewayController.loginGateway);
-gatewaysRouter.get('/:id/endpoints', gatewayController.getGatewayEndpoints);
-gatewaysRouter.post('/:id/bind', gatewayController.bindGateway);
-gatewaysRouter.delete('/:id/unbind', gatewayController.unbindGateway);
-
-module.exports = gatewaysRouter;
+module.exports = {mindolifeRouter};

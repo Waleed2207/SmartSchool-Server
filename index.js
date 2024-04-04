@@ -1,36 +1,40 @@
+// imports
 const express = require("express");
-const cors = require('cors');
+const cors    = require('cors');
 const connectDB = require("./config");
-const { connectToWs } = require("./ws");
-const axios = require("axios");
-const cron = require("node-cron");
-const _ = require("lodash");
-const { loginRouter, devicesRouter, sensorRouter, ruleRouter, roomRouter, suggestionsRouter, gatewaysRouter } = require('./routers');
-// Initialize Express application
+const { connectToWs } = require("./ws.js");
 const server = express();
 const port = process.env.PORT || 3000;
+require("dotenv").config();
 
-// Connect to MongoDB and WebSocket
+// import Routers
+const {devicesRouter} = require("./routers/devicesRouter");
+const {loginRouter} = require("./routers/loginRouter");
+const {sensorRouter} = require("./routers/sensorRouter");
+const {ruleRouter} = require("./routers/ruleRouter");
+const {roomRouter} = require("./routers/roomRouter");
+const {suggestionsRouter} = require("./routers/suggestionsRouter");
+const {mindolifeRouter} = require('./routers/gatewaysRouter');
+
+// Connect to MongoDB 
 connectDB();
 connectToWs();
 
-// Middleware
-server.use(cors({ origin: true }));
+// server.use(cookieParser());
+server.use(cors());
 server.use(express.json());
-server.use(express.urlencoded({ extended: true }));
+server.use(express.urlencoded({extended: true}));  // hundel post reqs with body
 
-// Use routers
+
 server.use('/api-login', loginRouter);
 server.use('/api-device', devicesRouter);
 server.use('/api-sensors', sensorRouter);
-server.use('/api-rules', ruleRouter);
+server.use('/api-rule', ruleRouter);
 server.use('/api-room', roomRouter);
 server.use('/api-suggestion', suggestionsRouter);
-server.use('/api-mindolife', gatewaysRouter);
+server.use('/api-mindolife', mindolifeRouter);
 
-// Default route for handling undefined routes
 server.use((req, res) => {
-    res.status(404).send('Page not found.');
+    res.status(400).send('Something is broken!');
 });
-
-server.listen(port, () => console.log(`Server running on port ${port}`));
+server.listen(port, () => console.log(`listening on port ${port}`));
