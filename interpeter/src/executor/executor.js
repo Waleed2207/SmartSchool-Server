@@ -6,7 +6,7 @@ function evaluateCondition({ variable, operator, value }, context) {
 
     const varValue = parseFloat(context[variable]);
     const conditionValue = parseFloat(value);
-
+    
     switch (operator) {
         case 'is above':
             return varValue > conditionValue;
@@ -28,9 +28,11 @@ function evaluateCondition({ variable, operator, value }, context) {
 }
 
 
+
 function execute(parsed, context) {
     if (parsed.condition && parsed.condition.operator) {
-        if (evaluateCondition(parsed.condition, context)) {
+        if (evaluateCondition(parsed.condition, context) ) 
+        {
             console.log(`Condition met, executing action: ${parsed.action}`);
             
             // Check if the action is defined
