@@ -3,11 +3,24 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 function evaluateCondition({ variable, operator, value }, context) {
     console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
-
-    const varValue = parseFloat(context[variable]);
-    const conditionValue = parseFloat(value);
     
-    switch (operator) {
+    const variablePattern = /\bdetection|temperature\b/i;
+    const operatorPattern = /\bis above|is below|is equal to|is above or equal to|is below or equal to|or|and\b/i;
+    const valuePattern = /\b(\d{1,3}|ON|OFF)\b/i; // Assuming value can be a number potentially followed by °C
+
+    const variableMatch = action.match(variablePattern);
+    const operatorMatch = action.match(operatorPattern);
+    const valueMatch = action.match(valuePattern);
+
+    const variableType = variableMatch ? variableMatch[0].trim() : '';
+    const operatorType = operatorMatch ? operatorMatch[0].trim().toLowerCase() : '';
+    const valueType = valueMatch ? valueMatch[0].trim() : '';
+    
+    console.log("variable: " + variableType );
+    console.log("operator " + operatorType );
+    console.log("value :" + valueType );
+    
+    switch (opertatortype) {
         case 'is above':
             return varValue > conditionValue;
         case 'is below':
