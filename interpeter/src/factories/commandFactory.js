@@ -16,17 +16,17 @@ class CommandFactory {
 
         // Regex for each component
         const commandTypePattern = /\bturn\b/i;
-        const devicePattern = /\b(light|ac | plub | tv )\ \b/i;
+        const devicePattern = /\b(light|ac | bulb | tv )\ \b/i;
         const statePattern = /\b(on|off)\b/i;
         const modePattern = /\b(cool|heat|fan)\b/i;
         const valuePattern = /\b(\d{1,3})\b/; // Assuming value is always a number
     
         // Extracting each component
-        const commandTypeMatch = parts.match(commandTypePattern);
-        const deviceMatch = parts.match(devicePattern);
-        const stateMatch = parts.match(statePattern);
-        const modeMatch = parts.match(modePattern);
-        const valueMatch = parts.match(valuePattern);
+        const commandTypeMatch = action.match(commandTypePattern);
+        const deviceMatch = action.match(devicePattern);
+        const stateMatch = action.match(statePattern);
+        const modeMatch = action.match(modePattern);
+        const valueMatch = action.match(valuePattern);
     
         // Processing extracted parts, assigning default '' if not found
         const commandType = commandTypeMatch ? commandTypeMatch[0] : '';

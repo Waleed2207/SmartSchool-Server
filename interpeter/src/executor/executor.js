@@ -3,24 +3,27 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 function evaluateCondition({ variable, operator, value }, context) {
     console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
-    
+    console.log(1)
     const variablePattern = /\bdetection|temperature\b/i;
     const operatorPattern = /\bis above|is below|is equal to|is above or equal to|is below or equal to|or|and\b/i;
     const valuePattern = /\b(\d{1,3}|ON|OFF)\b/i; // Assuming value can be a number potentially followed by °C
 
-    const variableMatch = action.match(variablePattern);
-    const operatorMatch = action.match(operatorPattern);
-    const valueMatch = action.match(valuePattern);
-
+    const variableMatch = variable.match(variablePattern);
+    const operatorMatch = operator.match(operatorPattern);
+    const valueMatch = value.match(valuePattern);
+    
     const variableType = variableMatch ? variableMatch[0].trim() : '';
     const operatorType = operatorMatch ? operatorMatch[0].trim().toLowerCase() : '';
-    const valueType = valueMatch ? valueMatch[0].trim() : '';
+    const conditionValue = valueMatch ? valueMatch[0].trim() : '';
+    const varValue = parseFloat(context[variable]);
+    
+    console.log(conditionValue)
     
     console.log("variable: " + variableType );
-    console.log("operator " + operatorType );
-    console.log("value :" + valueType );
+    console.log("operator : " + operatorType );
+    console.log("value :" + varValue );
     
-    switch (opertatortype) {
+    switch (operatorType) {
         case 'is above':
             return varValue > conditionValue;
         case 'is below':
@@ -47,7 +50,7 @@ function execute(parsed, context) {
         if (evaluateCondition(parsed.condition, context) ) 
         {
             console.log(`Condition met, executing action: ${parsed.action}`);
-            
+            console.log(parsed.action);
             // Check if the action is defined
             if (!parsed.action) {
                 console.log('Parsed action is undefined. Check the parsing logic.');

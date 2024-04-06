@@ -24,7 +24,7 @@ const getAllRulesDescription = async () =>
 
       // Loop through each rule to check if it is active
       rules.forEach(rule => {
-        if (rule.isActive) {
+        if ( rule.isActive) {
             descriptions.push(rule.description);
         }else{
           return ;
