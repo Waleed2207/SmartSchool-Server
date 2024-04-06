@@ -50,7 +50,6 @@ const fetchIoTDevicesData = async () => {
   }
 };
 
-
 const MindolifefetchAndTransformIoTDevicesData = async () => {
   try {
     const fetchedData = await fetchIoTDevicesData(); // Now this calls the actual API
@@ -59,13 +58,17 @@ const MindolifefetchAndTransformIoTDevicesData = async () => {
     const devices = fetchedData.map(device => {
       const features = Object.keys(device.feature || {}).map(featureKey => {
         const feature = device.feature[featureKey];
+        const featureSetDefinitionKey = feature.featureSetDefinitionKey;
+        const definitionKey = feature.definitionKey;
         return {
           jsonResponse: "true",
           iotDeviceID: device.id,
           featureSetID: featureKey.split('.')[0], // Assuming the featureSetID is the first part of the featureKey
           featureID: featureKey.split('.')[1], // Assuming the featureID is the second part of the featureKey
-          name: feature.name, 
+          name: feature.name || null, 
           value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
+          definitionKey: definitionKey,
+          featureSetDefinitionKey: featureSetDefinitionKey,
         };
       });
       return {
