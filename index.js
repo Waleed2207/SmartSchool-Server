@@ -1,42 +1,36 @@
-// imports
 const express = require("express");
-const path    = require("path")
-const cors    = require('cors');
+const cors = require('cors');
 const connectDB = require("./config");
-const { connectToWs } = require("./ws.js");
+const { connectToWs } = require("./ws");
 const axios = require("axios");
-const server = express();
-const port = process.env.PORT || 3000;
 const cron = require("node-cron");
 const _ = require("lodash");
-require("dotenv").config();
+const { loginRouter, devicesRouter, sensorRouter, ruleRouter, roomRouter, suggestionsRouter, mindolifeRouter } = require('./routers');
+// Initialize Express application
+const server = express();
+const port = process.env.PORT || 3000;
 
-// import Routers
-const {devicesRouter} = require("./routers/devicesRouter");
-const {loginRouter} = require("./routers/loginRouter");
-const {sensorRouter} = require("./routers/sensorRouter");
-const {ruleRouter} = require("./routers/ruleRouter");
-const {roomRouter} = require("./routers/roomRouter");
-const {suggestionsRouter} = require("./routers/suggestionsRouter");
-
-// Connect to MongoDB 
+// Connect to MongoDB and WebSocket
 connectDB();
 connectToWs();
 
-// server.use(cookieParser());
+// Middleware
 server.use(cors({ origin: true }));
 server.use(express.json());
-server.use(express.urlencoded({extended: true}));  // hundel post reqs with body
+server.use(express.urlencoded({ extended: true }));
 
-
+// Use routers
 server.use('/api-login', loginRouter);
 server.use('/api-device', devicesRouter);
 server.use('/api-sensors', sensorRouter);
-server.use('/api-rule', ruleRouter);
+server.use('/api-rules', ruleRouter);
 server.use('/api-room', roomRouter);
 server.use('/api-suggestion', suggestionsRouter);
+//server.use('/api-mindolife', mindolifeRouter);
 
+// Default route for handling undefined routes
 server.use((req, res) => {
-    res.status(400).send('Something is broken!');
+    res.status(404).send('Page not found.');
 });
-server.listen(port, () => console.log(`listening on port ${port}`));
+
+server.listen(port, () => console.log(`Server running on port ${port}`));

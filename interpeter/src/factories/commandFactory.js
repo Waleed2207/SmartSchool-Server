@@ -14,6 +14,7 @@ class CommandFactory {
         
         console.log(`Processing: "${action}"`);
 
+<<<<<<< HEAD
         // Regex for each component
         const commandTypePattern = /\bturn\b/i;
         const devicePattern = /\b(light|ac | bulb | tv )\ \b/i;
@@ -42,6 +43,33 @@ class CommandFactory {
         console.log(`Mode: ${mode}`);
         console.log(`Value: ${value}`);
         console.log('---'); // Separator for clarity
+=======
+        const commandType = parts[0]; // Already converted to uppercase
+        console.log(commandType);
+        const device = parts[1].toLowerCase(); // Devices may be case-sensitive
+        console.log(device);
+        const state = parts[2]; // Already uppercase
+        console.log(state);
+        const mode = parts[4]; //
+        const details = parts.slice(7).join(' '); // Any additional details after the state
+        console.log(details);
+
+        switch (commandType) {
+            case 'TURN':
+                // Based on the state, return the corresponding command
+                if (state === 'ON') {
+                    return new TurnDeviceOnCommand(device,state,mode, details);
+                } else if (state === 'OFF') {
+                    return new TurnDeviceOffCommand(device,state,mode, details);
+                } else {
+                    // Handle other states or return an error
+                    throw new Error(`Unknown state for TURN command: ${state}`);
+                }
+            // ... handle other command types
+            default:
+                throw new Error(`Unknown command type: ${commandType}`);
+        }
+>>>>>>> origin/SameerDevNew
     }
 }
 

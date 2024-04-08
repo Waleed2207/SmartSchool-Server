@@ -10,14 +10,14 @@ function tokenize(input) {
     operators.forEach(op => {
         if (input.includes(op)) {
             tokens = input.split(op);//split to substring
-            console.log(tokens)
+            //console.log(tokens)
             tokens.splice(1, 0, op); // Insert the operator back between the split parts
-            console.log(tokens)
+            //console.log(tokens)
             input = tokens.join('%%'); // Use a unique separator for further tokenization
-            console.log(input)
+            //console.log(input)
         }
     });
-    console.log(input.split('%%').flatMap(part => part.match(/\S+/g)))
+    //console.log(input.split('%%').flatMap(part => part.match(/\S+/g)))
     return input.split('%%').flatMap(part => part.match(/\S+/g) || []);
 }
 

@@ -6,6 +6,7 @@ const { addingDataToCsv } = require("../utils/machineLearning.js");
 const SensorValue = require("../models/SensorValue");
 const { getSeasonNumberByMonth, discretizeHour } = require("../utils/utils");
 const { SENSORS } = require("../consts/common.consts");
+const { stubString } = require("lodash");
 
 
 const test = 0;
@@ -271,9 +272,22 @@ const switchAcState = async (id, state, temperature = null) => {
       throw new Error("Failed to update AC state via API.");
     }
   } catch (err) {
-    console.error("Error switching AC state:", err.message);
-    return { statusCode: err.response?.status || 500, data: err.message };
+    const statusCode = err.response?.status || 500;
+    let errorMessage = err.message;
+    let detailedError = {};
+  
+    if (err.response && err.response.data) {
+      errorMessage = `Error switching AC state: ${err.response.statusText}`;
+      detailedError = err.response.data; // Assuming Sensibo API error details are in data
+  
+      // Log detailed error message if available
+      console.error("Detailed Sensibo API error:", detailedError);
+    }
+  
+    console.error(errorMessage);
+    return { statusCode, data: detailedError };
   }
+  
 };
 
 
