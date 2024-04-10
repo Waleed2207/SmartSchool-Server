@@ -1,77 +1,85 @@
 const TurnDeviceOnCommand = require('../commands/turnDeviceOnCommand');
-const TurnDeviceOffCommand = require('../commands/turnDeviceOffCommand'); // Assuming you have this command
-// ... (import other command classes as needed)
+const TurnDeviceOffCommand = require('../commands/turnDeviceOffCommand');
+const { getDevices } = require('../../../services/devices.service');
+
+const constructDeviceRegex = async () => {
+    try {
+        const devices = await getDevices();
+        // Assuming each device has a 'name' property. Adjust if your data structure is different.
+        const deviceNames = devices.map(device => device.name.toLowerCase());
+        const pattern = deviceNames.join("|"); // Creates a string that joins all device names with '|'
+        console.log("device pattern: " + pattern);
+        // Include the 'g' flag for a global search
+        return new RegExp(`\\b(${pattern})\\b`, 'ig'); // Case insensitive and global match
+    } catch (err) {
+        console.log("Error constructing device regex: ", err);
+        return null;
+    }
+};
+
+const searchDevicesInAction = async (action) => {
+    const devicePattern = await constructDeviceRegex();
+    if (devicePattern) {
+        const matchesIterator = action.matchAll(devicePattern);
+        const matches = [];
+        for (const match of matchesIterator) {
+            matches.push(match[0]); // match[0] contains the full match which is what you're interested in
+        }
+        console.log(matches); // This will log an array of matched device names
+        return matches; // Returns an array of matched device names
+    } else {
+        console.log("No devices found or error occurred");
+        return [];
+    }
+};
 
 class CommandFactory {
-    static createCommand(action) {
-        // Split the action into parts by space
+    static async createCommand(action) {
         const parts = action.toUpperCase().split(' '); // Convert action to uppercase for case-insensitive comparison
 
-        // Ensure the action string has at least three parts: TURN, device, ON/OFF
         if (parts.length < 3) {
             throw new Error(`Invalid action format: ${action}`);
         }
-        
+
         console.log(`Processing: "${action}"`);
 
-<<<<<<< HEAD
-        // Regex for each component
-        const commandTypePattern = /\bturn\b/i;
-        const devicePattern = /\b(light|ac | bulb | tv )\ \b/i;
-        const statePattern = /\b(on|off)\b/i;
-        const modePattern = /\b(cool|heat|fan)\b/i;
+        const commandTypePattern = /\bTURN\b/i;
+        const statePattern = /\b(ON|OFF)\b/i;
+        const modePattern = /\b(COOL|HEAT|FAN)\b/i;
         const valuePattern = /\b(\d{1,3})\b/; // Assuming value is always a number
-    
-        // Extracting each component
+
         const commandTypeMatch = action.match(commandTypePattern);
-        const deviceMatch = action.match(devicePattern);
+        const deviceMatches = await searchDevicesInAction(action); // This now correctly awaits the asynchronous function
         const stateMatch = action.match(statePattern);
         const modeMatch = action.match(modePattern);
         const valueMatch = action.match(valuePattern);
-    
-        // Processing extracted parts, assigning default '' if not found
+
         const commandType = commandTypeMatch ? commandTypeMatch[0] : '';
-        const device = deviceMatch ? deviceMatch[0].toLowerCase() : '';
+        const device = deviceMatches.length > 0 ? deviceMatches[0].toLowerCase() : ''; // Considering the first matched device
         const state = stateMatch ? stateMatch[0].toLowerCase() : '';
         const mode = modeMatch ? modeMatch[0].toLowerCase() : '';
         const value = valueMatch ? parseInt(valueMatch[0], 10) : '';
-    
-        // Output the results
+
         console.log(`Command Type: ${commandType}`);
         console.log(`Device: ${device}`);
         console.log(`State: ${state}`);
         console.log(`Mode: ${mode}`);
         console.log(`Value: ${value}`);
-        console.log('---'); // Separator for clarity
-=======
-        const commandType = parts[0]; // Already converted to uppercase
-        console.log(commandType);
-        const device = parts[1].toLowerCase(); // Devices may be case-sensitive
-        console.log(device);
-        const state = parts[2]; // Already uppercase
-        console.log(state);
-        const mode = parts[4]; //
-        const details = parts.slice(7).join(' '); // Any additional details after the state
-        console.log(details);
-
-        switch (commandType) {
-            case 'TURN':
-                // Based on the state, return the corresponding command
-                if (state === 'ON') {
-                    return new TurnDeviceOnCommand(device,state,mode, details);
-                } else if (state === 'OFF') {
-                    return new TurnDeviceOffCommand(device,state,mode, details);
-                } else {
-                    // Handle other states or return an error
-                    throw new Error(`Unknown state for TURN command: ${state}`);
-                }
-            // ... handle other command types
-            default:
-                throw new Error(`Unknown command type: ${commandType}`);
+        console.log('---');
+        /*
+        // Instantiate specific command based on parsed action
+        if (state === 'on') {
+            console.log("state is on ");
+            return new TurnDeviceOnCommand(device,mode, value);
+        } else if (state === 'off') {
+            console.log("state is off ");
+            return new TurnDeviceOffCommand(device);
+        } else {
+            console.log("Unknown command state.");
+            return null;
         }
->>>>>>> origin/SameerDevNew
+        */
     }
 }
 
 module.exports = { CommandFactory };
-

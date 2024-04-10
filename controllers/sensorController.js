@@ -151,3 +151,5 @@ exports.sensorControllers={
       },
 
 }
+
+exports.get_MotionState = exports.sensorControllers.get_MotionState;
