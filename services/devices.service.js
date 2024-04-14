@@ -29,60 +29,121 @@ const changeFeatureState = async (deviceId, state) => {
     throw error;
   }
 }
+// const fetchIoTDevicesData = async () => {
+//   try {
+//     const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
+//       params: {
+//         developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
+//         dataType: 'json',
+//         client: 'web',
+//         jsonResponse: true,
+//         getFullData: true,
+//         daysOfHistory: 30,
+//         sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+//       }
+//     });
+//     console.log(response.data);
+//     return response.data; // axios wraps the response data in a data property
+//   } catch (error) {
+//     console.error(`Error fetching IoT devices: ${error.message}`);
+//     throw error; // Rethrow or handle as needed
+//   }
+// };
+
 const fetchIoTDevicesData = async () => {
+  const flaskAppUrl = 'http://10.0.0.29:5009/api-mindolife/extract_iot_devices';
   try {
-    const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
-      params: {
-        developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
-        dataType: 'json',
-        client: 'web',
-        jsonResponse: true,
-        getFullData: true,
-        daysOfHistory: 30,
-        sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+      const response = await axios.get(flaskAppUrl);
+      console.log("Full Axios Response:", response);
+      console.log("Data received:", response.data);
+      if (!response.data || !Array.isArray(response.data.devices)) {
+        console.error('Invalid or missing devices data in response:', response.data);
+        return [];  // Ensuring function returns a consistent type
       }
-    });
-    console.log(response.data);
-    return response.data; // axios wraps the response data in a data property
+      return response.data;
   } catch (error) {
-    console.error(`Error fetching IoT devices: ${error.message}`);
-    throw error; // Rethrow or handle as needed
+      console.error(`Error fetching IoT devices from Flask app: ${error}`);
+      throw error;
   }
 };
 
+
+// const MindolifefetchAndTransformIoTDevicesData = async () => {
+//   try {
+//     const fetchedData = await fetchIoTDevicesData(); // Now this calls the actual API
+//     console.log(fetchedData); // Log the full fetchedData object
+
+//     const devices = fetchedData.map(device => {
+//       const features = Object.keys(device.feature || {}).map(featureKey => {
+//         const feature = device.feature[featureKey];
+//         const featureSetDefinitionKey = feature.featureSetDefinitionKey;
+//         const definitionKey = feature.definitionKey;
+//         return {
+//           jsonResponse: "true",
+//           iotDeviceID: device.id,
+//           featureSetID: featureKey.split('.')[0], // Assuming the featureSetID is the first part of the featureKey
+//           featureID: featureKey.split('.')[1], // Assuming the featureID is the second part of the featureKey
+//           name: feature.name || null, 
+//           value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
+//           definitionKey: definitionKey,
+//           featureSetDefinitionKey: featureSetDefinitionKey,
+//         };
+//       });
+//       return {
+//         id: device.id,
+//         name: device.name,
+//         features: features
+//       };
+//     });
+//     return devices;
+//   } catch (error) {
+//     console.error(`Error transforming IoT devices data: ${error.message}`);
+//     throw error;
+//   }
+// };
 const MindolifefetchAndTransformIoTDevicesData = async () => {
   try {
-    const fetchedData = await fetchIoTDevicesData(); // Now this calls the actual API
-    console.log(fetchedData); // Log the full fetchedData object
+    const fetchedData = await fetchIoTDevicesData();
+    if (fetchedData.devices.length === 0) {
+      console.log('Received empty devices array with success status.');
+      return [];  // Handling case where array is valid but empty
+    }
 
-    const devices = fetchedData.map(device => {
-      const features = Object.keys(device.feature || {}).map(featureKey => {
-        const feature = device.feature[featureKey];
-        const featureSetDefinitionKey = feature.featureSetDefinitionKey;
-        const definitionKey = feature.definitionKey;
+    const devices = fetchedData.devices.map(device => {
+      const features = device.features ? Object.keys(device.features).map(featureKey => {
+        const feature = device.features[featureKey];
         return {
-          jsonResponse: "true",
-          iotDeviceID: device.id,
-          featureSetID: featureKey.split('.')[0], // Assuming the featureSetID is the first part of the featureKey
-          featureID: featureKey.split('.')[1], // Assuming the featureID is the second part of the featureKey
-          name: feature.name || null, 
-          value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
-          definitionKey: definitionKey,
-          featureSetDefinitionKey: featureSetDefinitionKey,
+          featureID: featureKey,
+          ...feature
         };
-      });
+      }) : [];  // Handling missing or undefined features
+
       return {
         id: device.id,
         name: device.name,
         features: features
       };
     });
+
     return devices;
   } catch (error) {
     console.error(`Error transforming IoT devices data: ${error.message}`);
     throw error;
   }
 };
+
+// const processAndLogDevices = async () => {
+//   try {
+//     const fetchedData = await fetchIoTDevicesData();
+//     if (fetchedData.success) {
+//       console.log('Devices:', fetchedData.devices);
+//     } else {
+//       console.log('Failed to fetch devices');
+//     }
+//   } catch (error) {
+//     console.error('An error occurred:', error);
+//   }
+// };
 
 const getDevices = async () => {
   try {
@@ -338,5 +399,6 @@ module.exports = {
   getRoomsByDeviceName,
   MindolifefetchAndTransformIoTDevicesData,
   fetchIoTDevicesData,
-  changeFeatureState
+  changeFeatureState,
+  //processAndLogDevices
 };

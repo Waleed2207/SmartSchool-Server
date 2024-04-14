@@ -12,7 +12,8 @@ const {
     createNewDevice,
     getRoomDevicesTest,
     MindolifefetchAndTransformIoTDevicesData,
-    changeFeatureState
+    changeFeatureState,
+    processAndLogDevices
   } = require("./../services/devices.service.js");
 
 exports.devicescontrollers = {
@@ -30,7 +31,7 @@ exports.devicescontrollers = {
 
   async extractIoTDevices(req, res) {
     try {
-        const devices = await MindolifefetchAndTransformIoTDevicesData(); // Assuming a mock function for demonstration
+        const devices = await MindolifefetchAndTransformIoTDevicesData();
         res.json({ success: true, devices });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to extract IoT device details', error: error.message });
