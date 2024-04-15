@@ -51,7 +51,7 @@ const changeFeatureState = async (deviceId, state) => {
 // };
 
 const fetchIoTDevicesData = async () => {
-  const flaskAppUrl = 'http://10.0.0.29:5009/api-mindolife/extract_iot_devices';
+  const flaskAppUrl = 'http://10.0.0.29:5009/api-mindolife/get_devices';
   try {
       const response = await axios.get(flaskAppUrl);
       console.log("Full Axios Response:", response);
@@ -66,44 +66,59 @@ const fetchIoTDevicesData = async () => {
       throw error;
   }
 };
-
-
 // const MindolifefetchAndTransformIoTDevicesData = async () => {
-//   try {
-//     const fetchedData = await fetchIoTDevicesData(); // Now this calls the actual API
-//     console.log(fetchedData); // Log the full fetchedData object
+//    try {
+//     const fetchedData = await fetchIoTDevicesData();
+//     if (fetchedData.devices.length === 0) {
+//       console.log('Received empty devices array with success status.');
+//       return [];  // Handling case where array is valid but empty
+//     }
+
 
 //     const devices = fetchedData.map(device => {
-//       const features = Object.keys(device.feature || {}).map(featureKey => {
+//       if (!device.feature || typeof device.feature !== 'object') {
+//         throw new Error(`Invalid feature data for device ${device.id}`);
+//       }
+
+//       const features = Object.keys(device.feature).map(featureKey => {
 //         const feature = device.feature[featureKey];
-//         const featureSetDefinitionKey = feature.featureSetDefinitionKey;
-//         const definitionKey = feature.definitionKey;
+//         const featureSetDefinitionKey = feature.featureSetDefinitionKey || null;
+//         const definitionKey = feature.definitionKey || null;
+
+//         const [featureSetID, featureID] = featureKey.split('.');
 //         return {
-//           jsonResponse: "true",
+//           jsonResponse: true,
 //           iotDeviceID: device.id,
-//           featureSetID: featureKey.split('.')[0], // Assuming the featureSetID is the first part of the featureKey
-//           featureID: featureKey.split('.')[1], // Assuming the featureID is the second part of the featureKey
-//           name: feature.name || null, 
+//           featureSetID: featureSetID,
+//           featureID: featureID,
+//           name: feature.name || null,
 //           value: feature.value ? JSON.stringify({ value: feature.value }) : undefined,
 //           definitionKey: definitionKey,
 //           featureSetDefinitionKey: featureSetDefinitionKey,
 //         };
 //       });
+
 //       return {
 //         id: device.id,
 //         name: device.name,
-//         features: features
+//         features: features,
 //       };
 //     });
+
 //     return devices;
 //   } catch (error) {
 //     console.error(`Error transforming IoT devices data: ${error.message}`);
-//     throw error;
+//     throw {
+//       success: false,
+//       message: 'Failed to extract IoT device details',
+//       error: error.message,
+//     };
 //   }
 // };
+
 const MindolifefetchAndTransformIoTDevicesData = async () => {
   try {
-    const fetchedData = await fetchIoTDevicesData();
+    const fetchedData = await fetchIoTDevicesData(); // Ensure this function is defined elsewhere in your code
     if (fetchedData.devices.length === 0) {
       console.log('Received empty devices array with success status.');
       return [];  // Handling case where array is valid but empty
@@ -113,23 +128,26 @@ const MindolifefetchAndTransformIoTDevicesData = async () => {
       const features = device.features ? Object.keys(device.features).map(featureKey => {
         const feature = device.features[featureKey];
         return {
+          iotDeviceID: device.id,           // Assuming device.id is the IoT device ID
           featureID: featureKey,
-          ...feature
+          featureSetID: feature.featureSetID,
+          featureValue: feature.value,      // Assuming feature value is stored under 'value'
+          featureName: feature.name,        // Assuming feature name is stored under 'name'
+          featureState: feature.state,      // Assuming feature state is stored under 'state'
+          featureSetDefinitionKey: feature.featureSetDefinitionKey, // Ensure this property exists in your data model
+          definitionKey: feature.definitionKey   // Ensure this property exists in your data model
         };
       }) : [];  // Handling missing or undefined features
 
-      return {
-        id: device.id,
-        name: device.name,
-        features: features
-      };
+      return features;  // Return an array of features for each device
     });
 
-    return devices;
+    return devices.flat();  // Flattens the array to have a single list of all features across devices
   } catch (error) {
     console.error(`Error transforming IoT devices data: ${error.message}`);
     throw error;
   }
+
 };
 
 // const processAndLogDevices = async () => {

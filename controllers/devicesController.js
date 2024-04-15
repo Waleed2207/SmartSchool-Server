@@ -13,7 +13,8 @@ const {
     getRoomDevicesTest,
     MindolifefetchAndTransformIoTDevicesData,
     changeFeatureState,
-    processAndLogDevices
+    //processAndLogDevices,
+    
   } = require("./../services/devices.service.js");
 
 exports.devicescontrollers = {
