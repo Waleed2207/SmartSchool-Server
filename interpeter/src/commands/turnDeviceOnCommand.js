@@ -9,12 +9,16 @@ class TurnDeviceOnCommand extends BaseCommand
 {
 
     
-    constructor(device,state , mode, details) {
+    constructor(device,mode , details) {
+        console.log("TurnDeviceCommand constructor");
         super();
         this.device = device;
-        this.state = state;
         this.mode = mode;
         this.details = details;
+        console.log(`Device: ${device}`);
+        console.log(`Mode: ${mode}`);
+        console.log(`Value: ${details}`);
+        this.execute();
         
     }
 
@@ -27,10 +31,10 @@ class TurnDeviceOnCommand extends BaseCommand
         switch (this.device.toLowerCase()) {
            
             case 'light':
-                console.log(`device : ${this.device}  , State: ${this.state} , Details: ${this.details}`);
+                console.log(`device : ${this.device} `);
                 break;
-            case 'Ac' :
-                console.log(`device : ${this.device} State: ${this.state}, Details: ${this.details}`);
+            case 'ac' :
+                console.log(`device : ${this.device} mode: ${this.mode}, Details: ${this.details}`);
                 break; 
             // You can add more cases here for other devices
         }
@@ -38,7 +42,9 @@ class TurnDeviceOnCommand extends BaseCommand
         // Assuming this.details is a string like "25 DEGREES"
     
         // //Extract the numeric part from the string
-        const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
+        
+        //const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
+        const targetTemperature = this.details;
         console.log(targetTemperature)
         // // Use default values or values from parsed details
         const { device_id = `${process.env.SENSIBO_DEVICE_ID}`, apiKey = `${process.env.SENSIBO_API_KEY}` } = this.details; // Assuming you add device_id and apiKey to this.details if necessary
