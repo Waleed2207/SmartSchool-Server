@@ -25,6 +25,8 @@ const ruleSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  
+ 
 });
 
 const Rule = mongoose.model('rules', ruleSchema);
