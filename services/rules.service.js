@@ -19,60 +19,25 @@ function stringifyCondition(condition) {
   return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
 }
 
-/*
 
-const getAllRulesDescription = async () => 
-{
 
-  try 
-  {
-      console.log("getAllRulesDescription")
-      // Fetch all rules
-      const rules = await Rule.find({});
 
-      // Initialize an empty array to hold descriptions of active rules
-      const descriptions = [];
-
-      // Loop through each rule to check if it is active
-      rules.forEach(rule => {
-        if ( rule.isActive) {
-            descriptions.push(rule.description);
-        }else{
-          return ;
-          console.log("the rule : " + rule.description + " , isActive : " + rule.isActive );
-       }
-    });
-    // Now descriptions contains descriptions of all active rules
-    console.log(descriptions);
-
-    return {
-      statusCode: 200,
-      data: descriptions, // Return the descriptions
-    };
-  }catch (error) {
-    return {
-      statusCode: 500,
-      message: `Error fetching rules - ${error}`,
-    };
-  }
-
-}
-
-  */
 
 const getAllRulesDescription = async () =>
  {
   try {
     console.log("getallruledescription");
     const rules = await Rule.find({});
-    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
 
+    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
+   
     let activeDescriptions = [];
-    // gbd chnage it it was change to !== 0 
+    
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
         //gbd add the true | to see to get all the rule
-        if (rule.isActive) { 
+        if (rule.isActive) {
+          console.log("Rule description" + rule. description)
           activeDescriptions.push(rule.description);
         }
         
@@ -101,29 +66,6 @@ const getAllRulesDescription = async () =>
 };
 
 
-/*
-getAllRulesDescription().then((result) => {
-  console.log("descriptions : " + result.data);
-  return result.data;
-}).catch((error) => {
-  console.error(error);
-});
-*/
-
-// setInterval(() => {
-//   console.log('Checking for rule updates...');
-//   updateAndProcessRules();
-// }, 30000);
-
-// getAllRulesDescription();
-
-//////waleed ********************************
-// getAllRulesDescription().then((result) => {
-//   console.log("descriptions : " + result.data);
-//   return result.data;
-// }).catch((error) => {
-//   console.error(error);
-// });
 
 
 
@@ -165,41 +107,7 @@ async function getAndLogDetection() {
   return detection; // Return the detection data
 }
 
-/*
 
-// Define the async function that fetches sensor data and processes rules
-async function updateAndProcessRules() {
-  try {
-    console.log("UpdateAndProcess")
-    const data = await getSensiboSensors();
-    const detectionData = await getAndLogDetection();
-  
-    if (data) {
-      const context = {
-        temperature: data.temperature,
-        humidity: data.humidity,
-        motionDetected: detectionData.motionDetected
-        
-        
-      };
-      console.log("gbd try");
-      console.log("context motionDeteted : " , context.motionDetected);
-    
-      
-      await processAllRules(context); 
-    } else {
-      console.log('Failed to fetch sensor data or no data available.');
-    }
-  } catch (error) {
-    console.error('An error occurred:', error.message);
-  }
-
-  // Place the rule checking code here if it needs to be part of the async function
-  console.log('Checking for rule updates...');
-  getAllRulesDescription();
-}
-
-*/
 
 
 async function processAllRules(context) {
@@ -260,50 +168,7 @@ async function interpretRuleByName(ruleDescription, context) {
   }
 }
 
-/*
-///fetch the data from the sensors 
-(async () => {
-  const data = await getSensiboSensors();
-  if (data) {
-    const context = {
-      temperature: data.temperature,
-      humidity: data.humidity
-    };
-    console.log("Fetched context:", context);
-    await processAllRules(context); // Properly await the processing of rules
-  } else {
-    console.log('Failed to fetch sensor data or no data available.');
-  }
-})();
-*/
-/*
-async function processAllRules(context) 
-{
-  try 
-  {
-    console.log("processAllRules");
-    // Await the promise to get the result object
-    const descriptionResult = await getAllRulesDescription();
-    console.log("description result" + descriptionResult);
-    // Check if the operation was successful
-    if (descriptionResult.statusCode === 200) {
-      // Extract the descriptions array
-      const descriptions = descriptionResult.data;
 
-      // Iterate over each description and interpret it
-      for (const description of descriptions) {
-        // Await the interpretation of each rule description
-        const interpretResult = await interpretRuleByName(description, context);
-        
-      }
-    } else {
-      console.error('Failed to get rule descriptions:', descriptionResult.message);
-    }
-  } catch (error) {
-    console.error('Error processing rule descriptions:', error);
-  }
-}
-*/
 
 
 async function fetchAndProcessRules() {
@@ -346,7 +211,7 @@ async function fetchAndProcessRules() {
 
 // Set an interval to run the function every 30 seconds
 fetchAndProcessRules()
-setInterval(fetchAndProcessRules, 30000);
+setInterval(fetchAndProcessRules, 30 * 60 * 1000);
 
 /*
 setInterval(fetchAndProcessRules, intervalTime);
@@ -361,7 +226,8 @@ function stringifyCondition(condition) {
   function interpret(input, context) {
     const tokens = tokenize(input);
     const parsed = parse(tokens); // Ensure this returns the correct structure
-    console.log(parsed);
+   // Correct use of JSON.stringify to log the condition object as a string
+    console.log("Parsed condition: " + JSON.stringify(parsed.condition));
     execute(parsed, context); // `parsed` should include condition and action
   }
 

@@ -22,12 +22,13 @@ exports.ruleControllers={
     },
     // Define the route for adding a new rule
     async add_Rule(req, res){
-
         const rule  = req.body;
         console.log( rule );
         const response = await add_new_Rule(rule);
         res.status(response.statusCode).send(response.message);
     },
+
+    
     async update_Rule(req, res){
         const updateFields = { ...req.body }; // Includes isActive and any other fields
         const id = req.params.id;
@@ -35,6 +36,7 @@ exports.ruleControllers={
         return res.status(response.statusCode).send(response.message);
 
     },
+
     async delete_Rule_ByID(req, res){
         const id = req.params.id;
         try {
@@ -51,5 +53,7 @@ exports.ruleControllers={
         }
 
     },
+    
+    
+  }
 
-}

@@ -5,16 +5,22 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 
 
-function evaluateCondition({ variable, operator, value }, context) 
+function evaluateCondition({ variables, operators , values }, context) 
 {
     console.log("Context:", JSON.stringify(context));
     console.log(`Type of context[${context}]:`, typeof context[variable], `, Value:`, context[variable]);
-    console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
+    //console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
+    console.log("try1");
+    console.log(`Evaluating condition: ${ variables} , ${operators} , ${values} `);
 
-    const variablePattern = /\bdetection|temperature\b/i;
-    const operatorPattern = /\bis above|is below|is equal to|is above or equal to|is below or equal to|or|and\b/i;
-    const valuePattern = /\b(\d{1,3}|(ON|OFF)|(True|False)|(true|false))\b/i; // Assuming value can be a number potentially followed by °C
+   
 
+    
+    // Log all values after filling each array
+    console.log(`Variables collected: ${variables.join(', ')}`);
+    console.log(`Operators collected: ${operators.join(', ')}`);
+    console.log(`Values collected: ${values.join(', ')}`);
+ 
     const variableMatch = variable.match(variablePattern);
     const operatorMatch = operator.match(operatorPattern);
     const valueMatch = value.match(valuePattern);
@@ -23,6 +29,20 @@ function evaluateCondition({ variable, operator, value }, context)
     const operatorType = operatorMatch ? operatorMatch[0].trim().toLowerCase() : '';
     const conditionValue = valueMatch ? valueMatch[0].trim() : '';
     let varValue;
+    
+    console.log("condition value : ",conditionValue) 
+    console.log("variable: " + variableType );
+    console.log("operator : " + operatorType );
+    console.log("Condtionvalue :" + conditionValue );
+    console.log("varvalue : " + varValue)
+    
+    
+    
+     // Log all values after filling each array
+     console.log(`Variables collected: ${variables.join(', ')}`);
+     console.log(`Operators collected: ${operators.join(', ')}`);
+     console.log(`Values collected: ${values.join(', ')}`);
+   
     if (typeof context[variable] === 'boolean') {
         // Convert boolean to 1 or 0
         varValue = context[variable] ? 1 : 0;
@@ -39,13 +59,7 @@ function evaluateCondition({ variable, operator, value }, context)
 
     
 
-    console.log("condition value : ",conditionValue)
-    
-    console.log("variable: " + variableType );
-    console.log("operator : " + operatorType );
-    console.log("Condtionvalue :" + conditionValue );
-    console.log("varvalue : " + varValue)
-    
+  
     
     switch (operator) 
     {
@@ -67,27 +81,7 @@ function evaluateCondition({ variable, operator, value }, context)
             throw new Error(`Unknown operator: ${operator}`);
     }
 
-    /*
-    let0 TempValue = parseInt(value);
-    console.log(`variable: ${variable} , opraotor: ${operator} , Value : ${value}`);
-    //const varValue = parseFloat(context[variable]);
-    const conditionValue = parseFloat(value);
-        */
-
-    /*
-    if (variable === 'detection' && operator === 'is equal to' && conditionValue === 1 ) 
-    {
-        console.log("evaluateConditioDedection it ok");
-        return true;
-    } 
-    */
     
-
-    //console.log({varValue})
-    //console.log({conditionValue});
-
-    
-
 }
 
 /*
