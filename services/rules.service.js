@@ -72,10 +72,8 @@ const getAllRulesDescription = async () =>
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
         //gbd add the true | to see to get all the rule
-        if (true | rule.isActive) {
-          
+        if (rule.isActive) { 
           activeDescriptions.push(rule.description);
-          
         }
         
       }

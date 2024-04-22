@@ -25,6 +25,11 @@ const ruleSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  SpaceID:{
+    type: String,
+    required: true
+  },
+  
 });
 
 const Rule = mongoose.model('rules', ruleSchema);

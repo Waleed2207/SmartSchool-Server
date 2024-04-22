@@ -4,6 +4,31 @@ const Room = require("../models/Room");
 
 const axios = require('axios');
 const querystring = require('querystring');
+const { features } = require("process");
+// const changeFeatureState = async (device_id, state) => {
+//   const data = {
+//     device_id: device_id,  // Changed from deviceId to device_id
+//     state: state
+//   };
+//   console.log("Sending device id and state:", data);
+
+//   try {
+//     const response = await axios.post('http://10.0.0.29:5009/api-mindolife/change_feature_state', data, {
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
+//     console.log('Response:', response.data);
+//   } catch (error) {
+//     if (error.response) {
+//       console.error('Error with response:', error.response.data);
+//     } else if (error.request) {
+//       console.error('Error: No response received', error.request);
+//     } else {
+//       console.error('Error: Setup issue', error.message);
+//     }
+//   }
+// };
 const changeFeatureState = async (deviceId, state) => {
   const baseUrl = 'https://api.mindolife.com/API/Gateway/changeFeatureValue';
   const params = {
@@ -55,7 +80,7 @@ const fetchIoTDevicesData = async () => {
   try {
       const response = await axios.get(flaskAppUrl);
       console.log("Full Axios Response:", response);
-      console.log("Data received:", response.data);
+  
       if (!response.data || !Array.isArray(response.data.devices)) {
         console.error('Invalid or missing devices data in response:', response.data);
         return [];  // Ensuring function returns a consistent type
@@ -139,9 +164,10 @@ const MindolifefetchAndTransformIoTDevicesData = async () => {
         };
       }) : [];  // Handling missing or undefined features
 
-      return features;  // Return an array of features for each device
+      return features;
+        // Return an array of features for each device
     });
-
+    console.log(devices);
     return devices.flat();  // Flattens the array to have a single list of all features across devices
   } catch (error) {
     console.error(`Error transforming IoT devices data: ${error.message}`);

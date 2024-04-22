@@ -24,7 +24,7 @@ exports.devicescontrollers = {
       console.log("Sameeer",deviceId ,state);
       const result = await changeFeatureState(deviceId, state); // directly call the imported function
       res.json(result);
-      console.log("Sameer222",result);
+   
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
