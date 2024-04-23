@@ -1,74 +1,95 @@
 // /  Parses tokens into an actionable structure
-function parse(tokens) {
+function parse(input) {
     
-    // Find the index of the 'THEN' token
-    let variables = [], operators = [], values = [];
-    let match;
+    //console.log("parser input :  " + input);
+    // Check if input is a string and split into tokens if necessary
+    const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
+    console.log("tokens : " + tokens);
 
-    const thenIndex = tokens.findIndex(token => token === 'THEN');
+    let and_or_special_Operators = [];
+    const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
+    let match;
+    while ((match = SpecialOperatorPattern.exec(tokens)) !== null) {
+        and_or_special_Operators.push(match[0]);
+    }
+    
+    const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
+
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");
     }
 
-    // Check for sufficient tokens to form a condition
-    if (thenIndex < 3) { // At least 3 tokens needed: IF, variable, operator, value
+    if (thenIndex < 3) { // Minimum tokens to form a condition
         throw new Error("Syntax error: Incomplete condition.");
     }
 
-    // Get the tokens that form the condition and action parts
-    const conditionTokens = tokens.slice(1, thenIndex); // Skip the initial "IF"
+    const conditionTokens = tokens.slice(1, thenIndex);
     const actionTokens = tokens.slice(thenIndex + 1);
-    const conditionString = conditionTokens.join(' ');
-    // Validate that action part is not empty
+
     if (actionTokens.length === 0) {
         throw new Error("Syntax error: No action specified.");
     }
+
+    // Concatenate the tokens into a single string for easier manipulation
+    const conditionString = conditionTokens.join(' ');
+    const ActionString = actionTokens.join(' ');
+
+
+    const conditionsArray = splitPhrases(conditionString);
+    const ActionArray = splitPhrases(ActionString)
+
     
-    const variablePattern = /\bdetection|temperature\b/gi;
-    const operatorPattern = /\bis above|is below|is equal to|is above or equal to|is below or equal to|or|and\b/gi;
-    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false)\b/gi;
-     
-    // Arrays to store the matched items
-  
-
-    conditionTokensString = conditionTokens.join(' ');
-    while ((match = variablePattern.exec(conditionTokensString)) !== null) {
-
-        variables.push(match[0]);
-        
-    }
-
-    // Extract operators using regex
-    while ((match = operatorPattern.exec(conditionTokensString)) !== null) {
-   
-        operators.push(match[0]);
-    }
-
-    // Extract values using regex
-    while ((match = valuePattern.exec(conditionTokensString)) !== null) {
-        values.push(match[0]);
-    }
     /*
-      // Log all values after filling each array
-      console.log(`Variables collected: ${variables.join(', ')}`);
-      console.log(`Operators collected: ${operators.join(', ')}`);
-      console.log(`Values collected: ${values.join(', ')}`);
+    // Log all values after filling each array
+    console.log(`Conditions extracted: ${JSON.stringify(conditionsArray)}`);
+    console.log(`Action extracted: ${JSON.stringify(ActionArray)}`);
+    console.log(`Speical_operators extracted: ${JSON.stringify(and_or_special_Operators)}`);
     */
-
-    // Validate that we have all parts of the condition
-    if ( variables.length === 0    || operators.length === 0  || values.length === 0) {
+   
+    if (conditionsArray.length === 0 | ActionArray.length == 0  ) {
         throw new Error("Syntax error: Incomplete condition expression.");
     }
    
-   
-
-    // Build the condition and action objects
-    const condition = { variables, operators, values };
     const action = actionTokens.join(' ');
-
-    return { condition, action };
+    return { conditions: conditionsArray, actions : ActionArray , speicaloperators : and_or_special_Operators };
 }
 
+function splitPhrases(phraseStr,special_Operators) {
+    // Split the string based on ' and ' or ' or ', maintaining case insensitivity
+    const parts = phraseStr.split(/\s+(and|or)\s+/i);
+    const matches = [];
+    let currentPhrase = "";
+
+    parts.forEach(part => {
+        if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
+            
+            // Reset the current phrase only if a complete phrase was constructed
+            if (currentPhrase !== "") {
+                matches.push(currentPhrase.trim());
+                currentPhrase = "";
+            }
+        } else {
+            // Add part to the current phrase; continue accumulating parts until 'and' or 'or'
+            currentPhrase += (currentPhrase.length > 0 ? " " : "") + part;
+        }
+    });
+
+    // If there's any leftover phrase after the last 'and' or 'or', add it to matches
+    if (currentPhrase !== "") {
+        matches.push(currentPhrase.trim());
+    }
+
+    return matches;
+}
+
+
+/*
+
+    
+   
+   
+
+*/
 
 /*
 

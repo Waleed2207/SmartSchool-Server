@@ -1,3 +1,4 @@
+const { forEach } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
 
 // import {CommandFactory} from '../factories/commandFactory';
@@ -5,83 +6,85 @@ const {CommandFactory} = require('../factories/commandFactory');
 
 
 
-function evaluateCondition({ variables, operators , values }, context) 
+function evaluateCondition(parsed , context) 
 {
-    console.log("Context:", JSON.stringify(context));
-    console.log(`Type of context[${context}]:`, typeof context[variable], `, Value:`, context[variable]);
-    //console.log(`Evaluating condition: ${variable} ${operator} ${value}`);
-    console.log("try1");
-    console.log(`Evaluating condition: ${ variables} , ${operators} , ${values} `);
-
-   
-
     
-    // Log all values after filling each array
-    console.log(`Variables collected: ${variables.join(', ')}`);
-    console.log(`Operators collected: ${operators.join(', ')}`);
-    console.log(`Values collected: ${values.join(', ')}`);
- 
-    const variableMatch = variable.match(variablePattern);
-    const operatorMatch = operator.match(operatorPattern);
-    const valueMatch = value.match(valuePattern);
-    
-    const variableType = variableMatch ? variableMatch[0].trim() : '';
-    const operatorType = operatorMatch ? operatorMatch[0].trim().toLowerCase() : '';
-    const conditionValue = valueMatch ? valueMatch[0].trim() : '';
-    let varValue;
-    
-    console.log("condition value : ",conditionValue) 
-    console.log("variable: " + variableType );
-    console.log("operator : " + operatorType );
-    console.log("Condtionvalue :" + conditionValue );
-    console.log("varvalue : " + varValue)
-    
-    
-    
-     // Log all values after filling each array
-     console.log(`Variables collected: ${variables.join(', ')}`);
-     console.log(`Operators collected: ${operators.join(', ')}`);
-     console.log(`Values collected: ${values.join(', ')}`);
-   
-    if (typeof context[variable] === 'boolean') {
-        // Convert boolean to 1 or 0
-        varValue = context[variable] ? 1 : 0;
-    } else if (typeof context[variable] === 'number') {
-        // Use the number directly
-        varValue = context[variable];
-    } else {
-        // Handle other cases or throw an error
-        console.error(`Unsupported type for variable: ${variable}`);
-    }
-
-    
-    
-
-    
-
   
     
-    switch (operator) 
-    {
-        case 'is above':
-            return varValue > conditionValue;
-        case 'is below':
-            return varValue < conditionValue;
-        case 'is equal to':
-            return varValue === conditionValue;
-        case 'is above or equal to':
-            return varValue >= conditionValue;
-        case 'is below or equal to':
-            return varValue <= conditionValue;
-        case 'or':
-            return varValue || conditionValue;
-        case 'and':
-            return varValue && conditionValue;
-        default:
-            throw new Error(`Unknown operator: ${operator}`);
-    }
+    const variablePattern = /\b(detection|temperature)\b/gi;
+    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|or|and)\b/gi;
+    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false)\b/gi;
+   
+    
+
+    let results = [];  // This array will store the results of each condition evaluation
+
+   
+    
+    parsed.conditions.forEach((condition, index) => {
+        
+      
+
+        // Extracting variable, operator, and value using regex
+        const variableMatch = condition.match(variablePattern);
+        const operatorMatch = condition.match(operatorPattern);
+        const valueMatch = condition.match(valuePattern);
+
+        if (!variableMatch || !operatorMatch || !valueMatch) {
+            console.error('Error parsing condition:', condition);
+            results.push(false);
+            return; // Continue to next iteration in forEach
+        }
+
+        const variable = variableMatch[0].toLowerCase();
+        const operator = operatorMatch[0].toLowerCase().trim();
+        const conditionValue = valueMatch[0].toLowerCase();
+        const varValue  = context[variable];
+
+        /*
+        if (typeof context[variable] === 'boolean') {
+            // Convert boolean to 1 or 0
+            varValue = context[variable] ? 1 : 0;
+        } else if (typeof context[variable] === 'number') {
+            varValue = context[variable];
+        } else {
+            // Handle other cases or throw an error
+            console.error(`Unsupported type for variable: ${variable}`);
+        }
+        */
+
+        console.log("Variable : " + variable)
+        console.log("operator : " + operator)
+        console.log("conditionValue : " +  conditionValue)
+        console.log("varValue : " +  varValue)
+
+        switch (operator) 
+        {
+            case 'is above':
+                return varValue > conditionValue;
+            case 'is below':
+                return varValue < conditionValue;
+            case 'is equal to':
+                return varValue === conditionValue;
+            case 'is above or equal to':
+                return varValue >= conditionValue;
+            case 'is below or equal to':
+                return varValue <= conditionValue;
+            case 'or':
+                return varValue || conditionValue;
+            case 'and':
+                return varValue && conditionValue;
+            default:
+                throw new Error(`Unknown operator: ${operator}`);
+        }
+        
+    });
 
     
+ 
+
+   
+
 }
 
 /*
@@ -124,22 +127,28 @@ function DedectionEvaluat({variable, operator, value } ,context) {
 
 function execute(parsed, context) {
     
-    console.log("execute");
-    if (parsed.condition && parsed.condition.operator) {
+    console.log("Conditions:", parsed.conditions);
+    console.log("Actions:", parsed.actions);
+    console.log("Special Operators:", parsed.speicaloperators);
+     
+    
+    if (parsed.conditions.length > 0  && parsed.actions.length > 0  ) {
 
 
-        if (evaluateCondition(parsed.condition, context)  ) 
+        if (evaluateCondition(parsed, context)) 
         {
     
             console.log(`Condition met, executing action: ${parsed.action}`);
-            console.log(parsed.action);
-            // Check if the action is defined
+            
+           
             if (!parsed.action) {
                 console.log('Parsed action is undefined. Check the parsing logic.');
                 return;
             }
             //check this becuse i dont think is ok 
+            /*
             const command = CommandFactory.createCommand(parsed.action);
+            */
             /*i change i dont think i need that 
             console.log()
             if (command) {
@@ -156,7 +165,17 @@ function execute(parsed, context) {
         }
        
     } else {
-        console.log('Invalid condition structure:', parsed.condition);
+        
+        if(parsed.condition.length === 0)
+        {
+            console.log('parsed condition lenght :', parsed.condition.length );
+        }
+        else{
+
+            console.log('parsed Action lenght :', parsed.action.length );    
+        }
+
+        
     }
 }
 

@@ -37,13 +37,13 @@ const getAllRulesDescription = async () =>
       for (const rule of rules) {
         //gbd add the true | to see to get all the rule
         if (rule.isActive) {
-          console.log("Rule description" + rule. description)
           activeDescriptions.push(rule.description);
         }
         
       }
     }
-    
+
+   
      
     if (activeDescriptions.length > 0) {
       return {
@@ -102,8 +102,7 @@ async function fetchMotionState() {
 
 
 async function getAndLogDetection() {
-  const detection = await fetchMotionState();
- console.log("getandlogDetection " + "detection" + detection);
+  const detection = await fetchMotionState()
   return detection; // Return the detection data
 }
 
@@ -120,12 +119,16 @@ async function processAllRules(context) {
     if (descriptionResult.statusCode === 200) {
       // Extract the descriptions array
       const descriptions = descriptionResult.data;
+  
       let acRules = [];
       let lightRules = [];      
       for (const description of descriptions) {
         // // Await the interpretation of each rule description
         // const interpretResult = await interpretRuleByName(description, context);
-     
+        
+        const interpretResult = await interpretRuleByName(description, context);
+        
+        /*
         if (description.toLowerCase().includes("ac")) {
         
           const interpretResult = await interpretRuleByName(description, context);
@@ -135,6 +138,7 @@ async function processAllRules(context) {
           lightRules.push(description);
 
         }
+        */
       }
     } else {
       console.error('Failed to get rule descriptions:', descriptionResult.message);
@@ -153,10 +157,9 @@ async function interpretRuleByName(ruleDescription, context) {
   try {
     // Find the rule by its description using await for the asynchronous operation
     const rule = await Rule.findOne({ description: ruleDescription });
-    console.log("interpretrRuleNyName" + context)
     if (rule) {
-      const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      interpret(input, context);
+      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      interpret(ruleDescription, context);
       return `Rule "${ruleDescription}" interpreted successfully, Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
@@ -211,7 +214,7 @@ async function fetchAndProcessRules() {
 
 // Set an interval to run the function every 30 seconds
 fetchAndProcessRules()
-setInterval(fetchAndProcessRules, 30 * 60 * 1000);
+setInterval(fetchAndProcessRules, 3 * 60 * 1000);
 
 /*
 setInterval(fetchAndProcessRules, intervalTime);
@@ -224,11 +227,13 @@ function stringifyCondition(condition) {
 
   // Function to pass this context to the executor
   function interpret(input, context) {
-    const tokens = tokenize(input);
-    const parsed = parse(tokens); // Ensure this returns the correct structure
+    console.log("interpret");
+    //const tokens = tokenize(input);
+    const parsed = parse(input); // Ensure this returns the correct structure
    // Correct use of JSON.stringify to log the condition object as a string
-    console.log("Parsed condition: " + JSON.stringify(parsed.condition));
+ 
     execute(parsed, context); // `parsed` should include condition and action
+    
   }
 
 
