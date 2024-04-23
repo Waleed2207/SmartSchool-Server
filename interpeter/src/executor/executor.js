@@ -1,5 +1,6 @@
 const { forEach } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
+const { debug } = require('console');
 
 // import {CommandFactory} from '../factories/commandFactory';
 
@@ -17,14 +18,14 @@ function evaluateCondition(parsed , context)
    
     
 
-    let results = [];  // This array will store the results of each condition evaluation
+    let results = [];  
 
    
     
     parsed.conditions.forEach((condition, index) => {
         
       
-
+        console.log("conditions  : " +condition)
         // Extracting variable, operator, and value using regex
         const variableMatch = condition.match(variablePattern);
         const operatorMatch = condition.match(operatorPattern);
@@ -57,33 +58,34 @@ function evaluateCondition(parsed , context)
         console.log("operator : " + operator)
         console.log("conditionValue : " +  conditionValue)
         console.log("varValue : " +  varValue)
-
-        switch (operator) 
-        {
+      
+        
+        switch (operator) {
             case 'is above':
-                return varValue > conditionValue;
+                results.push(varValue > conditionValue);
+                break;
             case 'is below':
-                return varValue < conditionValue;
+                results.push(varValue < conditionValue);
+                break;
             case 'is equal to':
-                return varValue === conditionValue;
+                results.push(varValue === conditionValue);
+                break;
             case 'is above or equal to':
-                return varValue >= conditionValue;
+                results.push(varValue >= conditionValue);
+                break;
             case 'is below or equal to':
-                return varValue <= conditionValue;
-            case 'or':
-                return varValue || conditionValue;
-            case 'and':
-                return varValue && conditionValue;
+                results.push(varValue <= conditionValue);
+                break;
+            
             default:
                 throw new Error(`Unknown operator: ${operator}`);
         }
-        
-    });
+       
+    })
 
-    
- 
 
-   
+    return results;     
+         
 
 }
 
@@ -123,19 +125,63 @@ function DedectionEvaluat({variable, operator, value } ,context) {
 }
 
 */
+function convertOperators(operators) {
+    const operatorMap = {
+        'and': '&&',
+        'or': '||'
+    };
+
+    return operators.map(op => operatorMap[op.toLowerCase()] || op);
+}
+
+function evaluateLogic(results, operators) {
+    console.log("evaluatelogic");
+
+    if (results.length - 1 !== operators.length) {
+        throw new Error("The number of operators should be one less than the number of results.");
+    }
+
+
+    let currentValue = results[0] === 'true';  // Start with the first result
+
+    for (let i = 0; i < operators.length; i++) {
+        const nextValue = results[i + 1] === 'true';
+        switch (operators[i]) {
+            case '&&':
+                currentValue = currentValue && nextValue;
+                break;
+            case '||':
+                currentValue = currentValue || nextValue;
+                break;
+            default:
+                throw new Error(`Unsupported operator: ${operators[i]}`);
+        }
+    }
+
+    return currentValue;
+}
+
+
 
 
 function execute(parsed, context) {
     
     console.log("Conditions:", parsed.conditions);
     console.log("Actions:", parsed.actions);
-    console.log("Special Operators:", parsed.speicaloperators);
+    console.log("Special Operators:", parsed.Speical_operators);
      
     
     if (parsed.conditions.length > 0  && parsed.actions.length > 0  ) {
 
+        
+        const evaluation_condtion_result  = evaluateCondition(parsed, context);
+        const convertedOperators_Condition = convertOperators(parsed.Speical_operators.condition_operators);
+        console.log("convertedOperators_Condition : " + convertedOperators_Condition)
+        const result = evaluateLogic(evaluation_condtion_result,convertedOperators_Condition)
+        
+        console.log("result is " + result);
 
-        if (evaluateCondition(parsed, context)) 
+        if (result) 
         {
     
             console.log(`Condition met, executing action: ${parsed.action}`);

@@ -1,19 +1,71 @@
+function splitPhrases(phraseStr,special_Operators) {
+    // Split the string based on ' and ' or ' or ', maintaining case insensitivity
+    const parts = phraseStr.split(/\s+(and|or)\s+/i);
+    const matches = [];
+    let currentPhrase = "";
+
+    parts.forEach(part => {
+        if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
+            
+            // Reset the current phrase only if a complete phrase was constructed
+            if (currentPhrase !== "") {
+                matches.push(currentPhrase.trim());
+                currentPhrase = "";
+            }
+        } else {
+            // Add part to the current phrase; continue accumulating parts until 'and' or 'or'
+            currentPhrase += (currentPhrase.length > 0 ? " " : "") + part;
+        }
+    });
+
+    // If there's any leftover phrase after the last 'and' or 'or', add it to matches
+    if (currentPhrase !== "") {
+        matches.push(currentPhrase.trim());
+    }
+
+    return matches;
+}
+
+
 // /  Parses tokens into an actionable structure
 function parse(input) {
     
     //console.log("parser input :  " + input);
     // Check if input is a string and split into tokens if necessary
     const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
+    let match;
     console.log("tokens : " + tokens);
 
-    let and_or_special_Operators = [];
-    const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
-    let match;
-    while ((match = SpecialOperatorPattern.exec(tokens)) !== null) {
-        and_or_special_Operators.push(match[0]);
-    }
-    
+    let operators = {
+        condition_operators: [],
+        action__operators: []
+    };
+
     const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
+     
+    const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
+
+    tokens.forEach((token, index) => {
+        if (SpecialOperatorPattern.test(token)) {
+            if (index < thenIndex) {
+                // It's a condition operator
+                operators.condition_operators.push(token === 'and' ? '&&' : '||');
+            } else {
+                // It's an action operator
+                operators.action__operators.push(token === 'and' ? '&&' : '||');
+            }
+        }
+    });
+    console.log("the condition operator " + operators.condition_operators)
+    console.log("the action operator " + operators.action__operators)
+
+
+   
+
+    
+    
+    
+ 
 
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");
@@ -51,36 +103,10 @@ function parse(input) {
     }
    
     const action = actionTokens.join(' ');
-    return { conditions: conditionsArray, actions : ActionArray , speicaloperators : and_or_special_Operators };
+    return { conditions: conditionsArray, actions : ActionArray , Speical_operators: operators};
 }
 
-function splitPhrases(phraseStr,special_Operators) {
-    // Split the string based on ' and ' or ' or ', maintaining case insensitivity
-    const parts = phraseStr.split(/\s+(and|or)\s+/i);
-    const matches = [];
-    let currentPhrase = "";
 
-    parts.forEach(part => {
-        if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
-            
-            // Reset the current phrase only if a complete phrase was constructed
-            if (currentPhrase !== "") {
-                matches.push(currentPhrase.trim());
-                currentPhrase = "";
-            }
-        } else {
-            // Add part to the current phrase; continue accumulating parts until 'and' or 'or'
-            currentPhrase += (currentPhrase.length > 0 ? " " : "") + part;
-        }
-    });
-
-    // If there's any leftover phrase after the last 'and' or 'or', add it to matches
-    if (currentPhrase !== "") {
-        matches.push(currentPhrase.trim());
-    }
-
-    return matches;
-}
 
 
 /*
