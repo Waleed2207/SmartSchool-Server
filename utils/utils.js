@@ -1,4 +1,4 @@
-const { SENSORS, SEASONS, DAY_TIME } = require("../consts/common.consts");
+const { SENSORS, SEASONS, DAY_TIME, ACTIVITY } = require("../consts/common.consts");
 
 const discretizeTemperature = (temperature) => {
   if (temperature <= 15) {
@@ -82,12 +82,19 @@ const DISCRETIZE_SENSORS_MAP = {
   [SENSORS.SEASON]: convertSeasonToNumber,
 }
 
+const UNDISCRETIZE_ACTIVITY_MAP ={
+  [ACTIVITY.STUDYING]: { 1: "Studying"},
+  [ACTIVITY.COOKING]: { 1: "Cooking"},
+  [ACTIVITY.EATING]: { 1: "Eating"},
+  [ACTIVITY.PLAYING]: { 1: "Playing"},
+  [ACTIVITY.WATCHING_TV]: { 1: "Watching TV"},
 
+};
 const UNDISCRETIZE_SENSORS_MAP = {
   [SENSORS.HOUR]: { 1: "morning", 2: "afternoon", 3: "evening" },
   [SENSORS.TEMPERATURE]: { 1: 15, 2: 20, 3: 25, 4: 27 },
   [SENSORS.HUMIDITY]: { 1: 30, 2: 60, 3: 90, 4: 100 },
-  [SENSORS.DISTANCE]: { 1: 0.01, 2: 20, 3: 100 },
+ // [SENSORS.DISTANCE]: { 1: 0.01, 2: 20, 3: 100 },
   [SENSORS.SEASON]: { 1: "winter", 2: "spring", 3: "summer", 4: "fall" },
 };
 
@@ -120,5 +127,5 @@ module.exports = {
   DISCRETIZE_SENSORS_MAP,
   UNDISCRETIZE_SENSORS_MAP,
   getSeasonNumberByMonth,
-  
+  UNDISCRETIZE_ACTIVITY_MAP,
 }

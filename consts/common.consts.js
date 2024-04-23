@@ -2,18 +2,26 @@ const SENSORS = {
     TEMPERATURE: 'temperature',
     HOUR: 'hour',
     HUMIDITY: 'humidity',
-    DISTANCE: 'distance',
+    //DISTANCE: 'distance',
     SEASON: 'season',
-    SOIL: 'soil'
+    //SOIL: 'soil'
   }
+const ACTIVITY = {
+  STUDYING: 'study',
+  PLAYING: 'playing',
+  SLEEPING: 'sleeping',
+  EATING: 'eating',
+  COOKING: 'cooking',
+  WATCHING_TV: 'watching_tv'
+}
   
   const ML_DEVICES = {
     LIGHTS: 'lights',
     FAN: 'fan',
     AC_STATUS: 'ac_status',
-    HEATER_SWITCH: 'heater_switch',
-    LAUNDRY_MATCHINE: 'laundry_machine',
-    PUMP: 'pump'
+    // HEATER_SWITCH: 'heater_switch',
+    // LAUNDRY_MATCHINE: 'laundry_machine',
+    // PUMP: 'pump'
   }
 
   const SEASONS = {
@@ -34,5 +42,6 @@ const DAY_TIME = {
     SENSORS,
     ML_DEVICES,
     SEASONS,
-    DAY_TIME
+    DAY_TIME,
+    ACTIVITY,
   }
