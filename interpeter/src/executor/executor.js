@@ -1,4 +1,4 @@
-const { forEach } = require('lodash');
+const { forEach, cond } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
 const { debug } = require('console');
 
@@ -11,7 +11,7 @@ function evaluateCondition(parsed , context)
 {
     
   
-    
+    console.log("evaluateCondition%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     const variablePattern = /\b(detection|temperature)\b/gi;
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|or|and)\b/gi;
     const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false)\b/gi;
@@ -36,28 +36,32 @@ function evaluateCondition(parsed , context)
             results.push(false);
             return; // Continue to next iteration in forEach
         }
+        console.log("2")
+        let variable = variableMatch[0].toLowerCase();
+        let operator = operatorMatch[0].toLowerCase().trim();
+        let conditionValue = valueMatch[0].toLowerCase();
+        let varValue  = context[variable];
 
-        const variable = variableMatch[0].toLowerCase();
-        const operator = operatorMatch[0].toLowerCase().trim();
-        const conditionValue = valueMatch[0].toLowerCase();
-        const varValue  = context[variable];
-
-        /*
-        if (typeof context[variable] === 'boolean') {
-            // Convert boolean to 1 or 0
-            varValue = context[variable] ? 1 : 0;
-        } else if (typeof context[variable] === 'number') {
-            varValue = context[variable];
-        } else {
-            // Handle other cases or throw an error
-            console.error(`Unsupported type for variable: ${variable}`);
+        if ( conditionValue === 'on' ) {
+            conditionValue = true;
         }
-        */
+    
+        // Check for 'false', 'off', or '0' to return false
+        if (conditionValue === 'off' ) {
+            condition = false;
+        }
+        
+      
+        Number(conditionValue,varValue)
+        console.log("conditionValue type  : " +  typeof(conditionValue))
+        console.log("varValue  type : " +  typeof(varValue) )
+        
 
         console.log("Variable : " + variable)
         console.log("operator : " + operator)
-        console.log("conditionValue : " +  conditionValue)
-        console.log("varValue : " +  varValue)
+        console.log("conditionValue : " + conditionValue)
+        console.log("varvalue : " + varValue)
+        
       
         
         switch (operator) {
@@ -83,8 +87,10 @@ function evaluateCondition(parsed , context)
        
     })
 
+   
 
-    return results;     
+    return results;
+       
          
 
 }
@@ -137,8 +143,22 @@ function convertOperators(operators) {
 function evaluateLogic(results, operators) {
     console.log("evaluatelogic");
 
+    operators.forEach((operator, index) => {
+        console.log(`operator ${index}: ${operator}`);
+    });
+
+    results.forEach((result, index) => {
+        console.log(`Result ${index } : ${result}`);
+    });
+
     if (results.length - 1 !== operators.length) {
         throw new Error("The number of operators should be one less than the number of results.");
+    }
+
+    if(operators.length == 0 )
+    {
+        console.log("this is operators is 0 ")
+        return results[0] 
     }
 
 
@@ -165,11 +185,11 @@ function evaluateLogic(results, operators) {
 
 
 function execute(parsed, context) {
-    
+    console.log("Execute**************************************")
     console.log("Conditions:", parsed.conditions);
-    console.log("Actions:", parsed.actions);
+    console.log("Actions:", parsed.actions + "count " + parsed.actions.length );
     console.log("Special Operators:", parsed.Speical_operators);
-     
+    console.log("type of Special Operators:", typeof(parsed.Speical_operators)); 
     
     if (parsed.conditions.length > 0  && parsed.actions.length > 0  ) {
 
@@ -178,23 +198,31 @@ function execute(parsed, context) {
         const convertedOperators_Condition = convertOperators(parsed.Speical_operators.condition_operators);
         console.log("convertedOperators_Condition : " + convertedOperators_Condition)
         const result = evaluateLogic(evaluation_condtion_result,convertedOperators_Condition)
-        
-        console.log("result is " + result);
+
+        console.log("back result is " + typeof(result) + " result is : " + result);
 
         if (result) 
         {
     
-            console.log(`Condition met, executing action: ${parsed.action}`);
+            console.log(`Condition met, executing action: `, parsed.actions);
             
-           
-            if (!parsed.action) {
-                console.log('Parsed action is undefined. Check the parsing logic.');
+            
+            if (parsed.actions.length  == 0) {
+                console.log('Parsed action is zero or null. Check the parsing logic.');
                 return;
             }
-            //check this becuse i dont think is ok 
-            /*
-            const command = CommandFactory.createCommand(parsed.action);
-            */
+            else{
+                    //check this becuse i dont think is ok 
+                parsed.actions.forEach((actionDescription, index) => {
+                console.log(`Action ${index}: ${actionDescription}`);
+            
+                // Create a command for each action description
+                const command = CommandFactory.createCommand(actionDescription);
+                command.execute();
+            });
+            }
+            
+
             /*i change i dont think i need that 
             console.log()
             if (command) {

@@ -32,6 +32,7 @@ function parse(input) {
     
     //console.log("parser input :  " + input);
     // Check if input is a string and split into tokens if necessary
+    console.log("Parse!!!!!!!!!!!!!!!")
     const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
     let match;
     console.log("tokens : " + tokens);
@@ -56,6 +57,7 @@ function parse(input) {
             }
         }
     });
+    
     console.log("the condition operator " + operators.condition_operators)
     console.log("the action operator " + operators.action__operators)
 
@@ -106,7 +108,7 @@ function parse(input) {
     return { conditions: conditionsArray, actions : ActionArray , Speical_operators: operators};
 }
 
-
+module.exports = { parse };
 
 
 /*
@@ -139,4 +141,3 @@ function parse(tokens) {
     });
 */
 
-module.exports = { parse };
