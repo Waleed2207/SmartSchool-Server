@@ -6,6 +6,7 @@ const devicesRouter = new Router();
 //GET 
 devicesRouter.get('/devices', devicescontrollers.getDevices);
 devicesRouter.get('/device/:name', devicescontrollers.getDeviceByName);
+devicesRouter.get('/device/space/:spaceID', devicescontrollers.getDeviceBySpaceID);
 devicesRouter.get('/devices_with_thresholds', devicescontrollers.getDevicesWithThresholds);
 devicesRouter.get('/devices-by-room/:roomId', devicescontrollers.getDeviceByRoomID);
 devicesRouter.get('/room-devices/:roomId', devicescontrollers.getRoomDeviceByRoomID);

@@ -5,6 +5,10 @@ const deviceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  space_id: {
+    type: String,
+    required: true
+  },
   state: {
     type: String,
   },

@@ -1,5 +1,7 @@
 const {CommandFactory} = require('../factories/commandFactory');
 
+// import {CommandFactory} from '../factories/commandFactory';
+
 
 function evaluateCondition({ variable, operator, value }, context) {
     console.log(`Evaluating condition: ${variable} ${operator} ${value}`);

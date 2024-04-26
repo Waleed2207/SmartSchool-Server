@@ -11,6 +11,8 @@ const {
     setRoomDeviceState,
     createNewDevice,
     getRoomDevicesTest,
+    getDevice_By_SpaceID,
+    updateRoomDevices
   } = require("./../services/devices.service.js");
 
 exports.devicescontrollers = {
@@ -27,6 +29,12 @@ exports.devicescontrollers = {
   async getDevicesWithThresholds(req, res) {
     const devices = await Device.find({}, { device_id: 1, threshold: 1, _id: 0 });
     return res.json(devices);
+  },
+  async getDeviceBySpaceID(req, res) {
+    const spaceID = req.params.spaceID; // Corrected parameter name
+    const devices = await getDevice_By_SpaceID(spaceID);
+    return res.json(devices);
+
   },
   async getDeviceByRoomID(req, res) {
     const roomId = req.params.roomId;
@@ -47,14 +55,25 @@ exports.devicescontrollers = {
 
   },
   async createDevice(req, res) {
+    const { space_id, device, room_id } = req.body;
+    console.log("Creating device with details:", device, "in room ID:", room_id);
+
     try {
-        const { device, room_id } = req.body;
-        const response = await createNewDevice(device, room_id);
-        return res.status(200).send(response.data);
-      } catch (err) {
-        return res.status(500).send(err.message);
-      }
-  },
+        const newDeviceResponse = await createNewDevice(space_id, device, room_id);
+        if (!newDeviceResponse || !newDeviceResponse.data || !newDeviceResponse.data.name) {
+            throw new Error('Device creation failed or returned invalid data');
+        }
+        const newDevice = newDeviceResponse.data;
+        console.log("New device created with name:", newDevice.name);
+
+        const updatedRoom = await updateRoomDevices(space_id, room_id, newDevice.name);
+        console.log("Successfully updated room with new device:", updatedRoom);
+        return res.status(200).send({ newDevice, updatedRoom });
+    } catch (err) {
+        console.error("Failed to create device or update room:", err);
+        return res.status(500). send(err.message);
+    }
+},
   async createDeviceTORooom(req, res) {
     const { device_id, room_id, device_state } = req.body;
     const response = await addDeviceToRoom(device_id, room_id, device_state);
