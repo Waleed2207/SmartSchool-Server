@@ -6,8 +6,6 @@ const { getRoomIdByRoomName } = require("../services/rooms.service");
 const { getDeviceIdByDeviceName, setRoomDeviceState } = require("../services/devices.service");
 const RoomDevice = require("../models/RoomDevice");
 //const { controlPump } = require("../services/mqtt.service");
-
-
 const removeSensorValueByType = async (sensorType) => {
     try {
         const response = await SensorValue.deleteMany({ sensor_type: sensorType });
@@ -89,10 +87,6 @@ const switchHeaterState = async (state) => {
     })
 
 }
-
-
-
-
 module.exports = {
     removeSensorValueByType,
     getFunctionsFromDB,
