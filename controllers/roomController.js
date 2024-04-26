@@ -1,4 +1,4 @@
-const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/rooms.service.js");
+const { getRooms, getRoomById, getRoomIdByRoomName ,get_Rooms_By_SpaceId} = require("./../services/rooms.service.js");
 const Device = require("./../models/Device.js");
 const Room = require("./../models/Room");
 const RoomDevice = require("./../models/RoomDevice");
@@ -13,6 +13,10 @@ const {
     addSuggestionMenually,
     deleteSuggestion,
   } = require("./../services/suggestions.service.js");
+  const {
+    addRoomToSpace
+
+  } = require("./../services/space.service.js");
 
 
 exports.roomControllers={
@@ -34,17 +38,32 @@ exports.roomControllers={
             return res.status(400).send({ message: err.message });
           }
     },
-    async get_RoomsID_ByRoomName(req, res) {
-        try {
-            const roomName = req.params.name;
-            const response = await getRoomIdByRoomName(roomName);
-            if (!response)
-              return res.status(200).send(_.get(response, 'data.id'));
-            throw new Error(response.message)
-          } catch (err) {
-            return res.status(400).send({ message: err.message });
-          }
+    async  get_Rooms_By_SpaceId(req, res) {
+      try {
+        const space_id = req.params.space_id;
+        console.log('Fetching rooms for space ID:', space_id);
+        const rooms = await get_Rooms_By_SpaceId(space_id);
+        if (!rooms.length) { // Check if the rooms array is empty
+          return res.status(404).send({ message: 'Rooms not found' });
+        }
+        return res.status(200).send(rooms); // Send the rooms array directly
+      } catch (err) {
+        return res.status(500).send({ message: err.message });
+      }
     },
+    async get_RoomsID_ByRoomName(req, res) {
+      try {
+          const roomName = req.params.name_space;
+          const room = await getRoomIdByRoomName(roomName);
+          if (!room) {
+              return res.status(404).send({ message: 'Room not found' });
+          }
+          return res.status(200).send(room); // Send the room data directly
+      } catch (err) {
+          return res.status(500).send({ message: err.message }); // Handle any other errors
+      }
+    },
+    
     async get_RoomDevices_ByRoomId(req, res) {
         try {
 
@@ -74,4 +93,14 @@ exports.roomControllers={
         
           }
     },
+    async AddRoom(req, res) {
+      const { spaceId, roomType } = req.body; // Assuming these are the needed fields
+      try {
+          const room = await addRoomToSpace(spaceId, roomType);
+          res.status(200).send({ message: "Room added successfully", room: room });
+      } catch (error) {
+          console.error("Error adding room:", error);
+          res.status(500).send({ message: error.message });
+      }
+    }
 }

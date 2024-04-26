@@ -5,7 +5,7 @@ const ruleRouter = require("./ruleRouter");
 const roomRouter = require("./roomRouter");
 const suggestionsRouter = require("./suggestionsRouter");
 const mindolifeRouter = require('./gatewaysRouter'); 
-
+const {spacesRouter} = require("./spacesRouter");
 module.exports = {
     loginRouter,
     devicesRouter,
@@ -14,4 +14,5 @@ module.exports = {
     roomRouter,
     suggestionsRouter,
     mindolifeRouter,
+    spacesRouter,
 };

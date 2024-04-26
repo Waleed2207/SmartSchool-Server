@@ -237,22 +237,15 @@ const getDeviceByName = async (name) => {
   }
 };
 
-const addDeviceToRoom = async (deviceId, deviceName, roomId, deviceState) => {
+const addDeviceToRoom = async (space_id,deviceId, deviceName, roomId, deviceState) => {
+};
+
+const getDevice_By_SpaceID = async (space_ID) => {
   try {
-    const roomDeviceData = {
-      room_id: roomId,
-      device_id: deviceId,
-      state: deviceState,
-      device_name: deviceName,
-    };
-
-    const newRoomDevice = new RoomDevice({ ...roomDeviceData });
-    newRoomDevice.id = `${roomId}-${deviceId}`;
-    await newRoomDevice.save();
-
+    const devices = await Device.find({ space_id: space_ID });
     return {
       statusCode: 200,
-      data: "Device added successfully",
+      data: devices,
     };
   } catch (err) {
     return {
@@ -376,11 +369,13 @@ const setRoomDeviceState = async (id, state) => {
   }
 };
 
-const createNewDevice = async (device, roomId) => {
+const createNewDevice = async (space_id, device, roomId) => {
   try {
     const { name } = device;
+    console.log(space_id);
     const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
     const newDevice = new Device({
+      space_id,
       name,
       state: "off",
       device_id: newDeviceId, // Assuming you want to set a custom ID
@@ -390,11 +385,11 @@ const createNewDevice = async (device, roomId) => {
     await newDevice.save();
 
     // Ensure addDeviceToRoom is an async function or handles its promises correctly
-    await addDeviceToRoom(newDeviceId, name, roomId, "off");
+    await addDeviceToRoom(space_id,newDeviceId, name, roomId, "off");
 
     return {
       statusCode: 200,
-      data: "Device created successfully",
+      data: newDevice, 
     };
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -427,7 +422,26 @@ const getRoomsByDeviceName = async (deviceName) => {
   return roomsDevices;
 }
 
+const updateRoomDevices = async (space_id, roomId, deviceName) => {
+  try {
+    console.log(`Updating room devices for room ID ${roomId} and space ID ${space_id} with new device ${deviceName}`);
+    const result = await Room.findOneAndUpdate(
+      { id: roomId, space_id: space_id },  // Make sure this correctly identifies the document
+      { $push: { devices: deviceName } },  // Push the new device name into the devices array
+      { new: true, returnOriginal: false }  // Ensures the updated document is returned
+    );
 
+    if (!result) {
+      console.error('No document found with the provided id and space_id, or update failed');
+      throw new Error('No document found with the provided id and space_id, or update failed');
+    }
+
+    return result;
+  } catch (err) {
+    console.error("Failed to update room devices:", err);
+    throw err;
+  }
+};
 
 module.exports = {
   getDevices,
@@ -445,4 +459,18 @@ module.exports = {
   fetchIoTDevicesData,
   changeFeatureState,
   //processAndLogDevices
+
+  getDevices,
+  updateDeviceModeInDatabase,
+  getDeviceByName,
+  addDeviceToRoom,
+  getDevicesByRoomId,
+  getRoomDevices,
+  setRoomDeviceState,
+  createNewDevice,
+  getRoomDevicesTest,
+  getDeviceIdByDeviceName,
+  getRoomsByDeviceName,
+  getDevice_By_SpaceID,
+  updateRoomDevices
 };

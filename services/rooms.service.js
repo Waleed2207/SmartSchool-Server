@@ -23,26 +23,33 @@ const getRoomById = async (id) => {
     return { statusCode: 500, data: e.message };
   }
 };
+const get_Rooms_By_SpaceId = async (space_id) => {
+  try {
+    const rooms = await Room.find({ space_id: space_id }); // Use find to return all rooms
+    return rooms; // Directly return the rooms array
+  } catch (e) {
+    throw new Error(e.message); // Throw an error to be caught in the catch block of the route handler
+  }
+};
 
 const getRoomIdByRoomName = async (roomName) => {
-  try{
-    const room = await Room.findOne({ name: roomName });
-    if (!room) {
-      throw new Error('room not found');
-    }
-    return room.id;
-  } catch(err) {
-    return {
-      statusCode: 500,
-      message: err.message
-    }
+  try {
+      const room = await Room.find({ name_space: roomName }); // Find one room with the given namespace
+      if (!room) {
+          return null; // Return null if no room is found
+      }
+      return room; // Return the room data
+  } catch (err) {
+      throw new Error(err.message); // Throw any other errors to be handled by the caller
   }
 }
+
 
 
 
 module.exports = {
   getRooms,
   getRoomById,
-  getRoomIdByRoomName
+  getRoomIdByRoomName,
+  get_Rooms_By_SpaceId
 };

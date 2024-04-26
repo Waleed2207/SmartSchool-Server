@@ -29,7 +29,12 @@ exports.devicescontrollers = {
       res.status(500).json({ error: error.message });
     }
   },
+  async getDeviceBySpaceID(req, res) {
+    const spaceID = req.params.spaceID; // Corrected parameter name
+    const devices = await getDevice_By_SpaceID(spaceID);
+    return res.json(devices);
 
+  },
   async extractIoTDevices(req, res) {
     try {
         const devices = await MindolifefetchAndTransformIoTDevicesData();

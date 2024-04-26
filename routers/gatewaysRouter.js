@@ -19,4 +19,4 @@ mindolifeRouter.post('/:id/bind', gatewayController.bindGateway);
 mindolifeRouter.delete('/:id/unbind', gatewayController.unbindGateway);
 
 
-module.exports = {mindolifeRouter};
+module.exports = mindolifeRouter;
