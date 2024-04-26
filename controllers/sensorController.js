@@ -138,7 +138,7 @@ exports.sensorControllers={
         }
       },
       
-      async update_MotionState(req, res) {
+      async update_AC_Mode(req, res) {
         const { deviceId, mode } = req.body;
         const result = await updateSensiboMode(deviceId, mode);
       

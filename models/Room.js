@@ -5,6 +5,14 @@ const roomSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  space_id: {
+    type: String,
+    required: true
+  },
+  name_space: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true,

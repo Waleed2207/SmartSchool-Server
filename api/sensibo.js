@@ -122,30 +122,53 @@ const analyzeFunc = async (func) => {
 //   }
 // };
 
-const  getAcState = async () => {
+// --------------------15.4.24--------------------------------------------
+// const  getAcState = async () => {
+//   try {
+//     const response = await axios.get(
+//       `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}&limit=1`
+//     );
+
+//     // Debug log to see the full structure of the response data
+//     console.log("AC State Retrieved:", response.data);
+
+//     // Ensure to correctly navigate through the response structure
+//     // The actual path to the state might differ; adjust according to the actual API response
+//     if (response.data && response.data.result && response.data.result.length > 0) {
+//       const state = response.data.result[0].acState; // Adjust if the path differs
+//       return state;
+//     } else {
+//       console.log("No AC state found in the response");
+//       return null; // Consider returning a default state or null if no state is found
+//     }
+//   } catch (err) {
+//     console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
+//     return null; // Return null or a default state object in case of an error
+//   }
+// };
+const getAcState = async () => {
   try {
-    const response = await axios.get(
-      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/acStates?apiKey=${process.env.SENSIBO_API_KEY}&limit=1`
-    );
+    // Update this URL to the location where your Flask app is hosted
+    const flaskUrl = `http://10.100.102.14:5009/api-sensibo/get_ac_state`; 
 
-    // Debug log to see the full structure of the response data
-    console.log("AC State Retrieved:", response.data);
+    // Send a GET request to the Flask app
+    const response = await axios.get(flaskUrl);
 
-    // Ensure to correctly navigate through the response structure
-    // The actual path to the state might differ; adjust according to the actual API response
-    if (response.data && response.data.result && response.data.result.length > 0) {
-      const state = response.data.result[0].acState; // Adjust if the path differs
-      return state;
+    // Log the full structure of the response data from Flask
+    console.log("AC State Retrieved from Flask:", response.data);
+
+    if (response.data && response.data.success) {
+      return response.data.acState;  // Accessing the AC state returned by the Flask app
     } else {
-      console.log("No AC state found in the response");
-      return null; // Consider returning a default state or null if no state is found
+      console.log("No AC state found in the response from Flask");
+      return null;  // Consider returning a default state or null if no state is found
     }
   } catch (err) {
-    console.error("Error retrieving AC state:", err.response ? err.response.data : err.message);
-    return null; // Return null or a default state object in case of an error
+    // Handle errors in the request to the Flask app
+    console.error("Error retrieving AC state from Flask:", err.response ? err.response.data : err.message);
+    return null;  // Return null or a default state object in case of an error
   }
 };
-
 
 // const getAcState = async () => {
 
@@ -218,17 +241,18 @@ const validateDegree = (temperature) => {
 // };
 
 const switchAcState = async (id, state, temperature = null) => {
+  const apiUrl = `http://10.100.102.14:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
+
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
   const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
-  const deviceUrl = `https://home.sensibo.com/api/v2/pods/${actualDeviceId}/acStates?apiKey=${actualApiKey}`;
-  
+  // Construct the payload including the actualDeviceId and actualApiKey
   const payload = {
-    acState: {
-      on: state,
-      targetTemperature: temperature,
-      mode: "cool"
-    }
+    id: actualDeviceId,
+    apiKey: actualApiKey,
+    state: state,
+    temperature: temperature
   };
+
 
   console.log("Attempting to switch AC state:", state, "with temperature:", temperature);
 
@@ -237,11 +261,9 @@ const switchAcState = async (id, state, temperature = null) => {
     if (temperature !== null && !validateDegree(temperature)) {
       throw new Error("Temperature has to be between 16 and 30");
     }
-
-    const response = await axios.post(deviceUrl, payload, {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
+      const response = await axios.post(apiUrl, payload, {
+        headers: { 'Content-Type': 'application/json' }
+      });
     // Check if the API call was successful
     if (response.status === 200) {
       console.log("AC state changed successfully", response.data);
@@ -293,30 +315,21 @@ const switchAcState = async (id, state, temperature = null) => {
 
 const getSensiboSensors = async () => {
   try {
-    const response = await axios.get(
-      `https://home.sensibo.com/api/v2/pods/${process.env.SENSIBO_DEVICE_ID}/measurements`,
-      {
-        params: {
-          fields: 'temperature,humidity',
-          apiKey: process.env.SENSIBO_API_KEY,
-        },
-      }
-    );
-    
-    // Assuming that the first item in the result array contains the latest measurements
-    const latestMeasurements = response.data.result[0];
-    if (latestMeasurements) {
-      // Return an object with just the temperature and humidity
-      return {
-        temperature: latestMeasurements.temperature,
-        humidity: latestMeasurements.humidity
-      };
+    const flaskUrl = `http://10.100.102.14:5009/api-sensibo/get_sensor_data`; 
+
+    // Send a GET request to the Flask app
+    const response = await axios.get(flaskUrl);
+
+    // Check if the response has the necessary fields
+    if (response.data && response.data.success) {
+      const { temperature, humidity } = response.data;
+      return { temperature, humidity };
     } else {
       console.log('No measurements found.');
       return null; // Return null to indicate no data found
     }
   } catch (err) {
-    console.error("Error fetching sensor data from Sensibo:", err.message);
+    console.error("Error fetching sensor data from Flask or :", err.message);
     return null; // Return null to indicate failure
   }
 };
@@ -394,17 +407,16 @@ const updateAcMode = async (mode) => {
 
 const updateSensiboMode = async (deviceId, mode) => {
   try {
-    const response = await axios.post(`https://home.sensibo.com/api/v2/pods/${deviceId}/acStates?apiKey=${process.env.SENSIBO_API_KEY}`, {
-      acState: {
-        on: true,
-        mode,
-      },
+    const response = await axios.post('http://10.100.102.14:5009/api-sensibo/update_mode', {
+      deviceId: deviceId,
+      mode: mode
     });
-    const updateDB = await updateDeviceModeInDatabase(deviceId, mode);
 
-    if ((response.status == 200) && updateDB) {
-      // await addingDataToCsv()
+    if (response.data.success) {
+      const updateDB = await updateDeviceModeInDatabase(deviceId, mode);  // Your existing function to update the DB
       return { success: true, data: response.data };
+    } else {
+      return { success: false, message: "Failed to update mode via API" };
     }
 
   } catch (error) {

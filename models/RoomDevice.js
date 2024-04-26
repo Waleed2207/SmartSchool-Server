@@ -5,6 +5,10 @@ const roomDeviceSchema = new mongoose.Schema({
     type: String.prototype,
     required: true
   },
+  space_id: {
+    type: String,
+    required: true
+  },
   room_id: {
     type: String,
     required: true,
