@@ -28,82 +28,76 @@ function splitPhrases(phraseStr,special_Operators) {
 
 
 // /  Parses tokens into an actionable structure
+// function parse(input) {
+//     // Initial checks and setups
+//     const tokens = input.split(/\s+/);
+//     let operators = {
+//         condition_operators: [],
+//         action_operators: []  // Ensure both operators are initialized to avoid undefined issues
+//     };
+
+//     // Example parsing logic
+//     const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
+//     if (thenIndex === -1) {
+//         throw new Error("Syntax error: 'THEN' keyword not found.");
+//     }
+
+//     // Logical operator handling
+//     const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
+//     tokens.forEach((token, index) => {
+//         if (SpecialOperatorPattern.test(token)) {
+//             const operator = token.toLowerCase() === 'and' ? '&&' : '||';
+//             if (index < thenIndex) {
+//                 operators.condition_operators.push(operator);
+//             } else {
+//                 operators.action_operators.push(operator);
+//             }
+//         }
+//     });
+
+//     // Conditions and actions extraction logic
+//     const conditions = splitPhrases(tokens.slice(0, thenIndex).join(' '));
+//     const actions = splitPhrases(tokens.slice(thenIndex + 1).join(' '));
+
+//     // Return parsed object with guaranteed structure
+//     return {
+//         conditions: conditions,
+//         actions: actions,
+//         specialOperators: operators  // Always define this, even if empty
+//     };
+// }
+
+
 function parse(input) {
-    
-    //console.log("parser input :  " + input);
-    // Check if input is a string and split into tokens if necessary
-    const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
-    let match;
-    console.log("tokens : " + tokens);
-
-    let operators = {
-        condition_operators: [],
-        action__operators: []
-    };
-
-    const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
-     
-    const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
-
-    tokens.forEach((token, index) => {
-        if (SpecialOperatorPattern.test(token)) {
-            if (index < thenIndex) {
-                // It's a condition operator
-                operators.condition_operators.push(token === 'and' ? '&&' : '||');
-            } else {
-                // It's an action operator
-                operators.action__operators.push(token === 'and' ? '&&' : '||');
-            }
-        }
-    });
-    console.log("the condition operator " + operators.condition_operators)
-    console.log("the action operator " + operators.action__operators)
-
-
-   
-
-    
-    
-    
- 
+    const tokens = input.split(/\s+/);
+    const thenIndex = tokens.indexOf('then');
 
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");
     }
 
-    if (thenIndex < 3) { // Minimum tokens to form a condition
-        throw new Error("Syntax error: Incomplete condition.");
-    }
+    // Split conditions and actions
+    const conditionsPart = tokens.slice(1, thenIndex).join(' ');
+    const actionsPart = tokens.slice(thenIndex + 1).join(' ');
 
-    const conditionTokens = tokens.slice(1, thenIndex);
-    const actionTokens = tokens.slice(thenIndex + 1);
+    // Split conditions by 'and' for simplicity, assuming 'and' is the only logical operator between conditions
+    const conditions = conditionsPart.split(/ and /i);
+    const actions = [actionsPart];  // Actions are kept together for now
 
-    if (actionTokens.length === 0) {
-        throw new Error("Syntax error: No action specified.");
-    }
+    return {
+        conditions: conditions,
+        actions: actions,
+        specialOperators: {
+            condition_operators: ['&&'],  // Assume '&&' between all conditions for simplicity
+            action_operators: []  // Actions are not split in this example
+        }
+    };
+}
 
-    // Concatenate the tokens into a single string for easier manipulation
-    const conditionString = conditionTokens.join(' ');
-    const ActionString = actionTokens.join(' ');
 
-
-    const conditionsArray = splitPhrases(conditionString);
-    const ActionArray = splitPhrases(ActionString)
-
-    
-    /*
-    // Log all values after filling each array
-    console.log(`Conditions extracted: ${JSON.stringify(conditionsArray)}`);
-    console.log(`Action extracted: ${JSON.stringify(ActionArray)}`);
-    console.log(`Speical_operators extracted: ${JSON.stringify(and_or_special_Operators)}`);
-    */
-   
-    if (conditionsArray.length === 0 | ActionArray.length == 0  ) {
-        throw new Error("Syntax error: Incomplete condition expression.");
-    }
-   
-    const action = actionTokens.join(' ');
-    return { conditions: conditionsArray, actions : ActionArray , Speical_operators: operators};
+function splitPhrases(phrase) {
+    // Placeholder for actual implementation that splits a phrase into manageable units
+    return phrase.split(',');
 }
 
 

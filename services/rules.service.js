@@ -12,6 +12,7 @@ const { checkforUserDistance } = require('../api/location.js')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 
 
 // Function to handle rule objects directly
@@ -176,8 +177,7 @@ async function interpretRuleByName(ruleDescription, context) {
 
 async function fetchAndProcessRules() {
   try {
-
-    console.log("fetchAndproccessAllRules")
+    console.log("fetchAndProcessAllRules");
 
     // Get current date and time
     const now = new Date();
@@ -187,19 +187,22 @@ async function fetchAndProcessRules() {
     console.log(`[${timestamp}] Attempting to fetch sensor data...`);
     const data = await getSensiboSensors();
     const detectionData = await getAndLogDetection();
+    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
+    const currentSeason = getCurrentSeason(); // Get the current season
     
-    
-
     if (data) {
       const context = {
+        joe: "room 247",
         temperature: data.temperature,
         humidity: data.humidity,
-        detection: detectionData.motionDetected
-        
-        
+        // detection: detectionData.motionDetected,
+        detection:true,
+       // activity: currentActivity, // Include the current activity in the context
+        activity: "studying",
+        season: currentSeason // Include the current season in the context
       };
      
-      console.log(`[${timestamp}] Fetch and proccess  context  `, context);
+      console.log(`[${timestamp}] Fetch and process context`, context);
       await processAllRules(context); // Properly await the processing of rules
     } else {
       console.log(`[${timestamp}] Failed to fetch sensor data or no data available.`);
@@ -231,8 +234,14 @@ function stringifyCondition(condition) {
     //const tokens = tokenize(input);
     const parsed = parse(input); // Ensure this returns the correct structure
    // Correct use of JSON.stringify to log the condition object as a string
- 
-    execute(parsed, context); // `parsed` should include condition and action
+   
+   if (parsed && parsed.conditions && parsed.actions && parsed.specialOperators && parsed.specialOperators.condition_operators) {
+    execute(parsed, context);
+} else {
+    console.error("Parsed object is incomplete or invalid:", parsed);
+}
+
+
     
   }
 
