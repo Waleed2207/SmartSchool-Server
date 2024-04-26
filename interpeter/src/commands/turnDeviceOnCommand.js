@@ -38,7 +38,7 @@ class TurnDeviceOnCommand extends BaseCommand
                 break; 
             // You can add more cases here for other devices
         }
-         /*
+     
         // Assuming this.details is a string like "25 DEGREES"
     
         // //Extract the numeric part from the string
@@ -83,7 +83,7 @@ class TurnDeviceOnCommand extends BaseCommand
         } catch (error) {
             console.error(`Failed to turn on ${this.device}. Error:`, error.message);
         }
-        */
+        
     }
     
 

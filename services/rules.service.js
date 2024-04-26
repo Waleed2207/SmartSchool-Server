@@ -30,7 +30,7 @@ const getAllRulesDescription = async () =>
     console.log("getallruledescription");
     const rules = await Rule.find({});
 
-    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
+    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
    
     let activeDescriptions = [];
     
