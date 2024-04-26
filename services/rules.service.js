@@ -12,7 +12,6 @@ const { checkforUserDistance } = require('../api/location.js')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
-const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 
 
 // Function to handle rule objects directly
@@ -177,7 +176,8 @@ async function interpretRuleByName(ruleDescription, context) {
 
 async function fetchAndProcessRules() {
   try {
-    console.log("fetchAndProcessAllRules");
+
+    console.log("fetchAndproccessAllRules")
 
     // Get current date and time
     const now = new Date();
@@ -187,19 +187,19 @@ async function fetchAndProcessRules() {
     console.log(`[${timestamp}] Attempting to fetch sensor data...`);
     const data = await getSensiboSensors();
     const detectionData = await getAndLogDetection();
-    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
-    const currentSeason = getCurrentSeason(); // Get the current season
     
+    
+
     if (data) {
       const context = {
         temperature: data.temperature,
         humidity: data.humidity,
-        detection: detectionData.motionDetected,
-        activity: currentActivity, // Include the current activity in the context
-        season: currentSeason // Include the current season in the context
+        detection: detectionData.motionDetected
+        
+        
       };
      
-      console.log(`[${timestamp}] Fetch and process context`, context);
+      console.log(`[${timestamp}] Fetch and proccess  context  `, context);
       await processAllRules(context); // Properly await the processing of rules
     } else {
       console.log(`[${timestamp}] Failed to fetch sensor data or no data available.`);
@@ -209,7 +209,6 @@ async function fetchAndProcessRules() {
     console.error(`[${timestamp}] An error occurred while fetching sensor data or processing rules:`, error);
   }
 }
-
 
 // Set an interval for running the fetchAndProcessRules function
 
