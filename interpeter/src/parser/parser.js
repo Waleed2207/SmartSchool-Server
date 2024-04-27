@@ -85,8 +85,8 @@ function parse(input) {
         conditions: conditions,
         actions: actions,
         specialOperators: {
-            condition_operators: ['&&'],  // Assume '&&' between all conditions for simplicity
-            action_operators: []  // Actions are not split in this example
+            condition_operators: operators.condition_operators,  // Assume '&&' between all conditions for simplicity
+            action_operators: operators.action__operators  // Actions are not split in this example
         }
     };
 }
@@ -128,6 +128,5 @@ function parse(tokens) {
 */
 
 
-module.exports = { parse };
 
 
