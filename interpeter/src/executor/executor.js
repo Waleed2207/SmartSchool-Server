@@ -1,58 +1,51 @@
 const { forEach, cond } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
 const { debug } = require('console');
+const { getCurrentActivity, getCurrentSeason } = require('../../../services/time.service');
+
 
 // import {CommandFactory} from '../factories/commandFactory';
+function evaluateCondition(parsed, context) {
+    const structuredVariablePattern = /\b(detection|temperature|activity|season)\b/gi;
+    const naturalLanguagePattern = /(?:he|the)\s+(activity|season|he)\s+is\s+(\w+)/i;
+    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is)\b/gi;
+    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
 
+    let results = [];
+    console.log("Current context:", context);
 
-
-
-function evaluateCondition(parsed , context) 
-{
-    
-  
-    console.log("evaluateCondition%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    const variablePattern = /\b(detection|temperature)\b/gi;
-    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|or|and)\b/gi;
-    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false)\b/gi;
-   
-    
-
-    let results = [];  
-
-   
-    
-    parsed.conditions.forEach((condition, index) => {
-        
-      
-        console.log("conditions  : " +condition)
-        // Extracting variable, operator, and value using regex
-        const variableMatch = condition.match(variablePattern);
-        const operatorMatch = condition.match(operatorPattern);
-        const valueMatch = condition.match(valuePattern);
+    parsed.conditions.forEach((condition) => {
+        let naturalMatch = condition.match(naturalLanguagePattern);
 
         if (!variableMatch || !operatorMatch || !valueMatch) {
-            console.error('Error parsing condition:', condition);
+            console.error('Error parsing structured condition:', condition);
             results.push(false);
-            return; // Continue to next iteration in forEach
+            return;
         }
-        console.log("2")
+        console.log("1");
+        const variableMatch = condition.match(structuredVariablePattern);
+        const naturalMetch =  condition.match(naturalLanguagePattern);
+        const operatorMatch = condition.match(operatorPattern);
+        const valueMatch = condition.match(valuePattern);
+        
+        console.log("2");
         let variable = variableMatch[0].toLowerCase();
+        let natural = naturalMetch[0].toLowerCase();
         let operator = operatorMatch[0].toLowerCase().trim();
         let conditionValue = valueMatch[0].toLowerCase();
         let varValue  = context[variable];
 
+        
         if ( conditionValue === 'on' ) {
             conditionValue = true;
         }
-    
+
         // Check for 'false', 'off', or '0' to return false
         if (conditionValue === 'off' ) {
             condition = false;
         }
-        
-      
         Number(conditionValue,varValue)
+
         console.log("conditionValue type  : " +  typeof(conditionValue))
         console.log("varValue  type : " +  typeof(varValue) )
         
@@ -62,75 +55,51 @@ function evaluateCondition(parsed , context)
         console.log("conditionValue : " + conditionValue)
         console.log("varvalue : " + varValue)
         
-      
-        
+    
+
         switch (operator) {
             case 'is above':
-                results.push(varValue > conditionValue);
+                results.push(parseFloat(contextValue) > parseFloat(conditionValue));
                 break;
             case 'is below':
-                results.push(varValue < conditionValue);
+                results.push(parseFloat(contextValue) < parseFloat(conditionValue));
                 break;
             case 'is equal to':
-                results.push(varValue === conditionValue);
+            case 'is':  // Treat 'is' as an alias for 'is equal to'
+                results.push(contextValue === conditionValue);
                 break;
             case 'is above or equal to':
-                results.push(varValue >= conditionValue);
+                results.push(parseFloat(contextValue) >= parseFloat(conditionValue));
                 break;
             case 'is below or equal to':
-                results.push(varValue <= conditionValue);
+                results.push(parseFloat(contextValue) <= parseFloat(conditionValue));
                 break;
-            
             default:
-                throw new Error(`Unknown operator: ${operator}`);
+                console.error(`Unknown operator: ${operator}`);
+                results.push(false);
+                break;
         }
-       
     })
 
-   
 
-    return results;
-       
-         
-
-}
-
-/*
-
-// Modify your execute function or similar to handle the new rule
-function DedectionEvaluat({variable, operator, value } ,context) {
-
-    console.log("evaluateConditioDedection");
     
-    let TempValue = parseInt(value);
-    console.log({variable});
-    console.log({operator});
-    console.log({value});
-    if(variable == 'detection' &&  operator == 'is equal to ' && value == '1')
-    {
-        console.log("evaluateConditioDedection it ok");
-        return true;
-    }else
-    {
-        if(variable =! 'detection')
-        {
-            console.log("problem with variable!!!!!!!!!!!!!!");
+   
+    
+  
+    
+    return results;
 
-        }
-        if(operator =! 'is equal to')
-        {
-            console.log("problem with operator&&&&&&&&&&&&&&&&");
-        }
-        else 
-        {
-            console.log("problem with value!!!!!!!!!!!!!!!");
-        }
-        console.log("evaluateConditioDedection it not ok")
-        return false;
-    }
 }
+    
+    
+   
+        
 
-*/
+    
+
+
+
+
 function convertOperators(operators) {
     const operatorMap = {
         'and': '&&',
@@ -141,7 +110,7 @@ function convertOperators(operators) {
 }
 
 function evaluateLogic(results, operators) {
-    console.log("evaluatelogic");
+    console.log("IN (evaluate logic) Function");
 
     operators.forEach((operator, index) => {
         console.log(`operator ${index}: ${operator}`);
@@ -180,8 +149,6 @@ function evaluateLogic(results, operators) {
 
     return currentValue;
 }
-
-
 
 
 function execute(parsed, context) {
