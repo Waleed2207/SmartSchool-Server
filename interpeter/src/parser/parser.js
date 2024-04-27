@@ -25,52 +25,49 @@ function splitPhrases(phraseStr,special_Operators) {
 
     return matches;
 }
+/*
 
-
-// /  Parses tokens into an actionable structure
-// function parse(input) {
-//     // Initial checks and setups
-//     const tokens = input.split(/\s+/);
-//     let operators = {
-//         condition_operators: [],
-//         action_operators: []  // Ensure both operators are initialized to avoid undefined issues
-//     };
-
-//     // Example parsing logic
-//     const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
-//     if (thenIndex === -1) {
-//         throw new Error("Syntax error: 'THEN' keyword not found.");
-//     }
-
-//     // Logical operator handling
-//     const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
-//     tokens.forEach((token, index) => {
-//         if (SpecialOperatorPattern.test(token)) {
-//             const operator = token.toLowerCase() === 'and' ? '&&' : '||';
-//             if (index < thenIndex) {
-//                 operators.condition_operators.push(operator);
-//             } else {
-//                 operators.action_operators.push(operator);
-//             }
-//         }
-//     });
-
-//     // Conditions and actions extraction logic
-//     const conditions = splitPhrases(tokens.slice(0, thenIndex).join(' '));
-//     const actions = splitPhrases(tokens.slice(thenIndex + 1).join(' '));
-
-//     // Return parsed object with guaranteed structure
-//     return {
-//         conditions: conditions,
-//         actions: actions,
-//         specialOperators: operators  // Always define this, even if empty
-//     };
-// }
-
+function splitPhrases(phrase) {
+    // Placeholder for actual implementation that splits a phrase into manageable units
+    return phrase.split(',');
+}
+*/
 
 function parse(input) {
-    const tokens = input.split(/\s+/);
-    const thenIndex = tokens.indexOf('then');
+
+    
+    //console.log("parser input :  " + input);
+    // Check if input is a string and split into tokens if necessary
+    console.log("Parse!!!!!!!!!!!!!!!")
+    const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
+    const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN')
+    let match;
+    console.log("tokens : " + tokens);
+
+    let operators = {
+        condition_operators: [],
+        action__operators: []
+    };
+
+   ;
+     
+    const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
+
+    tokens.forEach((token, index) => {
+        if (SpecialOperatorPattern.test(token)) {
+            if (index < thenIndex) {
+                // It's a condition operator
+                operators.condition_operators.push(token === 'and' ? '&&' : '||');
+            } else {
+                // It's an action operator
+                operators.action__operators.push(token === 'and' ? '&&' : '||');
+            }
+        }
+    });
+    
+    console.log("the condition operator " + operators.condition_operators)
+    console.log("the action operator " + operators.action__operators)
+
 
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");
@@ -88,19 +85,16 @@ function parse(input) {
         conditions: conditions,
         actions: actions,
         specialOperators: {
-            condition_operators: ['&&'],  // Assume '&&' between all conditions for simplicity
-            action_operators: []  // Actions are not split in this example
+            condition_operators: operators.condition_operators,  // Assume '&&' between all conditions for simplicity
+            action_operators: operators.action__operators  // Actions are not split in this example
         }
     };
 }
 
 
-function splitPhrases(phrase) {
-    // Placeholder for actual implementation that splits a phrase into manageable units
-    return phrase.split(',');
-}
 
 
+module.exports = { parse };
 
 
 /*
@@ -133,4 +127,6 @@ function parse(tokens) {
     });
 */
 
-module.exports = { parse };
+
+
+
