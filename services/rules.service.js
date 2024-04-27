@@ -30,7 +30,7 @@ const getAllRulesDescription = async () =>
     console.log("getallruledescription");
     const rules = await Rule.find({});
 
-    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
+    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
    
     let activeDescriptions = [];
     
@@ -192,10 +192,13 @@ async function fetchAndProcessRules() {
     
     if (data) {
       const context = {
+        joe: "room 247",
         temperature: data.temperature,
         humidity: data.humidity,
-        detection: detectionData.motionDetected,
-        activity: currentActivity, // Include the current activity in the context
+        // detection: detectionData.motionDetected,
+        detection:true,
+       // activity: currentActivity, // Include the current activity in the context
+        activity: "studying",
         season: currentSeason // Include the current season in the context
       };
      
@@ -209,7 +212,6 @@ async function fetchAndProcessRules() {
     console.error(`[${timestamp}] An error occurred while fetching sensor data or processing rules:`, error);
   }
 }
-
 
 // Set an interval for running the fetchAndProcessRules function
 
@@ -232,8 +234,14 @@ function stringifyCondition(condition) {
     //const tokens = tokenize(input);
     const parsed = parse(input); // Ensure this returns the correct structure
    // Correct use of JSON.stringify to log the condition object as a string
- 
-    execute(parsed, context); // `parsed` should include condition and action
+   
+   if (parsed && parsed.conditions && parsed.actions && parsed.specialOperators && parsed.specialOperators.condition_operators) {
+    execute(parsed, context);
+} else {
+    console.error("Parsed object is incomplete or invalid:", parsed);
+}
+
+
     
   }
 

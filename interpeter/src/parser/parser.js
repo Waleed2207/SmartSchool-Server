@@ -25,15 +25,22 @@ function splitPhrases(phraseStr,special_Operators) {
 
     return matches;
 }
+/*
 
+function splitPhrases(phrase) {
+    // Placeholder for actual implementation that splits a phrase into manageable units
+    return phrase.split(',');
+}
+*/
 
-// /  Parses tokens into an actionable structure
 function parse(input) {
+
     
     //console.log("parser input :  " + input);
     // Check if input is a string and split into tokens if necessary
     console.log("Parse!!!!!!!!!!!!!!!")
     const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
+    const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN')
     let match;
     console.log("tokens : " + tokens);
 
@@ -42,7 +49,7 @@ function parse(input) {
         action__operators: []
     };
 
-    const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN');
+   ;
      
     const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
 
@@ -62,51 +69,30 @@ function parse(input) {
     console.log("the action operator " + operators.action__operators)
 
 
-   
-
-    
-    
-    
- 
-
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");
     }
 
-    if (thenIndex < 3) { // Minimum tokens to form a condition
-        throw new Error("Syntax error: Incomplete condition.");
-    }
+    // Split conditions and actions
+    const conditionsPart = tokens.slice(1, thenIndex).join(' ');
+    const actionsPart = tokens.slice(thenIndex + 1).join(' ');
 
-    const conditionTokens = tokens.slice(1, thenIndex);
-    const actionTokens = tokens.slice(thenIndex + 1);
+    // Split conditions by 'and' for simplicity, assuming 'and' is the only logical operator between conditions
+    const conditions = conditionsPart.split(/ and /i);
+    const actions = [actionsPart];  // Actions are kept together for now
 
-    if (actionTokens.length === 0) {
-        throw new Error("Syntax error: No action specified.");
-    }
-
-    // Concatenate the tokens into a single string for easier manipulation
-    const conditionString = conditionTokens.join(' ');
-    const ActionString = actionTokens.join(' ');
-
-
-    const conditionsArray = splitPhrases(conditionString);
-    const ActionArray = splitPhrases(ActionString)
-
-    
-    /*
-    // Log all values after filling each array
-    console.log(`Conditions extracted: ${JSON.stringify(conditionsArray)}`);
-    console.log(`Action extracted: ${JSON.stringify(ActionArray)}`);
-    console.log(`Speical_operators extracted: ${JSON.stringify(and_or_special_Operators)}`);
-    */
-   
-    if (conditionsArray.length === 0 | ActionArray.length == 0  ) {
-        throw new Error("Syntax error: Incomplete condition expression.");
-    }
-   
-    const action = actionTokens.join(' ');
-    return { conditions: conditionsArray, actions : ActionArray , Speical_operators: operators};
+    return {
+        conditions: conditions,
+        actions: actions,
+        specialOperators: {
+            condition_operators: ['&&'],  // Assume '&&' between all conditions for simplicity
+            action_operators: []  // Actions are not split in this example
+        }
+    };
 }
+
+
+
 
 module.exports = { parse };
 

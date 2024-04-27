@@ -7,16 +7,6 @@
     is: "==",
   };
 
-
- const ACTIVITY_MAP_FORMATTER = {
-  studying: 1,
-  playing: 2,
-  sleeping: 3,
-  eating: 4,
-  cooking: 5,
-  watching_tv: 6
-};
-
    const SEASONS_MAP_FORMATTER = {
     winter: 1,
     spring: 2,
@@ -32,13 +22,11 @@
 
   const SENSOR_DEVICE_RELATION_MAP = {
     temperature: 'ac'
-    
   }
 
   module.exports = {
     OPERATORS_MAP_FORMATTER,
     SEASONS_MAP_FORMATTER, 
     HOURS_MAP_FORMATTER,
-    SENSOR_DEVICE_RELATION_MAP,
-    ACTIVITY_MAP_FORMATTER
+    SENSOR_DEVICE_RELATION_MAP
   }
