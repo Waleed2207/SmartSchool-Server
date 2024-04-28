@@ -76,72 +76,38 @@ exports.sensorControllers={
     //       }  
     // },
 
-
-
-
-
-
-
-  
     async update_Motion_DetectedState(req, res) {
-
       try {
-        const { state, roomId, spaceId } = req.body;
-        const lightState = req.body.state;
-        
-        motionState = lightState === 'on'; // Update the motionState
-    
-        console.log('Received request to turn', lightState);
-        console.log(`Motion state: ${state}`);
-       
-      // Validate the received parameters
-      if (!state || !roomId || !spaceId) {
-          return res.status(400).json({ message: "Missing required parameters: state, roomId, or spaceId" });
-          
-      }
-    
-      // Validate the state value
-      if (state !== 'on' && state !== 'off') {
-          console.error(`Invalid state received: ${state}`);
-          return res.status(400).json({ message: `Invalid state: ${state}. Must be 'on' or 'off'.` });
-          console.log(`Room ID: ${roomId}`);
-          console.log(`Space ID: ${spaceId}`);
-      }
+          const { state, roomId, spaceId } = req.body;
   
-      console.log(`Received request to update state to ${state} for room ${roomId} in space ${spaceId}`);
-      
-     
-    } catch (error) {
-      console.error('Error:', error.message);
-      res.status(500).send(`Server error: ${error.message}`);
-    }  
-      try {
-          // Update the room's 'motionDetected' field
-          const roomUpdateResult = await Room.updateOne({ id: roomId }, { $set: { motionDetected: state === 'on' } });
-          console.log(`Room update result: ${roomUpdateResult.nModified} document(s) modified.`);
-          
-          // Update the specific device's state
+          if (!state || !roomId || !spaceId) {
+              console.error('Missing required parameters');
+              return res.status(400).json({ message: "Missing required parameters: state, roomId, or spaceId" });
+          }
+  
+          if (state !== 'on' && state !== 'off') {
+              console.error(`Invalid state received: ${state}`);
+              return res.status(400).json({ message: `Invalid state: ${state}. Must be 'on' or 'off'.` });
+          }
+  
+          motionState = (state === 'on'); // Update global motionState
+          console.log(`Global motion state updated to: ${motionState}`);
+  
+          // Database updates can proceed as earlier
+          const roomUpdateResult = await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
           const deviceUpdateResult = await Device.updateOne({ device_id: spaceId }, { $set: { state: state } });
-          console.log(`Device update result: ${deviceUpdateResult.nModified} document(s) modified.`);
-  
-          // Additionally, update the RoomDevice state
           const roomDeviceUpdateResult = await RoomDevice.updateOne(
               { room_id: roomId, device_id: spaceId },
               { $set: { state: state } }
-              
           );
-         
-          console.log(`RoomDevice update result: ${roomDeviceUpdateResult.nModified} document(s) modified.`);
   
-          res.status(200).json({ message: `Motion state updated to '${state}' successfully for room ${roomId} in space ${spaceId}.` });
-        } catch (error) {
+          console.log('Update results:', roomUpdateResult, deviceUpdateResult, roomDeviceUpdateResult);
+          res.status(200).json({ message: `Motion state updated to '${state}' successfully for room ${roomId} and space ${spaceId}.` });
+      } catch (error) {
           console.error('Error:', error.message);
           res.status(500).send(`Server error: ${error.message}`);
-        }  
+      }
   },
-
-
-
   //   async update_Motion_DetectedState(req, res) {
   //     const { state, room_id, space_id } = req.body;
 
