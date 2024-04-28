@@ -60,9 +60,11 @@ function evaluateCondition(parsed, context) {
    // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
     const unaryConditionPattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in)\b/gi;
-    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room 247)\b/gi;
+   
+    const valuePattern = /\b(room\s+\d+\s+is\s+)?(1|0|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
     let variable, operator, conditionValue,contextValue;
     let results = [];
+    //room 247
 
     console.log("Current context:", context);
 
@@ -84,7 +86,7 @@ function evaluateCondition(parsed, context) {
         if (myDict.check(condition) == true) {
             console.log("we found joe in room 247 in dictinory")
             condition = myDict.getValue(condition); 
-            console.log("the transform condtion is : " + condition)
+           
             
         }
 
@@ -109,10 +111,7 @@ function evaluateCondition(parsed, context) {
         operator = operatorMatch[0].toLowerCase().trim();
         conditionValue = valueMatch[0].toLowerCase();
 
-        console.log("variable : " + variable);
-        console.log("operator : " + operator);
-        console.log("conditionValue : " + conditionValue);
-
+        
         last_varibale = variable;
         last_operator = operator;
         last_conditionValue = conditionValue;
@@ -142,8 +141,11 @@ function evaluateCondition(parsed, context) {
         }
         else{
             contextValue = context.hasOwnProperty(variable) ? context[variable].toString().toLowerCase() : null;
-        }   
-
+        }  
+        console.log("condtion is : " + condition) 
+        console.log("variable :  " + variable);
+        console.log("operator :  " + operator);
+        console.log("conditionValue :  " + conditionValue);
         console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
      
        
