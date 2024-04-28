@@ -66,7 +66,7 @@ function evaluateCondition(parsed, context) {
     let results = [];
     //room 247
 
-    console.log("Current context:", context);
+    //console.log("Current context:", context);
 
     parsed.conditions.forEach((condition) => {
         /*
@@ -84,7 +84,7 @@ function evaluateCondition(parsed, context) {
         */
         
         if (myDict.check(condition) == true) {
-            console.log("we found joe in room 247 in dictinory")
+           // console.log("we found joe in room 247 in dictinory")
             condition = myDict.getValue(condition); 
            
             
@@ -151,28 +151,38 @@ function evaluateCondition(parsed, context) {
         }
         else{
             contextValue = context.hasOwnProperty(variable) ? context[variable].toString().toLowerCase() : null;
-        }  
-        console.log("condtion is : " + condition) 
-        console.log("variable :  " + variable);
-        console.log("operator :  " + operator);
-        console.log("conditionValue :  " + conditionValue);
-        console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
+        } 
+
+        String(contextValue,conditionValue)
+        contextValue = String(contextValue).toLowerCase();
+        conditionValue = String(conditionValue).toLowerCase();
+      
+
+        //  console.log("condtion is : " + condition) 
+        //  console.log("variable :  " + variable);
+        //  console.log("operator :  " + operator);
+        //  console.log("conditionValue :  " + conditionValue);
+        //  console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
      
-       
+        
 
         switch (operator) {
            
             case 'is above':
+                console.log("is above")
                 results.push( contextValue > conditionValue);
                 break;
             case 'is below':
+                console.log("is below")
                 results.push(contextValue < parseFloatconditionValue);
                 break;
             case 'is equal to':
+                console.log("is equal to switch")
                 results.push(contextValue === conditionValue);
                 break;
-            case 'is':  // Treat 'is' as an alias for 'is equal to'
-                 results.push(contextValue === conditionValue);
+            case 'is': 
+                console.log("is")
+                results.push(contextValue === conditionValue);
                 break;
             case 'is above or equal to':
                 results.push(contextValue  >=  conditionValue );
@@ -225,12 +235,12 @@ function execute(parsed, context) {
     if (result) {
         parsed.actions.forEach(action => {
             console.log("Current action being processed:", action);
-            const commandTypeMatch = action.match(commandTypePattern);
-            const command = CommandFactory.createCommand(parsed.action);
+            
+            const command = CommandFactory.createCommand(action);
             if (command) {
-                command.execute();
+                console.log("command was execute");
             } else {
-                console.log('Action could not be executed:', parsed.action);
+                console.log('Action could not be executed:', action);
             }
             console.log(`Executing action: ${action}`);
             // Execution code here

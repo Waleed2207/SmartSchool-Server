@@ -39,9 +39,9 @@ class CommandFactory {
 
         
 
-        console.log(`Processing: "${action}"`);
+        console.log(`Action proccesing: "${action}"`);
 
-        const commandTypePattern = /\bTURN\b/i;
+        const commandTypePattern = /\b(TURN|turn)\b/i;
         const statePattern = /\b(ON|OFF)\b/i;
         const modePattern = /\b(COOL|HEAT|FAN)\b/i;
         const valuePattern = /\b(\d{1,3})\b/; // Assuming value is always a number
@@ -64,7 +64,8 @@ class CommandFactory {
         console.log(`Mode: ${mode}`);
         console.log(`Value: ${value}`);
         console.log('---');
-        /*
+        
+        
         // Instantiate specific command based on parsed action
         if (state === 'on') {
             console.log("state is on ");
@@ -76,7 +77,7 @@ class CommandFactory {
             console.log("Unknown command state.");
             return null;
         }
-        */
+        
         
     }
 }
