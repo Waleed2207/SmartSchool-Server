@@ -35,11 +35,9 @@ const searchDevicesInAction = async (action) => {
 
 class CommandFactory {
     static async createCommand(action) {
-        const parts = action.toUpperCase().split(' '); // Convert action to uppercase for case-insensitive comparison
+      
 
-        if (parts.length < 3) {
-            throw new Error(`Invalid action format: ${action}`);
-        }
+        
 
         console.log(`Processing: "${action}"`);
 
