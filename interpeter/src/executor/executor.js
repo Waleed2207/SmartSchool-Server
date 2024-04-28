@@ -231,17 +231,23 @@ function execute(parsed, context) {
     console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
 
     const evaluation_condition_result = evaluateCondition(parsed, context);
-    console.log("2");
+   
 
     const convertedOperators_Condition = convertOperators(parsed.specialOperators.condition_operators);
-    console.log("3");
+   
 
     const result = evaluateLogic(evaluation_condition_result, convertedOperators_Condition);
-    console.log("4");
+ 
     console.log("Result of conditions:", result);
 
     if (result) {
         parsed.actions.forEach(action => {
+            const command = CommandFactory.createCommand(parsed.action);
+            if (command) {
+                command.execute();
+            } else {
+                console.log('Action could not be executed:', parsed.action);
+            }
             console.log(`Executing action: ${action}`);
             // Execution code here
         });
