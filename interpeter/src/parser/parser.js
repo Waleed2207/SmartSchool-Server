@@ -79,7 +79,7 @@ function parse(input) {
 
     // Split conditions by 'and' for simplicity, assuming 'and' is the only logical operator between conditions
     const conditions = conditionsPart.split(/ and /i);
-    const actions = [actionsPart];  // Actions are kept together for now
+    const actions = actionsPart.split(/ and /i);;  // Actions are kept together for now
 
     return {
         conditions: conditions,

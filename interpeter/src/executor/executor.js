@@ -1,6 +1,13 @@
 const { forEach, cond } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
 const { debug, Console } = require('console');
+const {SpecialDictionary} = require('./Dictionsry');
+const myDict = require('./Dictionsry');
+
+
+
+
+
 
 function convertOperators(operators) {
     const operatorMap = {
@@ -23,29 +30,25 @@ function evaluateLogic(results, operators) {
         return results[0];
 
     }
-    console.log("result 0 " + results[0] )
+
     let currentValue = results[0] ;  
-    console.log("Iniitlize currentValue " + currentValue)
+   
     for (let i = 0; i < operators.length; i++) {
         const nextValue = results[i + 1];
         switch (operators[i]) {  // Removed toLowerCase() as we're using symbols, not words
-            case '&&':  // Using symbol for AND
-                console.log("&&");
-                console.log("currentValue : " + currentValue + "nextValue : " + nextValue)
+            case '&&':  // Using symbol for AND  
                 currentValue = currentValue && nextValue;
-                console.log("currentValue" + currentValue)
+                console.log("currentValue" + currentValue )
                 break;
             case '||':  // Using symbol for OR
-                console.log("&&");
-                console.log("currentValue : " + currentValue + "nextValue : " + nextValue)
                 currentValue = currentValue || nextValue;
-                console.log("currentValue" + currentValue)
                 break;
             default:
                 console.error(`Unsupported operator: ${operators[i]}`);
                 return false;
         }
     }
+    console.log("currentValue" + currentValue )
     return currentValue;
 }
 
@@ -78,7 +81,22 @@ function evaluateCondition(parsed, context) {
         }
         */
         
-        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] ;   
+        if (myDict.check(condition) == true) {
+            console.log("we found joe in room 247 in dictinory")
+            condition = myDict.getValue(condition); 
+            console.log("the transform condtion is : " + condition)
+            
+        }
+
+        
+        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] ;
+      
+       
+    
+      
+
+        
+       
         let operatorMatch = condition.match(operatorPattern) || [last_operator] ;
         let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
         if (!variableMatch || !operatorMatch || !valueMatch) {
@@ -91,13 +109,15 @@ function evaluateCondition(parsed, context) {
         operator = operatorMatch[0].toLowerCase().trim();
         conditionValue = valueMatch[0].toLowerCase();
 
+        console.log("variable : " + variable);
+        console.log("operator : " + operator);
+        console.log("conditionValue : " + conditionValue);
+
         last_varibale = variable;
         last_operator = operator;
         last_conditionValue = conditionValue;
 
-        console.log("variable : "  +  variableMatch );
-        console.log("operator : "  +  operator );
-        console.log("conditionValue : "  +  conditionValue );
+      
 
         if(conditionValue == 'on' |  conditionValue == 'On' ) 
         {
@@ -124,9 +144,9 @@ function evaluateCondition(parsed, context) {
             contextValue = context.hasOwnProperty(variable) ? context[variable].toString().toLowerCase() : null;
         }   
 
-
+        console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
      
-        console.log("contxtvalue is :   " + contextValue + "   conditionValue  is :   " + conditionValue);
+       
 
         switch (operator) {
            
@@ -159,48 +179,14 @@ function evaluateCondition(parsed, context) {
         }
        
     });
-    console.log("results :  "  +  results )
+    console.log("results : " + results)
+   
     return results;
 }
 
 
 
-/*
 
-// Modify your execute function or similar to handle the new rule
-function DedectionEvaluat({variable, operator, value } ,context) {
-
-    console.log("evaluateConditioDedection");
-    
-    let TempValue = parseInt(value);
-    console.log({variable});
-    console.log({operator});
-    console.log({value});
-    if(variable == 'detection' &&  operator == 'is equal to ' && value == '1')
-    {
-        console.log("evaluateConditioDedection it ok");
-        return true;
-    }else
-    {
-        if(variable =! 'detection')
-        {
-            console.log("problem with variable!!!!!!!!!!!!!!");
-
-        }
-        if(operator =! 'is equal to')
-        {
-            console.log("problem with operator&&&&&&&&&&&&&&&&");
-        }
-        else 
-        {
-            console.log("problem with value!!!!!!!!!!!!!!!");
-        }
-        console.log("evaluateConditioDedection it not ok")
-        return false;
-    }
-}
-
-*/
 
 
 
@@ -215,17 +201,25 @@ function execute(parsed, context) {
     console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
 
     const evaluation_condition_result = evaluateCondition(parsed, context);
-    console.log("2");
+   
 
     const convertedOperators_Condition = convertOperators(parsed.specialOperators.condition_operators);
-    console.log("3");
+   
 
     const result = evaluateLogic(evaluation_condition_result, convertedOperators_Condition);
-    console.log("4");
+ 
     console.log("Result of conditions:", result);
 
     if (result) {
         parsed.actions.forEach(action => {
+            console.log("Current action being processed:", action);
+            const commandTypeMatch = action.match(commandTypePattern);
+            const command = CommandFactory.createCommand(parsed.action);
+            if (command) {
+                command.execute();
+            } else {
+                console.log('Action could not be executed:', parsed.action);
+            }
             console.log(`Executing action: ${action}`);
             // Execution code here
         });
