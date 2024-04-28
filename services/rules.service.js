@@ -271,6 +271,9 @@ async function fetchAndProcessRules() {
 // Set an interval to run the function every 30 seconds
 fetchAndProcessRules()
 setInterval(fetchAndProcessRules, 3 * 60 * 1000);
+
+//setInterval(fetchAndProcessRules, 5000);
+
 /*
 setInterval(fetchAndProcessRules, intervalTime);
 */
