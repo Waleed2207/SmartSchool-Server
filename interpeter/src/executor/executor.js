@@ -54,6 +54,7 @@ function evaluateLogic(results, operators) {
 function evaluateCondition(parsed, context) {
     console.log("evaluateCondition!!!!!!!!!!!!!!!!!!!");
     const structuredVariablePattern = /\b(Joe|detection|temperature|activity|season)\b/gi;
+   // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
     const unaryConditionPattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in)\b/gi;
     const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room 247)\b/gi;
@@ -77,26 +78,9 @@ function evaluateCondition(parsed, context) {
         }
         */
         
-        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] ;
-      
-       
-    
-      
-
-        
-       
+        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] ;   
         let operatorMatch = condition.match(operatorPattern) || [last_operator] ;
-      
-      
-   
-
-
         let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
-       
-      
-
-        
-
         if (!variableMatch || !operatorMatch || !valueMatch) {
             console.error('Error parsing structured condition:', condition);
             results.push(false);

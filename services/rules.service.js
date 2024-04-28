@@ -169,10 +169,6 @@ async function getAndLogDetection() {
   const detection = await fetchMotionState()
   return detection; // Return the detection data
 }
-
-
-
-
 async function processAllRules(context) {
   try {
     // Await the promise to get the result object
@@ -256,7 +252,7 @@ async function fetchAndProcessRules() {
         humidity: data.humidity,
         detection: detectionData.motionDetected,
        // detection:true,
-       // activity: currentActivity, // Include the current activity in the context
+        //activity: currentActivity, // Include the current activity in the context
         activity: "studying",
         season: currentSeason // Include the current season in the context
       };
