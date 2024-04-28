@@ -50,6 +50,6 @@ function createSpecialDictionary() {
 }
 
 const myDict = createSpecialDictionary();
-myDict.add("Joe in room 247", "detection in room 247 is equal to true")
+myDict.add("Joe in room 247", "detection in room  is equal to true")
 module.exports = myDict;
 
