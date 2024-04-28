@@ -254,8 +254,8 @@ async function fetchAndProcessRules() {
         joe: "room 247",
         temperature: data.temperature,
         humidity: data.humidity,
-        // detection: detectionData.motionDetected,
-        detection:true,
+        detection: detectionData.motionDetected,
+       // detection:true,
        // activity: currentActivity, // Include the current activity in the context
         activity: "studying",
         season: currentSeason // Include the current season in the context
