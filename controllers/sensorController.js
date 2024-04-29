@@ -15,7 +15,8 @@ const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/ro
 const _ = require("lodash");
 
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
-
+let ROOM_ID = false;
+let SPACE_ID = false;
 exports.sensorControllers={
 
     async getSensor(req, res) {
@@ -32,11 +33,35 @@ exports.sensorControllers={
             }
     },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
-    async get_MotionState (req, res) {
-        res.status(200).json({ motionDetected: motionState });
-        console.log("The Motion State IS ",motionState);
-    },
 
+
+    async get_RoomID(req, res) {
+      res.status(200).json({ RoomID: ROOM_ID });
+  },
+  
+
+
+ 
+  async get_SpaceID(req, res) {
+    
+      res.status(200).json({ spaceID: SPACE_ID });
+  },
+  
+  async get_MotionState(req, res) {
+      // Assuming that motionState, spaceId, and roomId are defined and available in your application context
+      // These should be retrieved from relevant data sources or passed to this function before calling
+  
+      // Respond with JSON object containing motion detection status and identifiers
+      res.status(200).json({
+          motionDetected: motionState,
+          spaceID: SPACE_ID,
+          RoomID: ROOM_ID,
+      });
+  
+      // Log the motion state and space ID for debugging purposes
+      console.log("The Motion State is:", motionState);
+  },
+  
     // async update_Motion_DetectedState(req, res) {
 
     //     try {
@@ -79,25 +104,32 @@ exports.sensorControllers={
     async update_Motion_DetectedState(req, res) {
       try {
           const { state, roomId, spaceId } = req.body;
-  
+          
+      
           if (!state || !roomId || !spaceId) {
               console.error('Missing required parameters');
               return res.status(400).json({ message: "Missing required parameters: state, roomId, or spaceId" });
+              
           }
-  
+          
           if (state !== 'on' && state !== 'off') {
               console.error(`Invalid state received: ${state}`);
               return res.status(400).json({ message: `Invalid state: ${state}. Must be 'on' or 'off'.` });
           }
   
           motionState = (state === 'on'); // Update global motionState
+          ROOM_ID = roomId;
+          SPACE_ID = spaceId;
+          console.log(`Motion state: ${state}`);
+          console.log(`Room ID: ${roomId}`);
+          console.log(`Space ID: ${spaceId}`);
           console.log(`Global motion state updated to: ${motionState}`);
   
           // Database updates can proceed as earlier
           const roomUpdateResult = await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
-          const deviceUpdateResult = await Device.updateOne({ device_id: spaceId }, { $set: { state: state } });
+          const deviceUpdateResult = await Device.updateOne( { $set: { state: state } });
           const roomDeviceUpdateResult = await RoomDevice.updateOne(
-              { room_id: roomId, device_id: spaceId },
+              { room_id: roomId },
               { $set: { state: state } }
           );
   
@@ -290,3 +322,9 @@ exports.sensorControllers={
 }
 
 exports.get_MotionState = exports.sensorControllers.get_MotionState;
+
+exports.get_RoomID = exports.sensorControllers.get_RoomID;
+
+
+
+exports.get_SpaceID = exports.sensorControllers.get_SpaceID;

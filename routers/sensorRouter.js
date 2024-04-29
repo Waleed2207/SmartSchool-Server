@@ -5,6 +5,8 @@ const router = new Router();
 // GET /sensor from Rassparypi
 router.get('/sensors', sensorControllers.getSensor);
 router.get('/motion-state', sensorControllers.get_MotionState);
+router.get('/SpaceID', sensorControllers.get_SpaceID);
+router.get('/Room-id', sensorControllers.get_RoomID);
 
 // GET /sensor from Sensibo
 router.get('/sensibo', sensorControllers.get_SensiboAC_State);

@@ -7,7 +7,7 @@ const { createRegexPattern, replaceWords } = require("../utils/utils");
 const { getUsers } = require("./users.service");
 const _ = require("lodash");
 const { getSensiboSensors } = require('../api/sensibo')
-const { get_MotionState } = require('../controllers/sensorController.js')
+const { get_MotionState, get_SpaceID, get_RoomID } = require('../controllers/sensorController.js')
 const { checkforUserDistance } = require('../api/location.js')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
@@ -128,43 +128,89 @@ const getAllRulesDescription = async () =>
     };
   }
 };
+async function fetchRoomID() {
+  const req = {};
+  let responseData;
 
+  // Mock response object
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this; // Allow chaining
+      },
+      json: function(data) {
+          responseData = data; // Return the data for direct access
+          return this;
+      }
+  };
 
-
-
-
-// Simulate calling the get_MotionState function directly
-async function fetchMotionState() {
-    // Mock request object (if needed)
-    const req = {};
-    let responseData;
-    // Mock response object
-    const res = {
-        status: function(statusCode) {
-            this.statusCode = statusCode;
-            
-            return this; // to allow chaining
-        },
-        json: function(data) {
-          
-          responseData = data // return the data for direct access
-          return this
-        }
-    };
-
-    try {
-        // Directly call get_MotionState with mocked req and res
-        await get_MotionState(req, res);
-        return responseData
-
-        // Use the result as needed
-    } catch (error) {
-        console.error('Error fetching motion state:', error);
-        return null
-    }
+  try {
+      await get_RoomID(req, res); // Directly call get_RoomID with mocked req and res
+      return responseData;
+  } catch (error) {
+      console.error('Error fetching room ID:', error); // Corrected the error message
+      return null;
+  }
 }
 
+async function fetchSpaceID() {
+  const req = {};
+  let responseData;
 
+  // Mock response object
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this; // Allow chaining
+      },
+      json: function(data) {
+          responseData = data; // Return the data for direct access
+          return this;
+      }
+  };
+
+  try {
+      await get_SpaceID(req, res); // Directly call get_SpaceID with mocked req and res
+      return responseData;
+  } catch (error) {
+      console.error('Error fetching space ID:', error); // Corrected the error message
+      return null;
+  }
+}
+
+async function fetchMotionState() {
+  const req = {};
+  let responseData;
+
+  // Mock response object
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this; // Allow chaining
+      },
+      json: function(data) {
+          responseData = data; // Return the data for direct access
+          return this;
+      }
+  };
+
+  try {
+      await get_MotionState(req, res); // Directly call get_MotionState with mocked req and res
+      return responseData;
+  } catch (error) {
+      console.error('Error fetching motion state:', error); // Corrected the error message
+      return null;
+  }
+}
+
+async function getAndLogSpace() {
+  const space_id = await fetchSpaceID()
+  return space_id; // Return the detection data
+}
+async function getAndLogRoom() {
+  const room_id = await fetchRoomID()
+  return room_id; // Return the detection data
+}
 async function getAndLogDetection() {
   const detection = await fetchMotionState()
   return detection; // Return the detection data
@@ -242,16 +288,19 @@ async function fetchAndProcessRules() {
     console.log(`[${timestamp}] Attempting to fetch sensor data...`);
     const data = await getSensiboSensors();
     const detectionData = await getAndLogDetection();
+    const spaceID =await getAndLogSpace();
+    const RoomID =await getAndLogRoom();
     const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
     const currentSeason = getCurrentSeason(); // Get the current season
     
     if (data) {
       const context = {
-        joe: "room 247",
+        Space_id: spaceID,
+        Room_id: RoomID,
         temperature: data.temperature,
         humidity: data.humidity,
-        //detection: detectionData.motionDetected,
-        detection:true,
+        detection: detectionData.motionDetected,
+        //detection:true,
        // activity: currentActivity, // Include the current activity in the context
         activity: "studying",
         season: currentSeason // Include the current season in the context
@@ -426,4 +475,6 @@ module.exports = {
   updateRule,
   toggleActiveStatus,
   deleteRuleById,
+  get_SpaceID,
+  get_RoomID
 };

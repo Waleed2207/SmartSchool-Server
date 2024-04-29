@@ -51,5 +51,6 @@ function createSpecialDictionary() {
 
 const myDict = createSpecialDictionary();
 myDict.add("Joe in room 247", "detection in room  is equal to true")
+myDict.add("Joe not in room 247", "detection in room  is equal to false")
 module.exports = myDict;
 

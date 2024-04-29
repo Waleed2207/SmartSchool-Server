@@ -46,7 +46,7 @@ class TurnDeviceOnCommand extends BaseCommand
         //const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
         const targetTemperature = this.details;
         console.log(targetTemperature)
-        
+        /*
         // // Use default values or values from parsed details
         const { device_id = `${process.env.SENSIBO_DEVICE_ID}`, apiKey = `${process.env.SENSIBO_API_KEY}` } = this.details; // Assuming you add device_id and apiKey to this.details if necessary
         console.log(device_id);
@@ -83,7 +83,7 @@ class TurnDeviceOnCommand extends BaseCommand
         } catch (error) {
             console.error(`Failed to turn on ${this.device}. Error:`, error.message);
         }
-        
+        */
     }
     
 

@@ -59,7 +59,7 @@ function evaluateCondition(parsed, context) {
     const structuredVariablePattern = /\b(Joe|detection|temperature|activity|season)\b/gi;
    // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
     const unaryConditionPattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
-    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in)\b/gi;
+    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
     const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
 
     
@@ -182,6 +182,10 @@ function evaluateCondition(parsed, context) {
                 results.push(contextValue <= conditionValue);
                 break;
             case 'in':  // Checks if the context value contains the given substring or matches one of a list
+                results.push(contextValue === conditionValue);
+                //results.push(contextValue.includes(conditionValue));
+                break;
+            case 'not':
                 results.push(contextValue === conditionValue);
                 //results.push(contextValue.includes(conditionValue));
                 break;
