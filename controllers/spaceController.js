@@ -5,7 +5,7 @@ const axios = require("axios");
 const {
     get_Space,
     createNewSpace,
-    get_Space_ByID,
+    get_Space_By_ID,
     updateDeviceModeInDatabase,
     create_Space,
     create_Space_TORoom,
@@ -18,18 +18,21 @@ const {
         return res.json(space);
     },
     async get_Space_ByID(req, res) {
-    try {
-        const spaceID = req.params.spaceId; 
-        console.log(spaceID);
-        const space = await get_Space_ByID(spaceID);
-        if (!space) {
-            return res.status(404).send({ message: 'space not found' });
+        try {
+          const spaceId = req.params.spaceId;
+          console.log("Space ID: " + spaceId);
+          const space = await get_Space_By_ID(spaceId);
+      
+          if (!space) {
+            return res.status(404).send({ message: 'Space not found' });
+          }
+      
+          return res.status(200).send(space);
+        } catch (err) {
+          console.error("Server error when fetching space:", err);
+          return res.status(500).send({ message: err.message });
         }
-        return res.status(200).send(space); // Send the room data directly
-    } catch (err) {
-        return res.status(500).send({ message: err.message }); // Handle any other errors
-    }
-    },
+      },      
     async create_Space(req, res) {
         try {
           const { spaceDetails } = req.body; // Assuming the request body has space details directly

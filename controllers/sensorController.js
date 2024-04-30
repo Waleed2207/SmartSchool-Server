@@ -17,6 +17,11 @@ const _ = require("lodash");
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
 let ROOM_ID = false;
 let SPACE_ID = false;
+let RoomID = false; 
+let SpaceID = false;
+let DeviceID = false;
+let clientIp = false;
+
 exports.sensorControllers={
 
     async getSensor(req, res) {
@@ -140,6 +145,7 @@ exports.sensorControllers={
           res.status(500).send(`Server error: ${error.message}`);
       }
   },
+  
   //   async update_Motion_DetectedState(req, res) {
   //     const { state, room_id, space_id } = req.body;
 
@@ -245,26 +251,27 @@ exports.sensorControllers={
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {
           try {
-              const state = await getAcState();
-              console.log("Fetched AC state:", state);
-          
-              if (!state) {
+            const rasp_ip = req.query.rasp_ip; // Correctly accessing clientIp from params
+            const state = await getAcState(rasp_ip);
+            console.log("Fetched AC state:", state);
+    
+            if (!state) {
                 console.error("Failed to fetch AC state: No state returned");
                 return res.status(500).send('Unable to fetch AC state');
-              }
-              // Optionally, validate/format the state here before sending
-              res.status(200).json(state);
-            } catch (error) {
-              console.error("Error fetching AC state:", error);
-              res.status(500).json({error: 'Unable to fetch AC state', details: error.message});
             }
+            // Optionally, validate/format the state here before sending
+            res.status(200).json(state);
+        } catch (error) {
+            console.error("Error fetching AC state:", error);
+            res.status(500).json({ error: 'Unable to fetch AC state', details: error.message });
+        }
 
       },
       async TurnON_OFF_AC(req, res) {
         try {
           console.log("-----------sensibo---------------");
       
-          const { state, temperature, id } = req.body;
+          const { state, temperature, rasp_ip, id } = req.body;
           console.log(id);
           const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
           const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
@@ -273,7 +280,7 @@ exports.sensorControllers={
           console.log("Device ID:", actualDeviceId, "API Key:", actualApiKey);
       
           // Adjusted call to match the switchAcState function signature
-          const switchResponse = await switchAcState(actualDeviceId, state, temperature);
+          const switchResponse = await switchAcState(actualDeviceId, state, rasp_ip, temperature);
           // This is where you should insert the detailed error logging
           if (switchResponse.statusCode !== 200) {
             if (switchResponse.data && typeof switchResponse.data === 'string') {
@@ -307,9 +314,10 @@ exports.sensorControllers={
         }
       },
       
-      async update_MotionState(req, res) {
-        const { deviceId, mode } = req.body;
-        const result = await updateSensiboMode(deviceId, mode);
+      async update_AC_Mode(req, res) {
+        const { deviceId, mode, rasp_ip } = req.body;
+        // console.log(rasp_ip);
+        const result = await updateSensiboMode(deviceId, mode, rasp_ip);
       
         if (_.get(result, "success", false)) {
           res.status(200).json(result);

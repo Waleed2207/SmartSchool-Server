@@ -12,24 +12,72 @@ const { checkforUserDistance } = require('../api/location.js')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
-const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
+// const { Rules } = require('../models/Rules');
+// const {
+//   OPERATORS_MAP_FORMATTER,
+//   SEASONS_MAP_FORMATTER,
+//   HOURS_MAP_FORMATTER,
+//   SENSOR_DEVICE_RELATION_MAP,
+// } = require("../consts/rules.consts");
+// const checkForDevices = (rule) => {
+//   const devices = [];
+//   if (/\b(ac)\b/i.test(rule)) devices.push("ac");
+//   if (/\b(heater)\b/i.test(rule)) devices.push("heater");
+//   if (/\b(dishwasher)\b/i.test(rule)) devices.push("dishwasher");
+//   return devices;
+// };
 
+// const decideOnState = (rule) => {
+//   return /\b(off)\b/i.test(rule) ? "on" : "off";
+// };
 
-// Function to handle rule objects directly
-function stringifyCondition(condition) {
-  return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
-}
+// const validateSensor = async (rule) => {
+//   const parsedRule = rule.split(" ");
+//   const usersResponse = await getUsers();
+//   const users = usersResponse.data.map(
+//     ({ fullName }) => fullName.split(" ")[0]
+//   );
 
+//   const sensorsResponse = await getSensors();
+//   const sensors = sensorsResponse.map(({ name }) => name);
 
+//   const sensorsFromRuleString = [];
 
-const validateRule = async (rule) => {
-  const parsedRule = rule.split(" ");
-  if (parsedRule[0] !== "IF") {
-    return {
-      statusCode: 400,
-      message: "Rule must start with IF",
-    };
-  }
+//   parsedRule.forEach((word, idx) => {
+//     if (word === "AND" || word === "IF") {
+//       sensorsFromRuleString.push(parsedRule[idx + 1]);
+//     }
+//   });
+
+//   let invalidSensor = null;
+
+//   sensorsFromRuleString.forEach((sensor) => {
+//     if (!users.includes(sensor) && !sensors.includes(sensor)) {
+//       invalidSensor = sensor;
+//     }
+//   });
+
+//   if (invalidSensor) {
+//     return {
+//       statusCode: 400,
+//       message: `We don't recognize ${invalidSensor}`,
+//     };
+//   }
+
+//   return {
+//     statusCode: 200,
+//     message: `All sensors are valid`,
+//   };
+// };
+
+// const validateRule = async (rule) => {
+//   const parsedRule = rule.split(" ");
+//   if (parsedRule[0] !== "IF") {
+//     return {
+//       statusCode: 400,
+//       message: "Rule must start with IF",
+//     };
+//   }
 
   if (
     !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(
@@ -49,11 +97,13 @@ const validateRule = async (rule) => {
     };
   }
 
-  return {
-    statusCode: 200,
-    message: "Rule  validated successfully",
-  };
-};
+//   return {
+//     statusCode: 200,
+//     message: "Rule  validated successfully",
+//   };
+// };
+
+
 // const createUserDistanceMap = (users) => {
 //   return users.reduce((map, user) => {
 //     map[user] = `${user}_distance`;
@@ -79,24 +129,88 @@ const ruleFormatter = async (rule) => {
   rule = replaceWords(rule, homeMap);
 
   
-  //add (" ")
-  const index = rule.indexOf("TURN") + 4;
-  rule =
-  rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
-  return rule;
-};
+//   //add (" ")
+//   const index = rule.indexOf("TURN") + 4;
+//   rule =
+//   rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
+//   return rule;
+// };
+
+// const insertRuleToDBMiddleware = async (rule, isStrict) => {
+//   const keepPattern = /\b(KEEP)\b/;
+//   const isWithKeep = keepPattern.test(rule);
+
+//   if (!isWithKeep) {
+//     console.log("GOOD")
+//     return await insertRuleToDB(rule, isStrict, false);
+//   } else {
+//     console.log("NOT GOOD")
+//     const action = rule.split(" THEN KEEP ")[1];
+//     const conditions = rule.split(" THEN KEEP ")[0];
+//     const numberPattern = /\d+/g;
+//     const desiredValue = parseInt(rule.match(numberPattern)[0]);
+//     const parsedAction = action.split(" ");
+//     const sensor = parsedAction[0];
+//     const room =
+//       parsedAction[parsedAction.length - 1] === "room"
+//         ? parsedAction[parsedAction.length - 2] +
+//           " " +
+//           parsedAction[parsedAction.length - 1]
+//         : parsedAction[parsedAction.length - 1];
+//     const device = SENSOR_DEVICE_RELATION_MAP[sensor];
+
+//     const belowValueAction = `TURN ${device} on ${desiredValue - 1} in ${room}`;
+//     const aboveValueAction = `TURN ${device} on ${desiredValue + 1} in ${room}`;
+//     const inValueAction = `TURN ${device} off in ${room}`;
+
+//     const belowValueCondition = `AND ${sensor} is ${desiredValue - 1} THEN`;
+//     const aboveValueCondition = `AND ${sensor} is ${desiredValue + 1} THEN`;
+//     const inValueCondition = `AND ${sensor} is ${desiredValue} THEN`;
+
+//     const belowValueRule = `${conditions} ${belowValueCondition} ${aboveValueAction}`;
+//     const aboveValueRule = `${conditions} ${aboveValueCondition} ${belowValueAction}`;
+//     const inValueRule = `${conditions} ${inValueCondition} ${inValueAction}`;
+
+//     const newRule = new Rule({
+//       rule,
+//       normalizedRule: rule,
+//       isStrict,
+//       isHidden: false,
+//       isUIOnly: true, 
+//     });
+//     const ruleId = Math.floor(10000000 + Math.random() * 90000000);
+//     newRule.id = ruleId;
+//     await newRule.save();
+
+//     await insertRuleToDB(belowValueRule, isStrict, true, ruleId);
+//     await insertRuleToDB(aboveValueRule, isStrict, true, ruleId);
+//     await insertRuleToDB(inValueRule, isStrict, true, ruleId);
+//   }
+
+//   return {
+//     statusCode: 200,
+//     message: 'rule added successfully'
+//   }
+// };
+// Example context
+// const context = {
+//   temperature: 22,
+//   humidity: 40
+// };
+
+// Function to handle rule objects directly
+function stringifyCondition(condition) {
+  return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
+}
 
 
-const getAllRulesDescription = async () =>
- {
+const getAllRulesDescription = async () => {
   try {
-    console.log("getallruledescription");
     const rules = await Rule.find({});
+    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
 
-    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
-   
     let activeDescriptions = [];
-    
+
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
         //gbd add the true | to see to get all the rule
@@ -128,75 +242,36 @@ const getAllRulesDescription = async () =>
     };
   }
 };
-async function fetchRoomID() {
-  const req = {};
-  let responseData;
 
-  // Mock response object
-  const res = {
-      status: function(statusCode) {
-          this.statusCode = statusCode;
-          return this; // Allow chaining
-      },
-      json: function(data) {
-          responseData = data; // Return the data for direct access
-          return this;
-      }
-  };
+// setInterval(() => {
+//   console.log('Checking for rule updates...');
+//   updateAndProcessRules();
+// }, 30000);
 
+// getAllRulesDescription();
+
+//////waleed ********************************
+// getAllRulesDescription().then((result) => {
+//   console.log("descriptions : " + result.data);
+//   return result.data;
+// }).catch((error) => {
+//   console.error(error);
+// });
+
+// Define the async function that fetches sensor data and processes rules
+async function updateAndProcessRules() {
   try {
-      await get_RoomID(req, res); // Directly call get_RoomID with mocked req and res
-      return responseData;
-  } catch (error) {
-      console.error('Error fetching room ID:', error); // Corrected the error message
-      return null;
-  }
-}
-
-async function fetchSpaceID() {
-  const req = {};
-  let responseData;
-
-  // Mock response object
-  const res = {
-      status: function(statusCode) {
-          this.statusCode = statusCode;
-          return this; // Allow chaining
-      },
-      json: function(data) {
-          responseData = data; // Return the data for direct access
-          return this;
-      }
-  };
-
-  try {
-      await get_SpaceID(req, res); // Directly call get_SpaceID with mocked req and res
-      return responseData;
-  } catch (error) {
-      console.error('Error fetching space ID:', error); // Corrected the error message
-      return null;
-  }
-}
-
-async function fetchMotionState() {
-  const req = {};
-  let responseData;
-
-  // Mock response object
-  const res = {
-      status: function(statusCode) {
-          this.statusCode = statusCode;
-          return this; // Allow chaining
-      },
-      json: function(data) {
-          responseData = data; // Return the data for direct access
-          return this;
-      }
-  };
-
-  try {
-      await get_MotionState(req, res); // Directly call get_MotionState with mocked req and res
-      return responseData;
+    const data = await getSensiboSensors();
+    if (data) {
+      const context = {
+        temperature: data.temperature,
+        humidity: data.humidity
+      };
+      console.log("Fetched context:", context);
+      await processAllRules(context); 
+    } else {
+      console.log('Failed to fetch sensor data or no data available.');
+    }
   } catch (error) {
       console.error('Error fetching motion state:', error); // Corrected the error message
       return null;
@@ -257,7 +332,6 @@ async function processAllRules(context) {
 
 
 
-// Function to interpret a rule by its description
 // Function to interpret a rule by its description
 async function interpretRuleByName(ruleDescription, context) {
   try {
@@ -390,25 +464,100 @@ const getAllRules = async () => {
     };
   }
 };
+
+
+// const add_new_Rule = async (rule, isStrict, isHidden, relatedRule = null) => {
+//   // console.log({rule})
+//   try {
+//     const formattedRule = await ruleFormatter(rule);
+//     const ruleValidation = await validateRule(formattedRule);
+//     const sensorsValidation = await validateSensor(rule);
+
+//     // console.log({ formattedRule, rule });
+
+//     if (sensorsValidation.statusCode === 400) {
+//       return {
+//         statusCode: sensorsValidation.statusCode,
+//         message: sensorsValidation.message,
+//       };
+//     }
+
+//     if (ruleValidation.statusCode === 400) {
+//       return {
+//         statusCode: ruleValidation.statusCode,
+//         message: ruleValidation.message,
+//       };
+//     }
+
+//     const newRule = new Rule({
+//       rule: formattedRule,
+//       normalizedRule: rule,
+//       isStrict,
+//       isHidden,
+//       relatedRule,
+//     });
+//     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
+//     await newRule.save();
+
+//     return {
+//       statusCode: 200,
+//       message: "Rule added successfully",
+//     };
+//   } catch (err) {
+//     return {
+//       statusCode: 500,
+//       message: `Error adding rule - ${err}`,
+//     };
+//   }
+// };
+
+// const removeRuleFromDB = async (id) => {
+//   try {
+//     console.log("--------Delete Rule--------", id);
+//     await Rule.deleteOne({ id: id });
+//     await Rule.deleteMany({ relatedRule: id });
+//     return {
+//       statusCode: 200,
+//       message: "Rule deleted successfully",
+//     };
+//   } catch (err) {
+//     return {
+//       statusCode: 500,
+//       message: `Error deleting rule - ${err}`,
+//     };
+//   }
+// };
+
+
+
 const updateRule = async (ruleId, updateFields) => {
   try {
     // Extract the 'rule' field from updateFields
     let rule = _.get(updateFields, "rule", "");
 
     if (rule !== "") {
-      // Process and validate the 'rule' field
+      // Process and validate the 'rulxe' field
       const formattedRule = await ruleFormatter(rule);
       const ruleValidation = await validateRule(formattedRule);
-      //waleed enable it because is not work without sensors
+      console.log(formattedRule);
+    if (updateFields.description) {
+      const formattedDescription = await descriptionFormatter(updateFields.description);
+      const tempMatch = formattedDescription.match(/(\d+)°C/);
+      console.log(tempMatch);
+      if (tempMatch) {
+        const formattedAction = `Turn AC ON to cool mode at ${tempMatch[1]}`;
+        updateFields.action = formattedAction; // Now updating the action here
+      }
+      updateFields.description = formattedDescription;
+    }
 
-      // const sensorsValidation = await validateSensor(rule);
-      //
-      // if (sensorsValidation.statusCode === 400) {
-      //   return {
-      //     statusCode: sensorsValidation.statusCode,
-      //     message: sensorsValidation.message,
-      //   };
-      // }
+    // Validate the sensor condition if it's being updated
+    if (updateFields.condition) {
+      const sensorValidation = await validateSensor(updateFields.condition);
+      if (sensorValidation.statusCode === 400) {
+        return sensorValidation;
+      }
+    }
 
       if (ruleValidation.statusCode === 400) {
         return {

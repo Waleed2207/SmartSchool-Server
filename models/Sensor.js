@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const sensorSchema = new mongoose.Schema({
+    sensor_id: {
+        type: String,
+        required: true
+    },
     name: {
         type: String,
         required: true

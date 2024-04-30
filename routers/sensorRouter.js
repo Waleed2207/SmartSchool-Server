@@ -13,14 +13,12 @@ router.get('/sensibo', sensorControllers.get_SensiboAC_State);
 router.get('/temperature', sensorControllers.get_Temperature);
 
 
-// POST
 router.post('/motion-detected', sensorControllers.update_Motion_DetectedState);
-//router.post('/update-motion', sensorControllers.update_Motion);
-
-router.post('/sensibo/mode', sensorControllers.update_MotionState);
+router.post('/sensibo/mode', sensorControllers.update_AC_Mode);
 router.post('/sensibo', sensorControllers.TurnON_OFF_AC);
 
-
+// i change lines 16,17,18 from sensorRouter to routerr it gaved me undifiend error i keep the sensorRouter as null Sammier need to answer me 
+sensorRouter = null ;
 
 
 module.exports = router;
