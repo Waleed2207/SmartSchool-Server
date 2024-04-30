@@ -7,11 +7,15 @@ const { createRegexPattern, replaceWords } = require("../utils/utils");
 const { getUsers } = require("./users.service");
 const _ = require("lodash");
 const { getSensiboSensors } = require('../api/sensibo')
-const { get_MotionState, get_SpaceID, get_RoomID } = require('../controllers/sensorController.js')
-const { checkforUserDistance } = require('../api/location.js')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
+
+const { get_MotionState } = require('../controllers/sensorController.js');
+
+
+
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -70,14 +74,14 @@ const { execute } = require('../interpeter/src/executor/executor');
 //   };
 // };
 
-// const validateRule = async (rule) => {
-//   const parsedRule = rule.split(" ");
-//   if (parsedRule[0] !== "IF") {
-//     return {
-//       statusCode: 400,
-//       message: "Rule must start with IF",
-//     };
-//   }
+const validateRule = async (rule) => {
+  const parsedRule = rule.split(" ");
+  if (parsedRule[0] !== "IF") {
+    return {
+      statusCode: 400,
+      message: "Rule must start with IF",
+    };
+  }
 
   if (
     !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(
@@ -97,19 +101,11 @@ const { execute } = require('../interpeter/src/executor/executor');
     };
   }
 
-//   return {
-//     statusCode: 200,
-//     message: "Rule  validated successfully",
-//   };
-// };
-
-
-// const createUserDistanceMap = (users) => {
-//   return users.reduce((map, user) => {
-//     map[user] = `${user}_distance`;
-//     return map;
-//   }, {});
-// };
+  return {
+    statusCode: 200,
+    message: "Rule  validated successfully",
+  };
+};
 
 const ruleFormatter = async (rule) => {
   const usersResponse = await getUsers();
@@ -129,12 +125,12 @@ const ruleFormatter = async (rule) => {
   rule = replaceWords(rule, homeMap);
 
   
-//   //add (" ")
-//   const index = rule.indexOf("TURN") + 4;
-//   rule =
-//   rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
-//   return rule;
-// };
+  //add (" ")
+  const index = rule.indexOf("TURN") + 4;
+  rule =
+  rule.slice(0, index) + `("` + rule.slice(index + 1, rule.length) + `")`;
+  return rule;
+};
 
 // const insertRuleToDBMiddleware = async (rule, isStrict) => {
 //   const keepPattern = /\b(KEEP)\b/;
@@ -202,15 +198,98 @@ const ruleFormatter = async (rule) => {
 function stringifyCondition(condition) {
   return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
 }
+/**
+ * Generic function to fetch data based on a specified key.
+ * @param {string} key The key in the response data to return.
+ * @returns {Promise<*>} The data associated with the key, or null if an error occurs.
+ */
+async function fetchData(key) {
+  const req = {};
+  let responseData;
 
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this;  
+      },
+      json: function(data) {
+          responseData = data;  
+          return this;
+      }
+  };
 
-const getAllRulesDescription = async () => {
   try {
+      await get_MotionState(req, res);  // This should modify res
+      if (!responseData || !(key in responseData)) {
+          console.error(`Error: Key '${key}' not found in response data`);
+          return null;
+      }
+      return responseData[key];
+  } catch (error) {
+      console.error(`Error fetching ${key}: ${error}`);
+      return null;
+  }
+}
+
+
+/**
+* Fetches room ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchRoomID() {
+  return fetchData('RoomID');
+}
+
+/**
+* Fetches space ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchSpaceID() {
+  return fetchData('SpaceID');
+}
+
+/**
+* Fetches motion detection status using a generic fetchData function.
+* @returns {Promise<boolean|null>}
+*/
+async function fetchMotionState() {
+  return fetchData('motionDetected');
+}
+
+/**
+* Fetches all detections concurrently and logs the results.
+* @returns {Promise<Object>}
+*/
+async function getAllDetections() {
+  try {
+      const [roomID, spaceID, motionState] = await Promise.all([
+          fetchRoomID(),
+          fetchSpaceID(),
+          fetchMotionState()
+      ]);
+
+      console.log(`Room ID: ${roomID}, Space ID: ${spaceID}, Motion Detected: ${motionState}`);
+      return {
+          roomID: roomID,
+          spaceID: spaceID,
+          motionDetected: motionState
+      };
+  } catch (error) {
+      console.error('Error fetching detection data:', error);
+      return null;
+  }
+}
+
+const getAllRulesDescription = async () =>
+ {
+  try {
+    console.log("getallruledescription");
     const rules = await Rule.find({});
-    const activeDevices = await Device.find({device_id: '4ahpAkJ9',  state: 'on'});
 
+    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
+   
     let activeDescriptions = [];
-
+    
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
         //gbd add the true | to see to get all the rule
@@ -242,84 +321,68 @@ const getAllRulesDescription = async () => {
     };
   }
 };
-
-// setInterval(() => {
-//   console.log('Checking for rule updates...');
-//   updateAndProcessRules();
-// }, 30000);
-
-// getAllRulesDescription();
-
-//////waleed ********************************
-// getAllRulesDescription().then((result) => {
-//   console.log("descriptions : " + result.data);
-//   return result.data;
-// }).catch((error) => {
-//   console.error(error);
-// });
-
 // Define the async function that fetches sensor data and processes rules
 async function updateAndProcessRules() {
   try {
     const data = await getSensiboSensors();
-    if (data) {
+    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
+    const currentSeason = getCurrentSeason(); // Get the current season
+    const detectionData = await getAllDetections(); // Call once and use the results multiple times
+
+    if (data && detectionData) {
+      const { roomID, spaceID, motionDetected } = detectionData;
       const context = {
+        Room_id: roomID,
+        Space_id: spaceID,
         temperature: data.temperature,
-        humidity: data.humidity
+        humidity: data.humidity,
+        detection: motionDetected,
+        activity: currentActivity,
+        season: currentSeason
       };
+
       console.log("Fetched context:", context);
       await processAllRules(context); 
     } else {
       console.log('Failed to fetch sensor data or no data available.');
     }
   } catch (error) {
-      console.error('Error fetching motion state:', error); // Corrected the error message
-      return null;
+    console.error('An error occurred:', error.message);
   }
 }
 
-async function getAndLogSpace() {
-  const space_id = await fetchSpaceID()
-  return space_id; // Return the detection data
-}
-async function getAndLogRoom() {
-  const room_id = await fetchRoomID()
-  return room_id; // Return the detection data
-}
-async function getAndLogDetection() {
-  const detection = await fetchMotionState()
-  return detection; // Return the detection data
-}
+// Run the function immediately
+updateAndProcessRules();
+
+// Set an interval to run the function every 30 seconds
+setInterval(updateAndProcessRules, 30000);
+
+
 async function processAllRules(context) {
   try {
     // Await the promise to get the result object
-    console.log("ProcessAllRules");
     const descriptionResult = await getAllRulesDescription();
-    
+    console.log(descriptionResult);
+
     // Check if the operation was successful
     if (descriptionResult.statusCode === 200) {
       // Extract the descriptions array
       const descriptions = descriptionResult.data;
-  
       let acRules = [];
       let lightRules = [];      
       for (const description of descriptions) {
+
         // // Await the interpretation of each rule description
         // const interpretResult = await interpretRuleByName(description, context);
-        
-        const interpretResult = await interpretRuleByName(description, context);
-        
-        /*
+        // console.log(interpretResult);
         if (description.toLowerCase().includes("ac")) {
-        
           const interpretResult = await interpretRuleByName(description, context);
           acRules.push(description);
         } else if (description.toLowerCase().includes("light")) {
-          const interpretResult = await interpretRuleByName(description, context);
+          const interpretResult = await interpretRuleByName(description, context = null);
           lightRules.push(description);
 
         }
-        */
       }
     } else {
       console.error('Failed to get rule descriptions:', descriptionResult.message);
@@ -331,16 +394,16 @@ async function processAllRules(context) {
 
 
 
-
 // Function to interpret a rule by its description
 async function interpretRuleByName(ruleDescription, context) {
   try {
     // Find the rule by its description using await for the asynchronous operation
     const rule = await Rule.findOne({ description: ruleDescription });
+
     if (rule) {
-      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      interpret(ruleDescription, context);
-      return `Rule "${ruleDescription}" interpreted successfully, Context: ${JSON.stringify(context)}`; // Return a success message
+      const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      interpret(input, context);
+      return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
       return `Rule "${ruleDescription}" not found.`; // Return an error message
@@ -350,72 +413,20 @@ async function interpretRuleByName(ruleDescription, context) {
     return `Error fetching rule - ${error}`; // Return an error message
   }
 }
-async function fetchAndProcessRules() {
-  try {
-    console.log("fetchAndProcessAllRules");
 
-    // Get current date and time
-    const now = new Date();
-    // Format the time as hour:minute:second
-    const timestamp = now.toLocaleTimeString(); // This will use the system's locale to format the time
-
-    console.log(`[${timestamp}] Attempting to fetch sensor data...`);
-    const data = await getSensiboSensors();
-    const detectionData = await getAndLogDetection();
-    const spaceID =await getAndLogSpace();
-    const RoomID =await getAndLogRoom();
-    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
-    const currentSeason = getCurrentSeason(); // Get the current season
-    
-    if (data) {
-      const context = {
-        Space_id: spaceID,
-        Room_id: RoomID,
-        temperature: data.temperature,
-        humidity: data.humidity,
-        detection: detectionData.motionDetected,
-        //detection:true,
-       // activity: currentActivity, // Include the current activity in the context
-        activity: "studying",
-        season: currentSeason // Include the current season in the context
-      };
-     
-      console.log(`[${timestamp}] Fetch and process context`, context);
-      await processAllRules(context); // Properly await the processing of rules
-    } else {
-      console.log(`[${timestamp}] Failed to fetch sensor data or no data available.`);
-    }
-  } catch (error) {
-    const timestamp = new Date().toLocaleTimeString(); // Log the time if an error occurs
-    console.error(`[${timestamp}] An error occurred while fetching sensor data or processing rules:`, error);
-  }
-}
-// Set an interval for running the fetchAndProcessRules function
-// Set an interval to run the function every 30 seconds
-fetchAndProcessRules()
-setInterval(fetchAndProcessRules, 3 * 60 * 1000);
-
-//setInterval(fetchAndProcessRules, 5000);
-
-/*
-setInterval(fetchAndProcessRules, intervalTime);
-*/
-// Function to handle rule objects directly
-function stringifyCondition(condition) {
-  return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
-}
   // Function to pass this context to the executor
-function interpret(input, context) {
-  console.log("interpret");
-  //const tokens = tokenize(input);
-  const parsed = parse(input); // Ensure this returns the correct structure
-  // Correct use of JSON.stringify to log the condition object as a string
-  if (parsed && parsed.conditions && parsed.actions && parsed.specialOperators && parsed.specialOperators.condition_operators) {
-  execute(parsed, context);
-  } else {
-    console.error("Parsed object is incomplete or invalid:", parsed);
-  }    
-}
+  function interpret(input, context) {
+    const tokens = tokenize(input);
+    const parsed = parse(tokens); // Ensure this returns the correct structure
+    console.log(parsed);
+    execute(parsed, context); // `parsed` should include condition and action
+  }
+
+
+
+
+
+
 
 const add_new_Rule = async (ruleData) => {
   console.log("add new Rule");
@@ -450,6 +461,7 @@ const add_new_Rule = async (ruleData) => {
     };
   }
 };
+
 const getAllRules = async () => {
   try {
     const rules = await Rule.find();
@@ -464,70 +476,89 @@ const getAllRules = async () => {
     };
   }
 };
+// Function to format the description of a rule
+const descriptionFormatter = async (description) => {
+  let formattedDescription = description.trim();
+  formattedDescription = formattedDescription.charAt(0).toUpperCase() + formattedDescription.slice(1);
 
+  if (!formattedDescription.startsWith('If')) {
+    formattedDescription = 'If ' + formattedDescription;
+  }
 
-// const add_new_Rule = async (rule, isStrict, isHidden, relatedRule = null) => {
-//   // console.log({rule})
-//   try {
-//     const formattedRule = await ruleFormatter(rule);
-//     const ruleValidation = await validateRule(formattedRule);
-//     const sensorsValidation = await validateSensor(rule);
+  // Add any additional formatting rules here
 
-//     // console.log({ formattedRule, rule });
+  return formattedDescription;
+};
 
-//     if (sensorsValidation.statusCode === 400) {
-//       return {
-//         statusCode: sensorsValidation.statusCode,
-//         message: sensorsValidation.message,
-//       };
-//     }
-
-//     if (ruleValidation.statusCode === 400) {
-//       return {
-//         statusCode: ruleValidation.statusCode,
-//         message: ruleValidation.message,
-//       };
-//     }
-
-//     const newRule = new Rule({
-//       rule: formattedRule,
-//       normalizedRule: rule,
-//       isStrict,
-//       isHidden,
-//       relatedRule,
-//     });
-//     newRule.id = Math.floor(10000000 + Math.random() * 90000000);
-//     await newRule.save();
-
+// const actionFormatter = async (action) => {
+//   // This should format the action string based on your requirements
+//   // For now, this just trims the whitespace
+//   return action.trim();
+// };
+// const validateSensor = async (condition) => {
+//   // Validate the condition object against your sensor requirements
+//   // Replace the following with actual validation logic
+//   if (condition && condition.id) {
+//     // Assuming the condition must have an ID to be valid
 //     return {
 //       statusCode: 200,
-//       message: "Rule added successfully",
+//       message: "Sensor validated successfully",
 //     };
-//   } catch (err) {
+//   } else {
 //     return {
-//       statusCode: 500,
-//       message: `Error adding rule - ${err}`,
+//       statusCode: 400,
+//       message: "Invalid sensor condition",
 //     };
 //   }
 // };
-
-// const removeRuleFromDB = async (id) => {
+// const updateRule = async (ruleId, updateFields) => {
 //   try {
-//     console.log("--------Delete Rule--------", id);
-//     await Rule.deleteOne({ id: id });
-//     await Rule.deleteMany({ relatedRule: id });
-//     return {
-//       statusCode: 200,
-//       message: "Rule deleted successfully",
-//     };
-//   } catch (err) {
+//     // If ruleId is a string that needs to be converted to ObjectId, uncomment the line below
+//     // ruleId = mongoose.Types.ObjectId(ruleId);
+
+//     // Format the description if it's being updated
+//     if (updateFields.description) {
+//       updateFields.description = await descriptixonFormatter(updateFields.description);
+//       // Update the action based on the temperature found in the description
+//       const tempMatch = updateFields.description.match(/(\d+)°C/);
+//       if (tempMatch) {
+//         updateFields.action = `Turn AC ON to cool mode at ${tempMatch[1]}`;
+//       }
+//     }
+
+//     // If action needs to be formatted, uncomment the line below and implement actionFormatter
+//     // if (updateFields.action) updateFields.action = await actionFormatter(updateFields.action);
+
+//     // Validate the sensor condition if it's being updated
+//     if (updateFields.condition) {
+//       const sensorValidation = await validateSensor(updateFields.condition);
+//       if (sensorValidation.statusCode === 400) {
+//         return sensorValidation;
+//       }
+//     }
+
+//     // Update the rule in the database
+//     const result = await Rule.updateOne({ _id: ruleId }, { $set: updateFields });
+
+//     if (result.modifiedCount === 1) {
+//       return {
+//         statusCode: 200,
+//         message: "Rule updated successfully",
+//       };
+//     } else {
+//       return {
+//         statusCode: 404,
+//         message: "Rule not found",
+//       };
+//     }
+//   } catch (error) {
+//     console.error(`Error updating rule: ${error}`);
 //     return {
 //       statusCode: 500,
-//       message: `Error deleting rule - ${err}`,
+//       message: `Error updating rule - ${error}`,
 //     };
 //   }
 // };
-
 
 
 const updateRule = async (ruleId, updateFields) => {
@@ -601,6 +632,7 @@ async function deleteRuleById(ruleId) {
     return { status: 500 };
   }
 }
+
 const toggleActiveStatus = async (ruleId, isActive) => {
   try {
     // Assuming updateRuleActiveStatus is an imported function from your services
@@ -618,12 +650,30 @@ const toggleActiveStatus = async (ruleId, isActive) => {
     toast.error("Failed to update rule status.");
   }
 };
+// const removeAllRules = async () => {
+//   try {
+//     await Rule.deleteMany({});
+//   } catch (err) {
+//     console.log(`Error deleting all rules ${err.message}`);
+//   }
+// };
+
+// const removeUIOnlyRules = async (ruleId) => {
+//   try {
+    
+//     await Rule.deleteMany({ id: ruleId });
+//     // await Rule.deleteMany
+//   } catch (err) {}
+// };
+
 module.exports = {
   add_new_Rule,
   getAllRules,
   updateRule,
   toggleActiveStatus,
   deleteRuleById,
-  get_SpaceID,
-  get_RoomID
+  getAllDetections,
+  fetchRoomID,
+  fetchSpaceID,
+  fetchMotionState
 };

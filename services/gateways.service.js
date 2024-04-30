@@ -244,21 +244,16 @@ const deleteGateway = (id) => {
 // };
 
 const fetchIoTDevicesData = async () => {
+  const flaskAppUrl = 'http://10.0.0.23:5010/api-mindolife/get_devices';
   try {
-    const response = await axios.get('https://api.mindolife.com/API/Gateway/getIoTDevices', {
-      httpsAgent: agent,
-      params: {
-        developerKey: 'dec4695bf4450e3a4e0aa2b3f92929b631055ee78b77c5da59d434dee088f1cc',
-        dataType: 'json',
-        client: 'web',
-        jsonResponse: true,
-        getFullData: true,
-        daysOfHistory: 30,
-        sessionKey: '3c387806e55743f337bd915199ea7a8a426f617414ebdd8e736f2d969bb7350a3b14aafb3542940d865eaf72046ef99e78a28e7a1f4dc4eed1490380ed7d391677413bf666ba5ee7f1695dff2f5c692997d99b99765a43ed70c2125253d0aa3b5efe849bf4bafb67f45083f1a1bba0c5d8fef74415fddd9c1030a15e3e2ca689',
+      const response = await axios.get(flaskAppUrl);
+      console.log("Full Axios Response:", response);
+      console.log("Data received:", response.data);
+      if (!response.data || !Array.isArray(response.data.devices)) {
+        console.error('Invalid or missing devices data in response:', response.data);
+        return [];  // Ensuring function returns a consistent type
       }
-    });
-    console.log(response.data);
-    return response.data; // axios wraps the response data in a data property
+      return response.data;
   } catch (error) {
       console.error(`Error fetching IoT devices from Flask app: ${error}`);
       throw error;
@@ -347,11 +342,10 @@ const MindolifefetchAndTransformIoTDeviceDataById = async (req, res) => {
     }
 };
 
-const changeFeatureState = async (deviceId, state) => {
-  console.log(deviceId);
+const changeFeatureState = async (deviceId, state, rasp_ip) => {
 
-  const baseUrl = 'https://api.mindolife.com/API/Gateway/changeFeatureValue';
-  
+  // console.log(rasp_ip);
+  const flaskAppUrl = `http://${rasp_ip}:5010/api-mindolife/change_feature_state`;
   try {
     const valueToPost = state ? 'on' : 'off'; // Prepare the value for the external API
     // Parameters sent in the request body for a POST request
