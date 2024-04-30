@@ -154,7 +154,7 @@ const getAcState = async (rasp_ip) => {
     }
     console.log("Requesting AC state for IP:", rasp_ip);
     try {
-        const flaskUrl = `http://${rasp_ip}:5009/api-sensibo/get_ac_state`;
+        const flaskUrl = `http://${rasp_ip}:5010/api-sensibo/get_ac_state`;
 
         // Send a GET request to the Flask app
         const response = await axios.get(flaskUrl);
@@ -245,7 +245,7 @@ const validateDegree = (temperature) => {
 // };
 
 const switchAcState = async (id, state, rasp_ip, temperature = null) => {
-  const apiUrl = `http://${rasp_ip}:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
+  const apiUrl = `http://${rasp_ip}:5010/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
 
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
   const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
@@ -319,7 +319,7 @@ const switchAcState = async (id, state, rasp_ip, temperature = null) => {
 
 const getSensiboSensors = async () => {
   try {
-    const flaskUrl = `http://10.100.102.14:5009/api-sensibo/get_sensor_data`; 
+    const flaskUrl = `http://10.0.0.23:5010/api-sensibo/get_sensor_data`; 
 
     // Send a GET request to the Flask app
     const response = await axios.get(flaskUrl);
@@ -412,7 +412,7 @@ const updateAcMode = async (mode) => {
 const updateSensiboMode = async (deviceId, mode, rasp_ip) => {
   // console.log(rasp_ip);
   try {
-    const response = await axios.post(`http://${rasp_ip}:5009/api-sensibo/update_mode`, {
+    const response = await axios.post(`http://${rasp_ip}:5010/api-sensibo/update_mode`, {
       deviceId: deviceId,
       mode: mode
     });

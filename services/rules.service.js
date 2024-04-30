@@ -10,6 +10,12 @@ const { getSensiboSensors } = require('../api/sensibo')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
+
+const { get_MotionState } = require('../controllers/sensorController.js');
+
+
+
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -100,14 +106,6 @@ const validateRule = async (rule) => {
     message: "Rule  validated successfully",
   };
 };
-
-
-// const createUserDistanceMap = (users) => {
-//   return users.reduce((map, user) => {
-//     map[user] = `${user}_distance`;
-//     return map;
-//   }, {});
-// };
 
 const ruleFormatter = async (rule) => {
   const usersResponse = await getUsers();
@@ -200,78 +198,110 @@ const ruleFormatter = async (rule) => {
 function stringifyCondition(condition) {
   return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
 }
+/**
+ * Generic function to fetch data based on a specified key.
+ * @param {string} key The key in the response data to return.
+ * @returns {Promise<*>} The data associated with the key, or null if an error occurs.
+ */
+async function fetchData(key) {
+  const req = {};
+  let responseData;
 
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this;  
+      },
+      json: function(data) {
+          responseData = data;  
+          return this;
+      }
+  };
 
-// const getAllRulesDescription = async () => {
-//   try {
-//     const rules = await Rule.find({});
-//     const devices = await Device.find({ state: 'on' });
-
-//     let activeDescriptions = [];
-//     let activeDevicesMap = {};
-
-//     console.log('Active devices found:', devices.length);
-
-//     // Create a map of active devices for quick lookup
-//     devices.forEach(device => {
-//       activeDevicesMap[device.device_id] = true;
-//     });
-
-//     console.log('Active devices map:', activeDevicesMap);
-
-//     // Check each rule to see if it relates to an active device
-//     rules.forEach(rule => {
-//       console.log('Checking rule:', rule.description, 'isActive:', rule.isActive);
-//       if (rule.isActive ) {
-//         activeDescriptions.push(rule.description);
-//       }
-//     });
-//     console.log('Active descriptions:', activeDescriptions);
-
-//     if (activeDescriptions.length > 0) {
-//       return {
-//         statusCode: 200,
-//         data: activeDescriptions,
-//       };
-//     } else {
-//       return {
-//         statusCode: 404,
-//         message: "No active rules found",
-//       };
-//     }
-//   } catch (error) {
-//     console.error('Error fetching rules:', error);
-//     return {
-//       statusCode: 500,
-//       message: `Error fetching rules - ${error}`,
-//     };
-//   }
-// };
-
-const getAllRulesDescription = async () => {
   try {
+      await get_MotionState(req, res);  // This should modify res
+      if (!responseData || !(key in responseData)) {
+          console.error(`Error: Key '${key}' not found in response data`);
+          return null;
+      }
+      return responseData[key];
+  } catch (error) {
+      console.error(`Error fetching ${key}: ${error}`);
+      return null;
+  }
+}
+
+
+/**
+* Fetches room ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchRoomID() {
+  return fetchData('RoomID');
+}
+
+/**
+* Fetches space ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchSpaceID() {
+  return fetchData('SpaceID');
+}
+
+/**
+* Fetches motion detection status using a generic fetchData function.
+* @returns {Promise<boolean|null>}
+*/
+async function fetchMotionState() {
+  return fetchData('motionDetected');
+}
+
+/**
+* Fetches all detections concurrently and logs the results.
+* @returns {Promise<Object>}
+*/
+async function getAllDetections() {
+  try {
+      const [roomID, spaceID, motionState] = await Promise.all([
+          fetchRoomID(),
+          fetchSpaceID(),
+          fetchMotionState()
+      ]);
+
+      console.log(`Room ID: ${roomID}, Space ID: ${spaceID}, Motion Detected: ${motionState}`);
+      return {
+          roomID: roomID,
+          spaceID: spaceID,
+          motionDetected: motionState
+      };
+  } catch (error) {
+      console.error('Error fetching detection data:', error);
+      return null;
+  }
+}
+
+const getAllRulesDescription = async () =>
+ {
+  try {
+    console.log("getallruledescription");
     const rules = await Rule.find({});
-    const activeDevices = await Device.find({state: 'on' });
 
-    
+    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
+   
     let activeDescriptions = [];
-    let devicesStateMap = {};
-    console.log('Active devices found:', activeDevices.length);
-
-     // Create a map of active devices for quick lookup
-      activeDevices.forEach(device => {
-      devicesStateMap[device.device_id] = device.state;
-    });
-
-    console.log('Devices state map:', devicesStateMap);
-
+    
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
+        //gbd add the true | to see to get all the rule
         if (rule.isActive) {
           activeDescriptions.push(rule.description);
         }
+        
       }
     }
+
+   
+     
     if (activeDescriptions.length > 0) {
       return {
         statusCode: 200,
@@ -283,6 +313,7 @@ const getAllRulesDescription = async () => {
         message: "No active rules found",
       };
     }
+
   } catch (error) {
     return {
       statusCode: 500,
@@ -290,16 +321,26 @@ const getAllRulesDescription = async () => {
     };
   }
 };
-
 // Define the async function that fetches sensor data and processes rules
 async function updateAndProcessRules() {
   try {
     const data = await getSensiboSensors();
-    if (data) {
+    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
+    const currentSeason = getCurrentSeason(); // Get the current season
+    const detectionData = await getAllDetections(); // Call once and use the results multiple times
+
+    if (data && detectionData) {
+      const { roomID, spaceID, motionDetected } = detectionData;
       const context = {
+        Room_id: roomID,
+        Space_id: spaceID,
         temperature: data.temperature,
-        humidity: data.humidity
+        humidity: data.humidity,
+        detection: motionDetected,
+        activity: currentActivity,
+        season: currentSeason
       };
+
       console.log("Fetched context:", context);
       await processAllRules(context); 
     } else {
@@ -308,10 +349,6 @@ async function updateAndProcessRules() {
   } catch (error) {
     console.error('An error occurred:', error.message);
   }
-
-  // Place the rule checking code here if it needs to be part of the async function
-  console.log('Checking for rule updates...');
-  getAllRulesDescription();
 }
 
 // Run the function immediately
@@ -630,14 +667,13 @@ const toggleActiveStatus = async (ruleId, isActive) => {
 // };
 
 module.exports = {
-  // insertRuleToDB,
   add_new_Rule,
   getAllRules,
   updateRule,
   toggleActiveStatus,
-  // removeRuleFromDB,
   deleteRuleById,
-  // validateRule,
-  // insertRuleToDBMiddleware,
-  // removeAllRules,
+  getAllDetections,
+  fetchRoomID,
+  fetchSpaceID,
+  fetchMotionState
 };

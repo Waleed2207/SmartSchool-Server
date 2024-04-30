@@ -244,7 +244,7 @@ const deleteGateway = (id) => {
 // };
 
 const fetchIoTDevicesData = async () => {
-  const flaskAppUrl = 'http://10.100.102.14:5009/api-mindolife/get_devices';
+  const flaskAppUrl = 'http://10.0.0.23:5010/api-mindolife/get_devices';
   try {
       const response = await axios.get(flaskAppUrl);
       console.log("Full Axios Response:", response);
@@ -345,7 +345,7 @@ const MindolifefetchAndTransformIoTDeviceDataById = async (req, res) => {
 const changeFeatureState = async (deviceId, state, rasp_ip) => {
 
   // console.log(rasp_ip);
-  const flaskAppUrl = `http://${rasp_ip}:5009/api-mindolife/change_feature_state`;
+  const flaskAppUrl = `http://${rasp_ip}:5010/api-mindolife/change_feature_state`;
   try {
     const valueToPost = state ? 'on' : 'off'; // Prepare the value for the external API
     // Parameters sent in the request body for a POST request
