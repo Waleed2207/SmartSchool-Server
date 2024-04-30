@@ -146,29 +146,33 @@ const analyzeFunc = async (func) => {
 //     return null; // Return null or a default state object in case of an error
 //   }
 // };
-const getAcState = async () => {
-  try {
-    // Update this URL to the location where your Flask app is hosted
-    const flaskUrl = `http://10.100.102.14:5009/api-sensibo/get_ac_state`; 
 
-    // Send a GET request to the Flask app
-    const response = await axios.get(flaskUrl);
-
-    // Log the full structure of the response data from Flask
-    console.log("AC State Retrieved from Flask:", response.data);
-
-    if (response.data && response.data.success) {
-      return response.data.acState;  // Accessing the AC state returned by the Flask app
-    } else {
-      console.log("No AC state found in the response from Flask");
-      return null;  // Consider returning a default state or null if no state is found
+const getAcState = async (rasp_ip) => {
+    if (!rasp_ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(rasp_ip)) {
+        console.error("Invalid IP address provided:", rasp_ip);
+        return res.status(400).json({ error: "Invalid IP address" });
     }
-  } catch (err) {
-    // Handle errors in the request to the Flask app
-    console.error("Error retrieving AC state from Flask:", err.response ? err.response.data : err.message);
-    return null;  // Return null or a default state object in case of an error
-  }
+    console.log("Requesting AC state for IP:", rasp_ip);
+    try {
+        const flaskUrl = `http://${rasp_ip}:5009/api-sensibo/get_ac_state`;
+
+        // Send a GET request to the Flask app
+        const response = await axios.get(flaskUrl);
+        console.log("AC State Retrieved from Flask:", response.data);
+
+        if (response.data && response.data.success) {
+            return response.data.acState; // Accessing the AC state returned by the Flask app
+        } else {
+            console.log("No AC state found in the response from Flask");
+            return null; // Consider returning a default state or null if no state is found
+        }
+    } catch (err) {
+        // Handle errors in the request to the Flask app
+        console.error("Error retrieving AC state from Flask:", err.response ? err.response.data : err.message);
+        return null; // Return null or a default state object in case of an error
+    }
 };
+
 
 // const getAcState = async () => {
 
@@ -240,8 +244,8 @@ const validateDegree = (temperature) => {
 //   }
 // };
 
-const switchAcState = async (id, state, temperature = null) => {
-  const apiUrl = `http://10.100.102.14:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
+const switchAcState = async (id, state, rasp_ip, temperature = null) => {
+  const apiUrl = `http://${rasp_ip}:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
 
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
   const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
@@ -405,9 +409,10 @@ const updateAcMode = async (mode) => {
   }
 };
 
-const updateSensiboMode = async (deviceId, mode) => {
+const updateSensiboMode = async (deviceId, mode, rasp_ip) => {
+  // console.log(rasp_ip);
   try {
-    const response = await axios.post('http://10.100.102.14:5009/api-sensibo/update_mode', {
+    const response = await axios.post(`http://${rasp_ip}:5009/api-sensibo/update_mode`, {
       deviceId: deviceId,
       mode: mode
     });

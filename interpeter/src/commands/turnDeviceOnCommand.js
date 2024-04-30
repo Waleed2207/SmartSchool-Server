@@ -15,6 +15,8 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     async execute() {
         console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
+
+
         // Assuming this.details is a string like "25 DEGREES"
     
         // //Extract the numeric part from the string
@@ -66,6 +68,9 @@ class TurnDeviceOnCommand extends BaseCommand {
     //     this.details = details;
     //     this.place  = place;
     //     console.log(`Turning ${this.device} ON with details: ${this.details} in ${this.place}`);
+
+    //  res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+
 
     }
 }

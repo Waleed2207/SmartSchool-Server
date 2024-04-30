@@ -15,6 +15,10 @@ const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/ro
 const _ = require("lodash");
 
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
+let RoomID = false; 
+let SpaceID = false;
+let DeviceID = false;
+let clientIp = false;
 
 exports.sensorControllers={
 
@@ -33,69 +37,78 @@ exports.sensorControllers={
     },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
     async get_MotionState (req, res) {
-        res.status(200).json({ motionDetected: motionState });
-    },
+      res.status(200).json({
+          motionDetected: motionState,
+          ROOM_ID: RoomID,
+          SPACE_ID: SpaceID,
+          DEVICE_ID: DeviceID,
+          CLIENT_IP: clientIp
+      });
+  },
+  
 
     async update_Motion_DetectedState(req, res) {
+      try {
+        const { state: lightState, room_id: roomId, space_id: spaceId , device_id: deviceId, raspberry_pi_ip: raspberryPiIP } = req.body;
+        
+        console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'in Space ID:', spaceId, 'using Device ID:', deviceId, 'from Raspberry Pi:', raspberryPiIP);
+        // Update the global motionState
+        motionState = lightState === 'on';
+        RoomID = roomId;
+        SpaceID = spaceId;
+        DeviceID = deviceId;
+        clientIp= raspberryPiIP
+        // Validate the state before processing
+        if (lightState !== 'on' && lightState !== 'off') {
+            return res.status(400).json({ error: `Invalid light state: ${lightState}` });
+        }
+        if ( getdatatfromInterpeter()) 
+          console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+          res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+          
+          // Update the room's 'motionDetected' field
+          await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
+          console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
 
-        try {
-            const lightState = req.body.state;
-            
-            motionState = lightState === 'on'; // Update the motionState
-        
-            console.log('Received request to turn', lightState);
-        
-            if (lightState !== 'on' && lightState !== 'off') {
-              throw new Error(`Invalid light state: ${lightState}`);
-            }
-        
-            console.log(`Simulated light turned ${lightState}`);
-            const roomId = "38197016"; // Example roomId
-            const deviceId = "65109692"; // Example deviceId
-        
-             // Update the room's 'motionDetected' field
-             await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
-        
-             // Update the specific device's state
-             await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-         
-           // Additionally, update the RoomDevice state
-           await RoomDevice.updateOne(
-            { room_id: roomId, device_id: deviceId },
-            { $set: { state: lightState } }
+          // Update the specific device's state
+          await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+          console.log(`Device state updated for Device ID: ${deviceId}`);
+
+          // Additionally, update the RoomDevice state
+          await RoomDevice.updateOne(
+              { room_id: roomId, device_id: deviceId },
+              { $set: { state: lightState } }
           );
-    
-            console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-            res.status(200).send(`Light turned ${lightState}, request received successfully`);
-          } catch (error) {
-            console.error('Error:', error.message);
-            res.status(500).send(`Server error: ${error.message}`);
-          }  
+      } catch (error) {
+          console.error('Error:', error.message);
+          res.status(500).json({ error: `Server error: ${error.message}` });
+      }
     },
 
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {
           try {
-              const state = await getAcState();
-              console.log("Fetched AC state:", state);
-          
-              if (!state) {
+            const rasp_ip = req.query.rasp_ip; // Correctly accessing clientIp from params
+            const state = await getAcState(rasp_ip);
+            console.log("Fetched AC state:", state);
+    
+            if (!state) {
                 console.error("Failed to fetch AC state: No state returned");
                 return res.status(500).send('Unable to fetch AC state');
-              }
-              // Optionally, validate/format the state here before sending
-              res.status(200).json(state);
-            } catch (error) {
-              console.error("Error fetching AC state:", error);
-              res.status(500).json({error: 'Unable to fetch AC state', details: error.message});
             }
+            // Optionally, validate/format the state here before sending
+            res.status(200).json(state);
+        } catch (error) {
+            console.error("Error fetching AC state:", error);
+            res.status(500).json({ error: 'Unable to fetch AC state', details: error.message });
+        }
 
       },
       async TurnON_OFF_AC(req, res) {
         try {
           console.log("-----------sensibo---------------");
       
-          const { state, temperature, id } = req.body;
+          const { state, temperature, rasp_ip, id } = req.body;
           console.log(id);
           const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
           const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
@@ -104,7 +117,7 @@ exports.sensorControllers={
           console.log("Device ID:", actualDeviceId, "API Key:", actualApiKey);
       
           // Adjusted call to match the switchAcState function signature
-          const switchResponse = await switchAcState(actualDeviceId, state, temperature);
+          const switchResponse = await switchAcState(actualDeviceId, state, rasp_ip, temperature);
           // This is where you should insert the detailed error logging
           if (switchResponse.statusCode !== 200) {
             if (switchResponse.data && typeof switchResponse.data === 'string') {
@@ -139,8 +152,9 @@ exports.sensorControllers={
       },
       
       async update_AC_Mode(req, res) {
-        const { deviceId, mode } = req.body;
-        const result = await updateSensiboMode(deviceId, mode);
+        const { deviceId, mode, rasp_ip } = req.body;
+        // console.log(rasp_ip);
+        const result = await updateSensiboMode(deviceId, mode, rasp_ip);
       
         if (_.get(result, "success", false)) {
           res.status(200).json(result);
