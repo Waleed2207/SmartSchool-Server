@@ -11,9 +11,8 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
-
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName} = require('./rooms.service');  
 const { get_MotionState } = require('../controllers/sensorController.js');
-
 
 
 // const { Rules } = require('../models/Rules');
@@ -324,35 +323,85 @@ const getAllRulesDescription = async () =>
 // Define the async function that fetches sensor data and processes rules
 async function updateAndProcessRules() {
   try {
-    const data = await getSensiboSensors();
-    const currentActivity = getCurrentActivity(); // Get the current activity based on the time of day
-    const currentSeason = getCurrentSeason(); // Get the current season
-    const detectionData = await getAllDetections(); // Call once and use the results multiple times
+      // Await the promise to get the result object
+      const descriptionResult = await getAllRulesDescription();
+      console.log(descriptionResult);
 
-    if (data && detectionData) {
-      const { roomID, spaceID, motionDetected } = detectionData;
-      const context = {
-        Room_id: roomID,
-        Space_id: spaceID,
-        temperature: data.temperature,
-        humidity: data.humidity,
-        detection: motionDetected,
-        activity: currentActivity,
-        season: currentSeason
-      };
+      // Check if the operation was successful
+      if (descriptionResult.statusCode === 200) {
+          // Extract the descriptions array
+          const descriptions = descriptionResult.data;
+          let acRules = [];
+          let lightRules = [];
 
-      console.log("Fetched context:", context);
-      await processAllRules(context); 
-    } else {
-      console.log('Failed to fetch sensor data or no data available.');
-    }
+          for (const description of descriptions) {
+              console.log("Process all rules");
+              console.log(description); 
+              const roomPattern = /\b(bathroom|livingroom|Class247|Class 247|room 247|season)\b/gi;
+
+              let roomMatch = description.match(roomPattern);
+              let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
+
+              if (!roomName) {
+                  console.error("No room matched in the description:", description);
+                  continue; // Skip this description if no room is found
+              }
+
+              try {
+                  // Get the room by its name
+                  const room = await getRoomByName(roomName);
+                  console.log("Room details:", JSON.stringify(room, null, 2));
+                  // Check if the room is found
+                  if (!room) {
+                      console.log(`Room "${roomName}" is null`);
+                      continue; // Skip this description if room is null
+                  }
+
+                  const data = await getSensiboSensors();
+                  if (data) {
+                      // Create a context object based on the data and room
+                      const context = {
+                          temperature: data.temperature,
+                          humidity: data.humidity,
+                          activity: "studying",
+                          season: "spring",
+                          Current_room: room,
+                      };
+
+                      // Evaluate the rule description
+                      if (description.toLowerCase().includes("ac")) {
+                          const interpretResult = await interpretRuleByName(description, context);
+                          acRules.push(description);
+                      } else if (description.toLowerCase().includes("light")) {
+                          const interpretResult = await interpretRuleByName(description, context);
+                          lightRules.push(description);
+                      }
+
+                      // Log the room details (optional)
+                      console.log("Room details:", JSON.stringify(room, null, 2));
+                  }
+              } catch (error) {
+                  console.error(`Failed to retrieve room "${roomName}":`, error.message);
+              }
+          }
+
+          // Optional: Log the processed rule descriptions
+          console.log("AC Rules:", acRules);
+          console.log("Light Rules:", lightRules);
+
+      } else {
+          console.error('Failed to get rule descriptions:', descriptionResult.message);
+      }
   } catch (error) {
-    console.error('An error occurred:', error.message);
+      console.error('Error processing rule descriptions:', error);
   }
 }
 
+   
+
+
 // Run the function immediately
-updateAndProcessRules();
+
 
 // Set an interval to run the function every 30 seconds
 setInterval(updateAndProcessRules, 30000);
@@ -360,49 +409,85 @@ setInterval(updateAndProcessRules, 30000);
 
 async function processAllRules(context) {
   try {
-    // Await the promise to get the result object
-    const descriptionResult = await getAllRulesDescription();
-    console.log(descriptionResult);
+      console.log("process all rules");
 
-    // Check if the operation was successful
-    if (descriptionResult.statusCode === 200) {
-      // Extract the descriptions array
-      const descriptions = descriptionResult.data;
-      let acRules = [];
-      let lightRules = [];      
-      for (const description of descriptions) {
+      // Await the promise to get the result object
+      const descriptionResult = await getAllRulesDescription();
+      console.log(descriptionResult);
 
-        // // Await the interpretation of each rule description
-        // const interpretResult = await interpretRuleByName(description, context);
-        // console.log(interpretResult);
-        if (description.toLowerCase().includes("ac")) {
-          const interpretResult = await interpretRuleByName(description, context);
-          acRules.push(description);
-        } else if (description.toLowerCase().includes("light")) {
-          const interpretResult = await interpretRuleByName(description, context = null);
-          lightRules.push(description);
+      // Check if the operation was successful
+      if (descriptionResult.statusCode === 200) {
+          // Extract the descriptions array
+          const descriptions = descriptionResult.data;
+          let acRules = [];
+          let lightRules = [];
 
-        }
+          for (const description of descriptions) {
+              const roomPattern = /\b(bathroom|livingroom|class247|class 247|room 247|season)\b/gi;
+
+              let roomMatch = description.match(roomPattern);
+              let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
+
+              if (!roomName) {
+                  console.error("No room matched in the description:", description);
+                  continue; // Skip this description if no room is found
+              }
+
+              try {
+                  // Get the room by its name
+                  const room = await getRoomByName(roomName);
+
+                  // Check if the room is found
+                  if (!room) {
+                      console.log(`Room "${roomName}" is null`);
+                      continue; // Skip this description if room is null
+                  }
+                 
+
+                  // Evaluate the rule description
+                  if (description.toLowerCase().includes("ac")) {
+                      const interpretResult = await interpretRuleByName(description, room);
+                      acRules.push(description);
+                  } else if (description.toLowerCase().includes("light")) {
+                      const interpretResult = await interpretRuleByName(description, room);
+                      lightRules.push(description);
+                  }
+
+                  // Log the room details (optional)
+                  console.log("Room details:", JSON.stringify(room, null, 2));
+
+              } catch (error) {
+                  console.error(`Failed to retrieve room "${roomName}":`, error.message);
+              }
+          }
+
+          // Optional: Log the processed rule descriptions
+          console.log("AC Rules:", acRules);
+          console.log("Light Rules:", lightRules);
+
+      } else {
+          console.error('Failed to get rule descriptions:', descriptionResult.message);
       }
-    } else {
-      console.error('Failed to get rule descriptions:', descriptionResult.message);
-    }
   } catch (error) {
-    console.error('Error processing rule descriptions:', error);
+      console.error('Error processing rule descriptions:', error);
   }
 }
 
 
 
+
 // Function to interpret a rule by its description
-async function interpretRuleByName(ruleDescription, context) {
+async function interpretRuleByName(ruleDescription,context) {
   try {
+    console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
     // Find the rule by its description using await for the asynchronous operation
     const rule = await Rule.findOne({ description: ruleDescription });
-
+    
     if (rule) {
-      const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      interpret(input, context);
+      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      //console.log(`Interpreting rule: ${input}`); 
+    
+      interpret(ruleDescription, context);
       return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
@@ -417,7 +502,7 @@ async function interpretRuleByName(ruleDescription, context) {
   // Function to pass this context to the executor
   function interpret(input, context) {
     const tokens = tokenize(input);
-    const parsed = parse(tokens); // Ensure this returns the correct structure
+    const parsed = parse(input); // Ensure this returns the correct structure
     console.log(parsed);
     execute(parsed, context); // `parsed` should include condition and action
   }

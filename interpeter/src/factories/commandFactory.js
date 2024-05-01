@@ -34,7 +34,7 @@ const searchDevicesInAction = async (action) => {
 };
 
 class CommandFactory {
-    static async createCommand(action) {
+    static async createCommand(action,context,roomName) {
       
 
         
@@ -63,16 +63,16 @@ class CommandFactory {
         console.log(`State: ${state}`);
         console.log(`Mode: ${mode}`);
         console.log(`Value: ${value}`);
-        console.log('---');
+        
         
         
         // Instantiate specific command based on parsed action
         if (state === 'on') {
             console.log("state is on ");
-            return new TurnDeviceOnCommand(device,mode, value);
+            return new TurnDeviceOnCommand(context[roomName],device,mode, value);
         } else if (state === 'off') {
             console.log("state is off ");
-            return new TurnDeviceOffCommand(device);
+            return new TurnDeviceOffCommand(context[roomName],device);
         } else {
             console.log("Unknown command state.");
             return null;
