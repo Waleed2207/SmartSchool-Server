@@ -36,47 +36,16 @@ exports.sensorControllers={
             }
     },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
-    async get_RoomID(req, res) {
-      res.status(200).json({ RoomID: RoomID });
-  },
-  
-
-
- 
-  async get_SpaceID(req, res) {
-    
-      res.status(200).json({ spaceID: SpaceID });
-  },
-  
-  async get_MotionState(req, res) {
-      // Assuming that motionState, spaceId, and roomId are defined and available in your application context
-      // These should be retrieved from relevant data sources or passed to this function before calling
-  
-      // Respond with JSON object containing motion detection status and identifiers
+    async get_MotionState (req, res) {
       res.status(200).json({
           motionDetected: motionState,
-          spaceID: SpaceID,
-          RoomID: RoomID,
+          ROOM_ID: RoomID,
+          SPACE_ID: SpaceID,
           DEVICE_ID: DeviceID,
           CLIENT_IP: clientIp
       });
-    },
-
-//   async get_MotionState(req, res) {
-//     // Assuming motionState and other variables are accessible here
-//     res.status(200).json({
-//       motionDetected: motionState,
-//       ROOM_ID: RoomID,
-//       SPACE_ID: SpaceID,
-//       DEVICE_ID: DeviceID,
-//       CLIENT_IP: clientIp
-//     });
-// },
+  },
   
-
-
-
-
 
     async update_Motion_DetectedState(req, res) {
       try {
@@ -89,12 +58,11 @@ exports.sensorControllers={
         SpaceID = spaceId;
         DeviceID = deviceId;
         clientIp= raspberryPiIP
-        console.log(typeof(roomId));
         // Validate the state before processing
         if (lightState !== 'on' && lightState !== 'off') {
             return res.status(400).json({ error: `Invalid light state: ${lightState}` });
         }
-       // if ( getdatatfromInterpeter()) 
+        
           console.log(`Motion state updated for room ${roomId} to ${motionState}`);
           res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
           
