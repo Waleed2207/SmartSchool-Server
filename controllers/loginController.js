@@ -36,8 +36,8 @@ exports.loginControllers={
     // --------------------------------- Sign up----------------------------------
     async RegesterUSER(req, res){
 
-        const { fullName, email, password, role } = req.body;
-        const response = await registerUser(fullName, email, password, role);
+        const { fullName, email, password, role, space_id } = req.body;
+        const response = await registerUser(fullName, email, password, role, space_id);
         res.status(response.status).json({ message: response.message });
     },
     // --------------------------------- Sign in ---------------------------------

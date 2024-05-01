@@ -62,7 +62,7 @@ exports.sensorControllers={
         if (lightState !== 'on' && lightState !== 'off') {
             return res.status(400).json({ error: `Invalid light state: ${lightState}` });
         }
-        if ( getdatatfromInterpeter()) 
+        
           console.log(`Motion state updated for room ${roomId} to ${motionState}`);
           res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
           

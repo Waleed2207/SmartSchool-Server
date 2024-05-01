@@ -246,9 +246,9 @@ const validateDegree = (temperature) => {
 
 const switchAcState = async (id, state, rasp_ip, temperature = null) => {
   const apiUrl = `http://${rasp_ip}:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
-
+  console.log(id);
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
-  const actualApiKey = id === "YNahUQcM" ? "VqP5EIaNb3MrI62s19pYpbIX5zdClO" : process.env.SENSIBO_API_KEY;
+  const actualApiKey = id === "YNahUQcM" ? "sS94OndxNNoKiBXwLU59Y08r27fyHW" : process.env.SENSIBO_API_KEY;
   // Construct the payload including the actualDeviceId and actualApiKey
   const payload = {
     id: actualDeviceId,
@@ -256,7 +256,7 @@ const switchAcState = async (id, state, rasp_ip, temperature = null) => {
     state: state,
     temperature: temperature
   };
-
+  console.log(payload);
 
   console.log("Attempting to switch AC state:", state, "with temperature:", temperature);
 

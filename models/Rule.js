@@ -12,6 +12,10 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  space_id: {
+    type: String,
+    required: true
+  },
   action: String,
   isStrict: {
     type: Boolean,
