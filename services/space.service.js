@@ -60,15 +60,18 @@ const get_Space = async () => {
       };
     }
   };
-  const get_Space_ByID = async (spaceId) => {
+  const get_Space_By_ID = async (spaceId) => {
     try {
-        const space = await Space.find({ space_id: spaceId }); // Find one room with the given namespace
-        if (!space) {
-            return null; // Return null if no room is found
-        }
-        return space; // Return the room data
+      const space = await Space.findOne({ space_id: spaceId });  // Find one space with the given space_id
+      if (!space) {
+        console.log(`No space found for ID: ${spaceId}`);
+        return null;  // Return null if no space is found
+      }
+      return {statusCode: 200,
+              data: space};  
     } catch (err) {
-        throw new Error(err.message); // Throw any other errors to be handled by the caller
+      console.error(`Error fetching space with ID ${spaceId}:`, err);
+      throw new Error(err.message);  // Throw any other errors to be handled by the caller
     }
   }
   
@@ -77,5 +80,5 @@ const get_Space = async () => {
     get_Space,
     createNewSpace,
     addRoomToSpace,
-    get_Space_ByID
+    get_Space_By_ID
   }  

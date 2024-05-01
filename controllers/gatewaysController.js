@@ -36,10 +36,11 @@ exports.gatewayController = {
     },
     changeFeature: async (req, res)=>{
         try {
-            const { deviceId ,state} = req.body;
-            console.log( state);
-            console.log(deviceId);
-            const result = await changeFeatureState(deviceId, state); // directly call the imported function
+            const { deviceId ,state, rasp_ip } = req.body;
+            // console.log( state);
+            // console.log(deviceId);
+            // console.log(rasp_ip);
+            const result = await changeFeatureState(deviceId, state, rasp_ip); // directly call the imported function
             res.json(result);
           } catch (error) {
             res.status(500).json({ error: error.message });

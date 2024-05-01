@@ -342,9 +342,10 @@ const MindolifefetchAndTransformIoTDeviceDataById = async (req, res) => {
     }
 };
 
-const changeFeatureState = async (deviceId, state) => {
+const changeFeatureState = async (deviceId, state, rasp_ip) => {
 
-  const flaskAppUrl = 'http://10.100.102.14:5009/api-mindolife/change_feature_state';
+  // console.log(rasp_ip);
+  const flaskAppUrl = `http://${rasp_ip}:5009/api-mindolife/change_feature_state`;
   try {
     const valueToPost = state ? 'on' : 'off'; // Prepare the value for the external API
     // Parameters sent in the request body for a POST request
