@@ -69,10 +69,10 @@ class CommandFactory {
         // Instantiate specific command based on parsed action
         if (state === 'on') {
             console.log("state is on ");
-            return new TurnDeviceOnCommand(context[roomName],device,mode, value);
+            return new TurnDeviceOnCommand(context[room],device,mode, value);
         } else if (state === 'off') {
             console.log("state is off ");
-            return new TurnDeviceOffCommand(context[roomName],device);
+            return new TurnDeviceOffCommand(context[room],device);
         } else {
             console.log("Unknown command state.");
             return null;

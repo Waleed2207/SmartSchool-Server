@@ -432,11 +432,29 @@ async function updateAndProcessRules() {
               }
 
               try {
-                  const room = await getRoomById(roomid);
-                  if (!room) {
-                      console.error(`Room not found with ID: ${roomid}`);
-                      continue;
-                  }
+                const room = await getRoomById(roomid);
+                if (room.statusCode !== 200) {
+                    console.error(`Room not found with ID: ${roomid}`);
+                    return;
+                } else {
+                    const context = {
+                        temperature: 22,
+                        humidity: 40,
+                        detection: true,  // Assume motion detection is true
+                        activity: "studying",
+                        season: "spring",
+                        room: room.data,
+                    }
+                    const interpretResult = await interpretRuleByName(description, context); 
+                    // // Evaluate the rule description
+                    // if (description.toLowerCase().includes("ac")) {
+                    //     const interpretResult = await interpretRuleByName(description, context); 
+                    //     acRules.push(description);
+                    // } else if (description.toLowerCase().includes("light")) {
+                    //     const interpretResult = await interpretRuleByName(description, context);
+                    //     lightRules.push(description);
+                    // }
+                }
                   console.log("Room details:", JSON.stringify(room, null, 2));
               } catch (error) {
                   console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);
@@ -450,16 +468,9 @@ async function updateAndProcessRules() {
   }
 }
 
- /*
-// Evaluate the rule description
-  if (description.toLowerCase().includes("ac")) {
-    const interpretResult = await interpretRuleByName(description, context); 
-      acRules.push(description);
-  } else if (description.toLowerCase().includes("light")) {
-      const interpretResult = await interpretRuleByName(description, context);
-      lightRules.push(description);
-  }
-  */
+
+
+
 
 // Run the function immediately
 

@@ -18,7 +18,7 @@ function convertOperators(operators) {
 }
 
 function evaluateLogic(results, operators) {
-    console.log("IN (evaluate logic) Function");
+
 
     if (results.length - 1 !== operators.length) {
         throw new Error("The number of operators should be one less than the number of results.");
@@ -37,7 +37,7 @@ function evaluateLogic(results, operators) {
         switch (operators[i]) {  // Removed toLowerCase() as we're using symbols, not words
             case '&&':  // Using symbol for AND  
                 currentValue = currentValue && nextValue;
-                console.log("currentValue" + currentValue )
+                console.log("currentValue : " + currentValue )
                 break;
             case '||':  // Using symbol for OR
                 currentValue = currentValue || nextValue;
@@ -55,7 +55,7 @@ function evaluateLogic(results, operators) {
 
 function evaluateCondition(parsed, context) {
     console.log("evaluateCondition!!!!!!!!!!!!!!!!!!!");
-    const structuredVariablePattern = /\b(in room|temperature|activity|season)\b/gi;
+    const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
     // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
     const VaribalePattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
@@ -82,7 +82,7 @@ function evaluateCondition(parsed, context) {
             return;
         }
         */
-       console.log("check 1 : ") 
+  
         
         // if (myDict.check(condition) == true) {
           
@@ -90,9 +90,17 @@ function evaluateCondition(parsed, context) {
            
             
         // }
+        console.log("condition : " + condition) 
+        if(myDict.check(condition) === true) 
+        { 
+            condition = myDict.getValue(condition); 
+            console.log("condition : " + condition) 
 
+        }else{
+               console.log("the condition is nont in the Speical dictinory  : " + condition)     
+        }
         
-        let variableMatch = condition.match(VaribalePattern) || [last_varibale] 
+        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] 
         if (variableMatch[0] === 'in room') {
             variableMatch[0] = "motionDetected";
         }
@@ -102,8 +110,11 @@ function evaluateCondition(parsed, context) {
         } else {
             console.error("No valid variable match found");
             variable = null; // Or assign some default value
-            return ;
-        }
+            return  false;
+        } 
+
+        console.log("variable :  " + variable);
+        
         
         
         let operatorMatch = condition.match(operatorPattern) || [last_operator] ;
@@ -111,17 +122,21 @@ function evaluateCondition(parsed, context) {
             operator = operatorMatch[0].toLowerCase(); // Safely call toLowerCase
         } else {
             console.error("No valid operator match found");
-            return 
+            return false;
         }
+
+        console.log("operator :  " + operator);
+
 
         let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
         if (valueMatch[0]) {
             conditionValue = valueMatch[0].toLowerCase(); // Safely call toLowerCase
         } else { 
             console.error("No valid value match found");
-            return
+            return false;
          }
-
+        
+        
 
        
        
@@ -231,10 +246,10 @@ function evaluateCondition(parsed, context) {
 
 
 function execute(parsed, context) {
-    console.log("Executing parsed conditions and actions"); 
-    console.log("Conditions :", parsed.conditions);
-    console.log("Actions:", parsed.actions);
-    console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
+    // console.log("Executing parsed conditions and actions"); 
+    // console.log("Conditions :", parsed.conditions);
+    // console.log("Actions:", parsed.actions);
+    // console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
 
     const evaluation_condition_result = evaluateCondition(parsed, context);
    

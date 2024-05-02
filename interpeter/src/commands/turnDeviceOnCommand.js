@@ -4,12 +4,14 @@ const RoomDevice = require("../../../models/RoomDevice");
 const axios = require('axios'); 
 
 class TurnDeviceOnCommand extends BaseCommand {
-    constructor(device,state , mode, details) {
+    constructor(deviceid,roomid,spaceid,state , mode, details) {
         super();
-        this.device = device;
+        this.device = deviceid;
         this.state = state;
         this.mode = mode;
-        this.details = details;
+        this.details = details; 
+        this.room = roomid;
+        this.space = spaceid;   
 
     }
 
