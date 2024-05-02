@@ -8,7 +8,6 @@ const myDict = require('./Dictionsry');
 
 
 
-
 function convertOperators(operators) {
     const operatorMap = {
         'and': '&&',
@@ -56,17 +55,17 @@ function evaluateLogic(results, operators) {
 
 function evaluateCondition(parsed, context) {
     console.log("evaluateCondition!!!!!!!!!!!!!!!!!!!");
-    const structuredVariablePattern = /\b(Joe|detection|temperature|activity|season)\b/gi;
-   // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
-    const unaryConditionPattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
+    const structuredVariablePattern = /\b(in room|temperature|activity|season)\b/gi;
+    // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
+    const VaribalePattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
     const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
-
+    console.log("context : " + context)     
     
-    let variable, operator, conditionValue,contextValue;
+    let variable, operator, conditionValue,contextValue,last_varibale,last_operator,last_conditionValue;   
     let results = [];
     //room 247
-
+      
     //console.log("Current context:", context);
 
     parsed.conditions.forEach((condition) => {
@@ -83,41 +82,59 @@ function evaluateCondition(parsed, context) {
             return;
         }
         */
+       console.log("check 1 : ") 
         
-        if (myDict.check(condition) == true) {
-           // console.log("we found joe in room 247 in dictinory")
-            condition = myDict.getValue(condition); 
+        // if (myDict.check(condition) == true) {
+          
+        //     condition = myDict.getValue(condition); 
            
             
+        // }
+
+        
+        let variableMatch = condition.match(VaribalePattern) || [last_varibale] 
+        if (variableMatch[0] === 'in room') {
+            variableMatch[0] = "motionDetected";
         }
 
+        if (variableMatch[0]) {
+            variable = variableMatch[0].toLowerCase(); // Safely call toLowerCase
+        } else {
+            console.error("No valid variable match found");
+            variable = null; // Or assign some default value
+            return ;
+        }
         
-        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] ;
-      
-       
-    
-      
-
         
-       
         let operatorMatch = condition.match(operatorPattern) || [last_operator] ;
-        let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
-        if (!variableMatch || !operatorMatch || !valueMatch) {
-            console.error('Error parsing structured condition:', condition);
-            results.push(false);
-            return;
+        if (operatorMatch[0]) {
+            operator = operatorMatch[0].toLowerCase(); // Safely call toLowerCase
+        } else {
+            console.error("No valid operator match found");
+            return 
         }
 
-        variable = variableMatch[0].toLowerCase();
-        operator = operatorMatch[0].toLowerCase().trim();
-        conditionValue = valueMatch[0].toLowerCase();
+        let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
+        if (valueMatch[0]) {
+            conditionValue = valueMatch[0].toLowerCase(); // Safely call toLowerCase
+        } else { 
+            console.error("No valid value match found");
+            return
+         }
 
+
+       
+       
+        // variable = variableMatch[0].toLowerCase();
+        // operator = operatorMatch[0].toLowerCase().trim();
+        // conditionValue = valueMatch[0].toLowerCase();
+        
         
         last_varibale = variable;
         last_operator = operator;
         last_conditionValue = conditionValue;
 
-      
+       
 
         if(conditionValue == 'on' |  conditionValue == 'On' ) 
         {
@@ -130,6 +147,7 @@ function evaluateCondition(parsed, context) {
             conditionValue = false;
 
         }
+        
 
         if (conditionValue == 'studying' || conditionValue == 'cooking' || conditionValue == 'eating' ||
             conditionValue == 'playing' || conditionValue == 'watching_tv') {
@@ -143,17 +161,17 @@ function evaluateCondition(parsed, context) {
         else{
             contextValue = context.hasOwnProperty(variable) ? context[variable].toString().toLowerCase() : null;
         } 
-
+        
         String(contextValue,conditionValue)
         contextValue = String(contextValue).toLowerCase();
         conditionValue = String(conditionValue).toLowerCase();
       
-
-        //  console.log("condtion is : " + condition) 
-        //  console.log("variable :  " + variable);
-        //  console.log("operator :  " + operator);
-        //  console.log("conditionValue :  " + conditionValue);
-        //  console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
+       
+         console.log("condtion is : " + condition) 
+         console.log("variable :  " + variable);
+         console.log("operator :  " + operator);
+         console.log("conditionValue :  " + conditionValue);
+         console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
      
         
 
@@ -197,7 +215,7 @@ function evaluateCondition(parsed, context) {
        
     });
     console.log("results : " + results)
-   
+
     return results;
 }
 
@@ -213,6 +231,7 @@ function evaluateCondition(parsed, context) {
 
 
 function execute(parsed, context) {
+    console.log("Executing parsed conditions and actions"); 
     console.log("Conditions :", parsed.conditions);
     console.log("Actions:", parsed.actions);
     console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
@@ -231,7 +250,7 @@ function execute(parsed, context) {
         parsed.actions.forEach(action => {
             console.log("Current action being processed:", action);
             
-            const command = CommandFactory.createCommand(action);
+            const command = CommandFactory.createCommand(action,context);
             if (command) {
                 console.log("command was execute");
             } else {

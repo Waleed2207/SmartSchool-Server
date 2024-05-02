@@ -10,6 +10,11 @@ const { getSensiboSensors } = require('../api/sensibo')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
+const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomNames} = require('./rooms.service');  
+const { get_MotionState } = require('../controllers/sensorController.js');
+
+
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -100,14 +105,6 @@ const validateRule = async (rule) => {
     message: "Rule  validated successfully",
   };
 };
-
-
-// const createUserDistanceMap = (users) => {
-//   return users.reduce((map, user) => {
-//     map[user] = `${user}_distance`;
-//     return map;
-//   }, {});
-// };
 
 const ruleFormatter = async (rule) => {
   const usersResponse = await getUsers();
@@ -200,78 +197,110 @@ const ruleFormatter = async (rule) => {
 function stringifyCondition(condition) {
   return `IF ${condition.variable} ${condition.operator} ${condition.value}`;
 }
+/**
+ * Generic function to fetch data based on a specified key.
+ * @param {string} key The key in the response data to return.
+ * @returns {Promise<*>} The data associated with the key, or null if an error occurs.
+ */
+async function fetchData(key) {
+  const req = {};
+  let responseData;
 
+  const res = {
+      status: function(statusCode) {
+          this.statusCode = statusCode;
+          return this;  
+      },
+      json: function(data) {
+          responseData = data;  
+          return this;
+      }
+  };
 
-// const getAllRulesDescription = async () => {
-//   try {
-//     const rules = await Rule.find({});
-//     const devices = await Device.find({ state: 'on' });
-
-//     let activeDescriptions = [];
-//     let activeDevicesMap = {};
-
-//     console.log('Active devices found:', devices.length);
-
-//     // Create a map of active devices for quick lookup
-//     devices.forEach(device => {
-//       activeDevicesMap[device.device_id] = true;
-//     });
-
-//     console.log('Active devices map:', activeDevicesMap);
-
-//     // Check each rule to see if it relates to an active device
-//     rules.forEach(rule => {
-//       console.log('Checking rule:', rule.description, 'isActive:', rule.isActive);
-//       if (rule.isActive ) {
-//         activeDescriptions.push(rule.description);
-//       }
-//     });
-//     console.log('Active descriptions:', activeDescriptions);
-
-//     if (activeDescriptions.length > 0) {
-//       return {
-//         statusCode: 200,
-//         data: activeDescriptions,
-//       };
-//     } else {
-//       return {
-//         statusCode: 404,
-//         message: "No active rules found",
-//       };
-//     }
-//   } catch (error) {
-//     console.error('Error fetching rules:', error);
-//     return {
-//       statusCode: 500,
-//       message: `Error fetching rules - ${error}`,
-//     };
-//   }
-// };
-
-const getAllRulesDescription = async () => {
   try {
+      await get_MotionState(req, res);  // This should modify res
+      if (!responseData || !(key in responseData)) {
+          console.error(`Error: Key '${key}' not found in response data`);
+          return null;
+      }
+      return responseData[key];
+  } catch (error) {
+      console.error(`Error fetching ${key}: ${error}`);
+      return null;
+  }
+}
+
+
+/**
+* Fetches room ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchRoomID() {
+  return fetchData('RoomID');
+}
+
+/**
+* Fetches space ID using a generic fetchData function.
+* @returns {Promise<string|null>}
+*/
+async function fetchSpaceID() {
+  return fetchData('SpaceID');
+}
+
+/**
+* Fetches motion detection status using a generic fetchData function.
+* @returns {Promise<boolean|null>}
+*/
+async function fetchMotionState() {
+  return fetchData('motionDetected');
+}
+
+/**
+* Fetches all detections concurrently and logs the results.
+* @returns {Promise<Object>}
+*/
+async function getAllDetections() {
+  try {
+      const [roomID, spaceID, motionState] = await Promise.all([
+          fetchRoomID(),
+          fetchSpaceID(),
+          fetchMotionState()
+      ]);
+
+      console.log(`Room ID: ${roomID}, Space ID: ${spaceID}, Motion Detected: ${motionState}`);
+      return {
+          roomID: roomID,
+          spaceID: spaceID,
+          motionDetected: motionState
+      };
+  } catch (error) {
+      console.error('Error fetching detection data:', error);
+      return null;
+  }
+}
+
+const getAllRulesDescription = async () =>
+ {
+  try {
+    console.log("getallruledescription");
     const rules = await Rule.find({});
-    const activeDevices = await Device.find({state: 'on' });
 
-    
+    const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
+   
     let activeDescriptions = [];
-    let devicesStateMap = {};
-    console.log('Active devices found:', activeDevices.length);
-
-     // Create a map of active devices for quick lookup
-      activeDevices.forEach(device => {
-      devicesStateMap[device.device_id] = device.state;
-    });
-
-    console.log('Devices state map:', devicesStateMap);
-
+    
     if (activeDevices.length === 0) { // This means AC is off
       for (const rule of rules) {
+        //gbd add the true | to see to get all the rule
         if (rule.isActive) {
           activeDescriptions.push(rule.description);
         }
+        
       }
     }
+
+   
+     
     if (activeDescriptions.length > 0) {
       return {
         statusCode: 200,
@@ -283,6 +312,7 @@ const getAllRulesDescription = async () => {
         message: "No active rules found",
       };
     }
+
   } catch (error) {
     return {
       statusCode: 500,
@@ -290,82 +320,190 @@ const getAllRulesDescription = async () => {
     };
   }
 };
-
 // Define the async function that fetches sensor data and processes rules
 async function updateAndProcessRules() {
   try {
-    const data = await getSensiboSensors();
-    if (data) {
-      const context = {
-        temperature: data.temperature,
-        humidity: data.humidity
-      };
-      console.log("Fetched context:", context);
-      await processAllRules(context); 
-    } else {
-      console.log('Failed to fetch sensor data or no data available.');
-    }
-  } catch (error) {
-    console.error('An error occurred:', error.message);
-  }
+    console.log("update and process rules!#!#!@#@!#@!#!@#!@#@!");    
+    // Await the promise to get the result object
+      const descriptionResult = await getAllRulesDescription();
+      console.log(descriptionResult);
 
-  // Place the rule checking code here if it needs to be part of the async function
-  console.log('Checking for rule updates...');
-  getAllRulesDescription();
+      // Check if the operation was successful
+      if (descriptionResult.statusCode === 200) {
+          // Extract the descriptions array
+          const descriptions = descriptionResult.data;
+          let acRules = [];
+          let lightRules = [];
+          const roomNames = await getAllRoomNames();
+          const Rooms = await getRooms();
+          console.log("Room names:", roomNames);
+          // Create a dynamic regex pattern to match any of the room names
+          const patternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+          const roomPattern = new RegExp(`\\b(${patternString})\\b`, 'gi');
+          
+          
+
+          for (const description of descriptions) {
+              console.log("Process all rules");
+              console.log(description); 
+             
+              const RoommsMatches = description.match(roomPattern).toString();
+              // Apply the regex to search the text
+            
+              
+              let roomName = RoommsMatches ? RoommsMatches : null;
+
+              console.log("gbd RoomName : ",roomName);
+
+              if (roomName === null | roomName === undefined) {
+                  console.error("No room matched in the description:", description);
+                  return ; // Skip this description if no room is found
+              }
+
+              try 
+              {
+                  // Get the room by its name
+                  const room = await getRoomByName(roomName);
+                  console.log("Room details:", JSON.stringify(room, null, 2));
+
+
+                  const data = await getSensiboSensors();
+                  console.log("Data from Sensibo:", data);
+
+                  if (data && room) {
+                      // Create a context object based on the data and room
+                      const context = {
+                          temperature: data.temperature,
+                          humidity: data.humidity,
+                          activity: "studying",
+                          season: "spring",
+                          Current_room: room,
+                      };
+                    const interpretResult = await interpretRuleByName(description, context); 
+                     
+                      // Log the room details (optional)
+                      console.log("Room details:", JSON.stringify(room, null, 2));
+                  }else{
+                      console.error("No data from Sensibo");
+                      return;
+                  }
+              } catch (error) {
+                  console.error(`Failed to retrieve room "${roomName}":`, error.message);
+              }
+          }
+
+        
+
+      } else {
+          console.error('Failed to get rule descriptions:', descriptionResult.message);
+      }
+  } catch (error) {
+      console.error('Error processing rule descriptions:', error);
+  }
 }
 
+   
+ /*
+// Evaluate the rule description
+  if (description.toLowerCase().includes("ac")) {
+    const interpretResult = await interpretRuleByName(description, context); 
+      acRules.push(description);
+  } else if (description.toLowerCase().includes("light")) {
+      const interpretResult = await interpretRuleByName(description, context);
+      lightRules.push(description);
+  }
+  */
+
 // Run the function immediately
-updateAndProcessRules();
+
 
 // Set an interval to run the function every 30 seconds
 setInterval(updateAndProcessRules, 30000);
 
-
+/*
 async function processAllRules(context) {
   try {
-    // Await the promise to get the result object
-    const descriptionResult = await getAllRulesDescription();
-    console.log(descriptionResult);
+      console.log("process all rules");
 
-    // Check if the operation was successful
-    if (descriptionResult.statusCode === 200) {
-      // Extract the descriptions array
-      const descriptions = descriptionResult.data;
-      let acRules = [];
-      let lightRules = [];      
-      for (const description of descriptions) {
+      // Await the promise to get the result object
+      const descriptionResult = await getAllRulesDescription();
+      console.log(descriptionResult);
 
-        // // Await the interpretation of each rule description
-        // const interpretResult = await interpretRuleByName(description, context);
-        // console.log(interpretResult);
-        if (description.toLowerCase().includes("ac")) {
-          const interpretResult = await interpretRuleByName(description, context);
-          acRules.push(description);
-        } else if (description.toLowerCase().includes("light")) {
-          const interpretResult = await interpretRuleByName(description, context = null);
-          lightRules.push(description);
+      // Check if the operation was successful
+      if (descriptionResult.statusCode === 200) {
+          // Extract the descriptions array
+          const descriptions = descriptionResult.data;
+          let acRules = [];
+          let lightRules = [];
 
-        }
-      }
-    } else {
-      console.error('Failed to get rule descriptions:', descriptionResult.message);
-    }
-  } catch (error) {
-    console.error('Error processing rule descriptions:', error);
-  }
-}
+          for (const description of descriptions) {
+              const roomPattern = /\b(bathroom|livingroom|(class247|class 247)|room 247|season)\b/gi;
+
+              let roomMatch = description.match(roomPattern);
+//               let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
+//               console.log("roomName",roomName); 
+//               if (!roomName) {
+//                   console.error("No room matched in the description:", description);
+//                   return; // Skip this description if no room is found
+//               }
+             
+//               try {
+//                   // Get the room by its name
+//                   const room = await getRoomByName(roomName);
+//                   console.log("Room details:", JSON.stringify(room, null, 2));
+//                   // Check if the room is found
+//                   if (!room) {
+//                       console.log(`Room "${roomName}" is null`);
+//                       continue; // Skip this description if room is null
+//                   }
+//                   const interpretResult = await interpretRuleByName(description, room);
+                 
+//                   /*   
+//                   // Evaluate the rule description
+//                   if (description.toLowerCase().includes("ac")) {
+//                       c
+//                       acRules.push(description);
+//                   } else if (description.toLowerCase().includes("light")) {
+//                       const interpretResult = await interpretRuleByName(description, room);
+//                       lightRules.push(description);
+//                   }
+//                   */
+
+                
+                  
+
+//               } catch (error) {
+//                   console.error(`Failed to retrieve room "${roomName}":`, error.message);
+//               }
+//           }
+
+//           // Optional: Log the processed rule descriptions
+//           console.log("AC Rules:", acRules);
+//           console.log("Light Rules:", lightRules);
+
+//       } else {
+//           console.error('Failed to get rule descriptions:', descriptionResult.message);
+//       }
+//   } catch (error) {
+//       console.error('Error processing rule descriptions:', error);
+//   }
+// }
+
 
 
 
 // Function to interpret a rule by its description
-async function interpretRuleByName(ruleDescription, context) {
+async function interpretRuleByName(ruleDescription,context) {
   try {
+    console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
     // Find the rule by its description using await for the asynchronous operation
     const rule = await Rule.findOne({ description: ruleDescription });
-
+    
     if (rule) {
-      const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      interpret(input, context);
+      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
+      //console.log(`Interpreting rule: ${input}`); 
+    
+      interpret(ruleDescription, context);
       return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
@@ -380,7 +518,7 @@ async function interpretRuleByName(ruleDescription, context) {
   // Function to pass this context to the executor
   function interpret(input, context) {
     const tokens = tokenize(input);
-    const parsed = parse(tokens); // Ensure this returns the correct structure
+    const parsed = parse(input); // Ensure this returns the correct structure
     console.log(parsed);
     execute(parsed, context); // `parsed` should include condition and action
   }
@@ -630,14 +768,13 @@ const toggleActiveStatus = async (ruleId, isActive) => {
 // };
 
 module.exports = {
-  // insertRuleToDB,
   add_new_Rule,
   getAllRules,
   updateRule,
   toggleActiveStatus,
-  // removeRuleFromDB,
   deleteRuleById,
-  // validateRule,
-  // insertRuleToDBMiddleware,
-  // removeAllRules,
+  getAllDetections,
+  fetchRoomID,
+  fetchSpaceID,
+  fetchMotionState
 };
