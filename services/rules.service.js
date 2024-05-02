@@ -11,7 +11,7 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
-const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName} = require('./rooms.service');  
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState } = require('../controllers/sensorController.js');
 
 
@@ -323,7 +323,8 @@ const getAllRulesDescription = async () =>
 // Define the async function that fetches sensor data and processes rules
 async function updateAndProcessRules() {
   try {
-      // Await the promise to get the result object
+    console.log("update and process rules!#!#!@#@!#@!#!@#!@#@!");    
+    // Await the promise to get the result object
       const descriptionResult = await getAllRulesDescription();
       console.log(descriptionResult);
 
@@ -333,32 +334,43 @@ async function updateAndProcessRules() {
           const descriptions = descriptionResult.data;
           let acRules = [];
           let lightRules = [];
+          const roomNames = await getAllRoomNames();
+          const Rooms = await getRooms();
+          console.log("Room names:", roomNames);
+          // Create a dynamic regex pattern to match any of the room names
+          const patternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+          const roomPattern = new RegExp(`\\b(${patternString})\\b`, 'gi');
+          
+          
 
           for (const description of descriptions) {
               console.log("Process all rules");
               console.log(description); 
-              const roomPattern = /\b(bathroom|livingroom|Class247|Class 247|room 247|season)\b/gi;
+             
+              const RoommsMatches = description.match(roomPattern).toString();
+              // Apply the regex to search the text
+            
+              
+              let roomName = RoommsMatches ? RoommsMatches : null;
 
-              let roomMatch = description.match(roomPattern);
-              let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
+              console.log("gbd RoomName : ",roomName);
 
-              if (!roomName) {
+              if (roomName === null | roomName === undefined) {
                   console.error("No room matched in the description:", description);
-                  continue; // Skip this description if no room is found
+                  return ; // Skip this description if no room is found
               }
 
-              try {
+              try 
+              {
                   // Get the room by its name
                   const room = await getRoomByName(roomName);
                   console.log("Room details:", JSON.stringify(room, null, 2));
-                  // Check if the room is found
-                  if (!room) {
-                      console.log(`Room "${roomName}" is null`);
-                      continue; // Skip this description if room is null
-                  }
+
 
                   const data = await getSensiboSensors();
-                  if (data) {
+                  console.log("Data from Sensibo:", data);
+
+                  if (data && room) {
                       // Create a context object based on the data and room
                       const context = {
                           temperature: data.temperature,
@@ -367,27 +379,20 @@ async function updateAndProcessRules() {
                           season: "spring",
                           Current_room: room,
                       };
-
-                      // Evaluate the rule description
-                      if (description.toLowerCase().includes("ac")) {
-                          const interpretResult = await interpretRuleByName(description, context);
-                          acRules.push(description);
-                      } else if (description.toLowerCase().includes("light")) {
-                          const interpretResult = await interpretRuleByName(description, context);
-                          lightRules.push(description);
-                      }
-
+                    const interpretResult = await interpretRuleByName(description, context); 
+                     
                       // Log the room details (optional)
                       console.log("Room details:", JSON.stringify(room, null, 2));
+                  }else{
+                      console.error("No data from Sensibo");
+                      return;
                   }
               } catch (error) {
                   console.error(`Failed to retrieve room "${roomName}":`, error.message);
               }
           }
 
-          // Optional: Log the processed rule descriptions
-          console.log("AC Rules:", acRules);
-          console.log("Light Rules:", lightRules);
+        
 
       } else {
           console.error('Failed to get rule descriptions:', descriptionResult.message);
@@ -398,7 +403,16 @@ async function updateAndProcessRules() {
 }
 
    
-
+ /*
+// Evaluate the rule description
+  if (description.toLowerCase().includes("ac")) {
+    const interpretResult = await interpretRuleByName(description, context); 
+      acRules.push(description);
+  } else if (description.toLowerCase().includes("light")) {
+      const interpretResult = await interpretRuleByName(description, context);
+      lightRules.push(description);
+  }
+  */
 
 // Run the function immediately
 
@@ -406,7 +420,7 @@ async function updateAndProcessRules() {
 // Set an interval to run the function every 30 seconds
 setInterval(updateAndProcessRules, 30000);
 
-
+/*
 async function processAllRules(context) {
   try {
       console.log("process all rules");
@@ -423,55 +437,57 @@ async function processAllRules(context) {
           let lightRules = [];
 
           for (const description of descriptions) {
-              const roomPattern = /\b(bathroom|livingroom|class247|class 247|room 247|season)\b/gi;
+              const roomPattern = /\b(bathroom|livingroom|(class247|class 247)|room 247|season)\b/gi;
 
               let roomMatch = description.match(roomPattern);
-              let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
-
-              if (!roomName) {
-                  console.error("No room matched in the description:", description);
-                  continue; // Skip this description if no room is found
-              }
-
-              try {
-                  // Get the room by its name
-                  const room = await getRoomByName(roomName);
-
-                  // Check if the room is found
-                  if (!room) {
-                      console.log(`Room "${roomName}" is null`);
-                      continue; // Skip this description if room is null
-                  }
+//               let roomName = roomMatch ? roomMatch[0].toLowerCase() : null;
+//               console.log("roomName",roomName); 
+//               if (!roomName) {
+//                   console.error("No room matched in the description:", description);
+//                   return; // Skip this description if no room is found
+//               }
+             
+//               try {
+//                   // Get the room by its name
+//                   const room = await getRoomByName(roomName);
+//                   console.log("Room details:", JSON.stringify(room, null, 2));
+//                   // Check if the room is found
+//                   if (!room) {
+//                       console.log(`Room "${roomName}" is null`);
+//                       continue; // Skip this description if room is null
+//                   }
+//                   const interpretResult = await interpretRuleByName(description, room);
                  
+//                   /*   
+//                   // Evaluate the rule description
+//                   if (description.toLowerCase().includes("ac")) {
+//                       c
+//                       acRules.push(description);
+//                   } else if (description.toLowerCase().includes("light")) {
+//                       const interpretResult = await interpretRuleByName(description, room);
+//                       lightRules.push(description);
+//                   }
+//                   */
 
-                  // Evaluate the rule description
-                  if (description.toLowerCase().includes("ac")) {
-                      const interpretResult = await interpretRuleByName(description, room);
-                      acRules.push(description);
-                  } else if (description.toLowerCase().includes("light")) {
-                      const interpretResult = await interpretRuleByName(description, room);
-                      lightRules.push(description);
-                  }
+                
+                  
 
-                  // Log the room details (optional)
-                  console.log("Room details:", JSON.stringify(room, null, 2));
+//               } catch (error) {
+//                   console.error(`Failed to retrieve room "${roomName}":`, error.message);
+//               }
+//           }
 
-              } catch (error) {
-                  console.error(`Failed to retrieve room "${roomName}":`, error.message);
-              }
-          }
+//           // Optional: Log the processed rule descriptions
+//           console.log("AC Rules:", acRules);
+//           console.log("Light Rules:", lightRules);
 
-          // Optional: Log the processed rule descriptions
-          console.log("AC Rules:", acRules);
-          console.log("Light Rules:", lightRules);
-
-      } else {
-          console.error('Failed to get rule descriptions:', descriptionResult.message);
-      }
-  } catch (error) {
-      console.error('Error processing rule descriptions:', error);
-  }
-}
+//       } else {
+//           console.error('Failed to get rule descriptions:', descriptionResult.message);
+//       }
+//   } catch (error) {
+//       console.error('Error processing rule descriptions:', error);
+//   }
+// }
 
 
 
