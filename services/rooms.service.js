@@ -67,6 +67,14 @@ const getAllRoomNames = async () => {
 };
 
 
+const getAllRoomIds = async () => {
+  try {
+      const rooms = await Room.find({}, { id: 1 }); // Fetch only the _id field
+      return rooms.map(room => room.id.toString()); // Return an array of room IDs as strings
+  } catch (error) {
+      throw new Error(`Error fetching room IDs - ${error.message}`);
+  }
+};
 
 
 
@@ -78,5 +86,6 @@ module.exports = {
   getRoomIdByRoomName,
   get_Rooms_By_SpaceId,
   getRoomByName,
-  getAllRoomNames
+  getAllRoomNames,
+  getAllRoomIds
 };

@@ -11,7 +11,7 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
-const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomNames} = require('./rooms.service');  
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState } = require('../controllers/sensorController.js');
 
 
@@ -321,79 +321,127 @@ const getAllRulesDescription = async () =>
   }
 };
 // Define the async function that fetches sensor data and processes rules
-async function updateAndProcessRules() {
-  try {
-    console.log("update and process rules!#!#!@#@!#@!#!@#!@#@!");    
-    // Await the promise to get the result object
-      const descriptionResult = await getAllRulesDescription();
-      console.log(descriptionResult);
+// async function updateAndProcessRules() {
+//   try {
+//     console.log("update and process rules!#!#!@#@!#@!#!@#!@#@!");    
+//     // Await the promise to get the result object
+//       const descriptionResult = await getAllRulesDescription();
+//       console.log(descriptionResult);
 
-      // Check if the operation was successful
-      if (descriptionResult.statusCode === 200) {
-          // Extract the descriptions array
-          const descriptions = descriptionResult.data;
-          let acRules = [];
-          let lightRules = [];
-          const roomNames = await getAllRoomNames();
-          const Rooms = await getRooms();
-          console.log("Room names:", roomNames);
-          // Create a dynamic regex pattern to match any of the room names
-          const patternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-          const roomPattern = new RegExp(`\\b(${patternString})\\b`, 'gi');
-          
+//       // Check if the operation was successful
+//       if (descriptionResult.statusCode === 200) {
+//           // Extract the descriptions array
+//           const descriptions = descriptionResult.data;
+//           let acRules = [];
+//           let lightRules = [];
+//           const roomNames = await getAllRoomNames();
+//           const roomIDs = await getAllRoomIds();
+//           const Rooms = await getRooms();
+//           console.log("Room names:", roomNames);
+//           console.log("Room ID",roomIDs);
+//           // Create a dynamic regex pattern to match any of the room names
+//           const patternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+//           const roomPattern = new RegExp(`\\b(${patternString})\\b`, 'gi');
+//           const roomIDpatternString = roomIDs.map(id=>id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+//           const roomIDPattern = new RegExp(`\\b(${roomIDpatternString})\\b`, 'gi');
           
 
-          for (const description of descriptions) {
-              console.log("Process all rules");
-              console.log(description); 
-             
-              const RoommsMatches = description.match(roomPattern).toString();
-              // Apply the regex to search the text
+//           for (const description of descriptions) {
+//               console.log("Process all rules");
+//               console.log(description); 
+//               const RoomIDMatches = description.match(roomIDPattern);
+//               const RoommsMatches = description.match(roomPattern).toString();
+//               // Apply the regex to search the text
             
-              
-              let roomName = RoommsMatches ? RoommsMatches : null;
+//               let roomid = RoomIDMatches ? RoomIDMatches :null;
+//               let roomName = RoommsMatches ? RoommsMatches : null;
 
-              console.log("gbd RoomName : ",roomName);
+//               console.log("gbd RoomName : ",roomName);
+//               console.log("Sameer Room ID:",roomid);
+//               if (roomName === null | roomName === undefined) {
+//                   console.error("No room matched in the description:", description);
+//                   return ; // Skip this description if no room is found
+//               }
 
-              if (roomName === null | roomName === undefined) {
-                  console.error("No room matched in the description:", description);
-                  return ; // Skip this description if no room is found
-              }
-
-              try 
-              {
-                  // Get the room by its name
-                  const room = await getRoomByName(roomName);
-                  console.log("Room details:", JSON.stringify(room, null, 2));
+//               try 
+//               {
+//                   // Get the room by its name
+//                   const room = await getRoomByName(roomName);
+//                   console.log("Room details:", JSON.stringify(room, null, 2));
 
 
-                  const data = await getSensiboSensors();
-                  console.log("Data from Sensibo:", data);
+//                   const data = await getSensiboSensors();
+//                   console.log("Data from Sensibo:", data);
 
-                  if (data && room) {
-                      // Create a context object based on the data and room
-                      const context = {
-                          temperature: data.temperature,
-                          humidity: data.humidity,
-                          activity: "studying",
-                          season: "spring",
-                          Current_room: room,
-                      };
-                    const interpretResult = await interpretRuleByName(description, context); 
+//                   if (data && room) {
+//                       // Create a context object based on the data and room
+//                       const context = {
+//                           temperature: data.temperature,
+//                           humidity: data.humidity,
+//                           activity: "studying",
+//                           season: "spring",
+//                           Current_room: room,
+//                       };
+//                     const interpretResult = await interpretRuleByName(description, context); 
                      
-                      // Log the room details (optional)
-                      console.log("Room details:", JSON.stringify(room, null, 2));
-                  }else{
-                      console.error("No data from Sensibo");
-                      return;
-                  }
-              } catch (error) {
-                  console.error(`Failed to retrieve room "${roomName}":`, error.message);
-              }
-          }
+//                       // Log the room details (optional)
+//                       console.log("Room details:", JSON.stringify(room, null, 2));
+//                   }else{
+//                       console.error("No data from Sensibo");
+//                       return;
+//                   }
+//               } catch (error) {
+//                   console.error(`Failed to retrieve room "${roomName}":`, error.message);
+//               }
+//           }
 
         
 
+//       } else {
+//           console.error('Failed to get rule descriptions:', descriptionResult.message);
+//       }
+//   } catch (error) {
+//       console.error('Error processing rule descriptions:', error);
+//   }
+// }
+
+async function updateAndProcessRules() {
+  try {
+      console.log("Update and process rules!");
+      const descriptionResult = await getAllRulesDescription();
+      console.log(descriptionResult);
+
+      if (descriptionResult.statusCode === 200) {
+          const descriptions = descriptionResult.data;
+          const roomIDs = await getAllRoomIds();
+          console.log("Room IDs:", roomIDs);
+
+          const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+          const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+          console.log("Room ID Regex Pattern:", roomIDPattern);  // Debug print of the regex pattern
+
+          for (const description of descriptions) {
+              console.log("Processing rule:", description);
+              const roomIDMatches = description.match(roomIDPattern);
+              const roomid = roomIDMatches ? roomIDMatches[0] : null;
+              console.log("Matched Room ID:", roomid);
+
+              if (!roomid) {
+                  console.error("No room ID matched in the description:", description);
+                  continue;
+              }
+
+              try {
+                  const room = await getRoomById(roomid);
+                  if (!room) {
+                      console.error(`Room not found with ID: ${roomid}`);
+                      continue;
+                  }
+                  console.log("Room details:", JSON.stringify(room, null, 2));
+              } catch (error) {
+                  console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);
+              }
+          }
       } else {
           console.error('Failed to get rule descriptions:', descriptionResult.message);
       }
@@ -402,7 +450,6 @@ async function updateAndProcessRules() {
   }
 }
 
-   
  /*
 // Evaluate the rule description
   if (description.toLowerCase().includes("ac")) {
