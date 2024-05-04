@@ -274,7 +274,7 @@ async function getAllDetections() {
 const getAllRulesDescription = async () =>
  {
   try {
-    console.log("getallruledescription");
+    //console.log("getallruledescription");
     const rules = await Rule.find({});
 
     const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
@@ -399,24 +399,24 @@ const getAllRulesDescription = async () =>
 
 async function updateAndProcessRules() {
   try {
-      console.log("Update and process rules!");
+      //console.log("Update and process rules!");
       const descriptionResult = await getAllRulesDescription();
-      console.log(descriptionResult);
+      //console.log(descriptionResult);
 
       if (descriptionResult.statusCode === 200) {
           const descriptions = descriptionResult.data;
           const roomIDs = await getAllRoomIds();
-          console.log("Room IDs:", roomIDs);
+          //console.log("Room IDs:", roomIDs);
 
           const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
           const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
-          console.log("Room ID Regex Pattern:", roomIDPattern);  // Debug print of the regex pattern
+          //console.log("Room ID Regex Pattern:", roomIDPattern);  // Debug print of the regex pattern
 
           for (const description of descriptions) {
-              console.log("Processing rule:", description);
+              //console.log("Processing rule:", description);
               const roomIDMatches = description.match(roomIDPattern);
               const roomid = roomIDMatches ? roomIDMatches[0] : null;
-              console.log("Matched Room ID:", roomid);
+              //console.log("Matched Room ID:", roomid);
 
               if (!roomid) {
                   console.error("No room ID matched in the description:", description);
@@ -589,7 +589,7 @@ async function interpretRuleByName(ruleDescription) {
   function interpret(input) {
     const tokens = tokenize(input);
     const parsed = parse(input); // Ensure this returns the correct structure
-    console.log("Sameer parsed",parsed);
+    //console.log("Sameer parsed",parsed);
     execute(parsed); // `parsed` should include condition and action
   }
 

@@ -122,6 +122,15 @@ function evaluateCondition(parsed, context) {
     let results = [];
     parsed.conditions.forEach(condition => {
         console.log("Processing condition:", condition);
+       
+
+        if(myDict.check(condition))
+        {
+            condition = myDict.getValue(condition); 
+
+        }
+
+        console.log("Condition after checking in dictionary:", condition);  
 
         let variableMatch = condition.match(structuredVariablePattern);
         let operatorMatch = condition.match(operatorPattern);
@@ -133,10 +142,14 @@ function evaluateCondition(parsed, context) {
             return;
         }
 
+        
+        
         let variable = variableMatch[0].toLowerCase();
         let operator = operatorMatch[0].toLowerCase();
         let conditionValue = valueMatch[0].toLowerCase();
         let contextValue = context[variable];
+      
+       
 
         // Ensure contextValue is valid for operation
         if (contextValue === undefined) {
@@ -146,11 +159,14 @@ function evaluateCondition(parsed, context) {
         }
 
         // Convert boolean strings to boolean values
-        if (conditionValue === "true" || conditionValue === "false") {
-            conditionValue = conditionValue === "true";
+        if (conditionValue === "true | True" || conditionValue === "false | False") {
+            Boolean(conditionValue);
         }
 
-        let result = false;
+        console.log("variable: ", variable, " operator: ", operator, " conditionValue: ", conditionValue);
+        console.log("contextValue: ", contextValue, " conditionValue: ", conditionValue);
+
+       let result = false;
         switch (operator) {
             case 'is above':
                 result = parseFloat(contextValue) > parseFloat(conditionValue);
@@ -185,9 +201,10 @@ function evaluateCondition(parsed, context) {
                 result = false;
                 break;
         }
+        console.log("Condition evaluation result:", result);    
         results.push(result);
     });
-
+    
     console.log("Condition evaluation results:", results);
     return results;
 }
@@ -202,7 +219,7 @@ async function CallRoom(parsed) {
         console.log("Room IDs:", roomIDs);
         const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
         const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
-        console.log("Room ID pattern:", roomIDPattern); 
+        //console.log("Room ID pattern:", roomIDPattern); 
 
         // Check if parsed object and its conditions property are defined and not empty
         if (parsed && parsed.length > 0) {
@@ -210,7 +227,7 @@ async function CallRoom(parsed) {
             if (roomIdMatch) {
                 const roomId = roomIdMatch[0]; // Assuming the first match is the room ID
                 const room = await getRoomById(roomId); // Call getRoomById with the room ID
-                console.log("Room details:", JSON.stringify(room, null, 2));
+                //console.log("Room details:", JSON.stringify(room, null, 2));
                 return room;
             } else {
                 console.log("No room ID found in the parsed string.");
@@ -241,17 +258,19 @@ async function execute(parsed) {
 
 
     const room =  CallRoom(parsed.conditions[0]); 
+    console.log("Room details:", JSON.stringify(room.data, null, 2));
     const currentActivity = getCurrentActivity();
     const currrentSeason = getCurrentSeason();
    // const data = await getSensiboSensors();
   //  console.log("Data from Sensibo:", data);
     const detection = false;
     const context = {
-        current_room: room, 
+        current_room: room.data, 
         detection: true,
         //temperature: data.temperature,
         //humidity: data.humidity,
-        activity: currentActivity,
+        //activity: currentActivity,
+        activity: "studying",
         season: currrentSeason
     }
 
@@ -264,7 +283,7 @@ async function execute(parsed) {
 
     const result = evaluateLogic(evaluation_condition_result, convertedOperators_Condition);
  
-    console.log("Result of conditions:", result);
+   // console.log("Result of conditions:", result);
 
     if (result) {
         parsed.actions.forEach(action => {
