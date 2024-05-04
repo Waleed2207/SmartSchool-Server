@@ -1,10 +1,10 @@
-const { forEach, cond } = require('lodash');
+const { forEach, cond, result } = require('lodash');
 const {CommandFactory} = require('../factories/commandFactory');
 const { debug, Console } = require('console');
 const {SpecialDictionary} = require('./Dictionsry');
 const myDict = require('./Dictionsry');
-
-
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('../../../services/rooms.service');  
+const { getCurrentActivity, getCurrentSeason } = require('../../../services/time.service');
 
 
 
@@ -17,27 +17,81 @@ function convertOperators(operators) {
     return operators.map(op => operatorMap[op.toLowerCase()] || op);
 }
 
-function evaluateLogic(results, operators) {
+// function evaluateLogic(results, operators) {
 
 
-    if (results.length - 1 !== operators.length) {
-        throw new Error("The number of operators should be one less than the number of results.");
-    }
+//     if (results.length - 1 !== operators.length) {
+//         throw new Error("The number of operators should be one less than the number of results.");
+//     }
 
-    if(operators.length == 0 )
-    {
-        return results[0];
+//     if(operators.length == 0 )
+//     {
+//         return results[0];
 
-    }
+//     }
 
-    let currentValue = results[0] ;  
+//     let currentValue = results[0] ;  
    
+//     for (let i = 0; i < operators.length; i++) {
+//         const nextValue = results[i + 1];
+//         switch (operators[i]) {  // Removed toLowerCase() as we're using symbols, not words
+//             case '&&':  // Using symbol for AND  
+//                 currentValue = currentValue && nextValue;
+//                 console.log("currentValue : " + currentValue )
+//                 break;
+//             case '||':  // Using symbol for OR
+//                 currentValue = currentValue || nextValue;
+//                 break;
+//             default:
+//                 console.error(`Unsupported operator: ${operators[i]}`);
+//                 return false;
+//         }
+//     }
+//     console.log("currentValue" + currentValue )
+//     return currentValue;
+// }
+
+
+
+// function evaluateLogic(results, operators) {
+//     // Check if the length of results is appropriate given the number of operators
+//     if (results.length - 1 !== operators.length) {
+//         console.error(`Mismatch in the number of results and operators: Results Length=${results.length}, Operators Length=${operators.length}`);
+//         throw new Error("The number of operators should be one less than the number of results.");
+//     }
+
+//     // Evaluate the logic
+//     let currentValue = results[0];
+//     for (let i = 0; i < operators.length; i++) {
+//         const operator = operators[i];
+//         const nextValue = results[i + 1];
+//         switch (operator) {
+//             case '&&':
+//                 currentValue = currentValue && nextValue;
+//                 break;
+//             case '||':
+//                 currentValue = currentValue || nextValue;
+//                 break;
+//             default:
+//                 console.error(`Unsupported operator: ${operator}`);
+//                 return false;
+//         }
+//     }
+
+//     return currentValue;
+// }
+
+
+
+
+
+function evaluateLogic(results, operators) {
+    let currentValue = results[0];
     for (let i = 0; i < operators.length; i++) {
         const nextValue = results[i + 1];
         switch (operators[i]) {  // Removed toLowerCase() as we're using symbols, not words
-            case '&&':  // Using symbol for AND  
+            case '&&':  // Using symbol for AND
                 currentValue = currentValue && nextValue;
-                console.log("currentValue : " + currentValue )
                 break;
             case '||':  // Using symbol for OR
                 currentValue = currentValue || nextValue;
@@ -47,11 +101,9 @@ function evaluateLogic(results, operators) {
                 return false;
         }
     }
-    console.log("currentValue" + currentValue )
     return currentValue;
+
 }
-
-
 
 function evaluateCondition(parsed, context) {
     console.log("evaluateCondition!!!!!!!!!!!!!!!!!!!");
@@ -64,32 +116,9 @@ function evaluateCondition(parsed, context) {
     
     let variable, operator, conditionValue,contextValue,last_varibale,last_operator,last_conditionValue;   
     let results = [];
-    //room 247
-      
-    //console.log("Current context:", context);
-
-    parsed.conditions.forEach((condition) => {
-        /*
-        let naturalMatch = condition.match(naturalLanguagePattern);
-        if (naturalMatch) {
-            let variable = naturalMatch[1].toLowerCase();
-            let expectedValue = naturalMatch[2].toLowerCase();
-            if (context.hasOwnProperty(variable) && context[variable].toString().toLowerCase() === expectedValue) {
-                results.push(true);
-            } else {
-                results.push(false);
-            }
-            return;
-        }
-        */
   
-        
-        // if (myDict.check(condition) == true) {
-          
-        //     condition = myDict.getValue(condition); 
-           
-            
-        // }
+    parsed.conditions.forEach((condition) => {
+     
         console.log("condition : " + condition) 
         if(myDict.check(condition) === true) 
         { 
@@ -238,19 +267,67 @@ function evaluateCondition(parsed, context) {
 
 
 
+async function CallRoom(parsed) {
+    try {
+        console.log("Getting room IDs and details");
+        const roomIDs = await getAllRoomIds(); // Await the promise to get room IDs
+        console.log("Room IDs:", roomIDs);
+        const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+        const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+        console.log("Room ID pattern:", roomIDPattern); 
+
+        // Check if parsed object and its conditions property are defined and not empty
+        if (parsed && parsed.length > 0) {
+            const roomIdMatch = parsed.match(roomIDPattern); // Extract the room ID match
+            if (roomIdMatch) {
+                const roomId = roomIdMatch[0]; // Assuming the first match is the room ID
+                const room = await getRoomById(roomId); // Call getRoomById with the room ID
+                console.log("Room details:", JSON.stringify(room, null, 2));
+                return room;
+            } else {
+                console.log("No room ID found in the parsed string.");
+                throw new Error("No room ID found in the parsed string.");
+            }
+        } else {
+            console.log("Parsed object or its conditions property is undefined or empty.");
+            throw new Error("Parsed object or its conditions property is undefined or empty.");
+        }
+    } catch (err) {
+        console.log("Error in getting room IDs or room details:", err);
+        // Return null or handle the error as appropriate
+        return null;
+    }
+}
 
 
 
 
 
 
-
-function execute(parsed, context) {
+async function execute(parsed) {
     // console.log("Executing parsed conditions and actions"); 
     // console.log("Conditions :", parsed.conditions);
     // console.log("Actions:", parsed.actions);
     // console.log("SpecialOperators condtion operators:", parsed.specialOperators.condition_operators);
 
+
+
+    const room =  CallRoom(parsed.conditions[0]); 
+    const currentActivity = getCurrentActivity();
+    const currrentSeason = getCurrentSeason();
+   // const data = await getSensiboSensors();
+  //  console.log("Data from Sensibo:", data);
+    const detection = false;
+    const context = {
+        current_room: room, 
+        detection: true,
+        //temperature: data.temperature,
+        //humidity: data.humidity,
+        activity: currentActivity,
+        season: currrentSeason
+    }
+
+   // console.log("The Context is :", current_room, currrentSeason, detection, activity,season);
     const evaluation_condition_result = evaluateCondition(parsed, context);
    
 
@@ -288,4 +365,4 @@ function execute(parsed, context) {
 
 
 
-module.exports = { execute };
+module.exports = { execute  };

@@ -17,7 +17,8 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     async execute() {
         console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
-
+        console.log(`Turing ${this.device} on ${this.state} in room id ${this.roomid} and Space ID ${this.spaceid}`);
+        
 
         // Assuming this.details is a string like "25 DEGREES"
     

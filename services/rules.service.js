@@ -12,7 +12,7 @@ const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
-const { get_MotionState } = require('../controllers/sensorController.js');
+const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
 
 
 // const { Rules } = require('../models/Rules');
@@ -131,6 +131,18 @@ const ruleFormatter = async (rule) => {
   return rule;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 // const insertRuleToDBMiddleware = async (rule, isStrict) => {
 //   const keepPattern = /\b(KEEP)\b/;
 //   const isWithKeep = keepPattern.test(rule);
@@ -229,36 +241,16 @@ async function fetchData(key) {
       return null;
   }
 }
-
-
-/**
-* Fetches room ID using a generic fetchData function.
-* @returns {Promise<string|null>}
-*/
 async function fetchRoomID() {
   return fetchData('RoomID');
 }
-
-/**
-* Fetches space ID using a generic fetchData function.
-* @returns {Promise<string|null>}
-*/
 async function fetchSpaceID() {
   return fetchData('SpaceID');
 }
 
-/**
-* Fetches motion detection status using a generic fetchData function.
-* @returns {Promise<boolean|null>}
-*/
 async function fetchMotionState() {
   return fetchData('motionDetected');
 }
-
-/**
-* Fetches all detections concurrently and logs the results.
-* @returns {Promise<Object>}
-*/
 async function getAllDetections() {
   try {
       const [roomID, spaceID, motionState] = await Promise.all([
@@ -437,15 +429,15 @@ async function updateAndProcessRules() {
                     console.error(`Room not found with ID: ${roomid}`);
                     return;
                 } else {
-                    const context = {
-                        temperature: 22,
-                        humidity: 40,
-                        detection: true,  // Assume motion detection is true
-                        activity: "studying",
-                        season: "spring",
-                        room: room.data,
-                    }
-                    const interpretResult = await interpretRuleByName(description, context); 
+                    // const context = {
+                    //     temperature: 22,
+                    //     humidity: 40,
+                    //     detection: true,  // Assume motion detection is true
+                    //     activity: "studying",
+                    //     season: "spring",
+                    //     room: room.data,
+                    // }
+                    const interpretResult = await interpretRuleByName(description); 
                     // // Evaluate the rule description
                     // if (description.toLowerCase().includes("ac")) {
                     //     const interpretResult = await interpretRuleByName(description, context); 
@@ -454,8 +446,12 @@ async function updateAndProcessRules() {
                     //     const interpretResult = await interpretRuleByName(description, context);
                     //     lightRules.push(description);
                     // }
+                    console.log("interpret Result", interpretResult);
+                    return interpretResult;
                 }
+
                   console.log("Room details:", JSON.stringify(room, null, 2));
+             
               } catch (error) {
                   console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);
               }
@@ -468,16 +464,32 @@ async function updateAndProcessRules() {
   }
 }
 
+async function interpeter_result(){
+  const interpretResult = await updateAndProcessRules(); 
+  console.log("in interpeter_result Function ",interpretResult);
+  if(interpretResult === "interpted successfully") {
+    return true;
+  }
+  return false;
+}
 
-
-
+async function checkInterpreterCondition() {
+  const interpretResult = await updateAndProcessRules(); 
+  console.log("in interpeter_result Function ",interpretResult);
+  if(interpretResult === "interpted successfully") {
+    return true;
+  }
+  return false;
+  return true;
+}
 
 // Run the function immediately
 
 
 // Set an interval to run the function every 30 seconds
 setInterval(updateAndProcessRules, 30000);
-
+interpeter_result();
+checkInterpreterCondition();
 /*
 async function processAllRules(context) {
   try {
@@ -551,7 +563,7 @@ async function processAllRules(context) {
 
 
 // Function to interpret a rule by its description
-async function interpretRuleByName(ruleDescription,context) {
+async function interpretRuleByName(ruleDescription) {
   try {
     console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
     // Find the rule by its description using await for the asynchronous operation
@@ -561,8 +573,8 @@ async function interpretRuleByName(ruleDescription,context) {
       //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
       //console.log(`Interpreting rule: ${input}`); 
     
-      interpret(ruleDescription, context);
-      return `Rule "${ruleDescription}" interpreted successfully. Context: ${JSON.stringify(context)}`; // Return a success message
+      interpret(ruleDescription);
+      return `Rule "${ruleDescription}" interpreted successfully.)}`; // Return a success message
     } else {
       console.log(`Rule "${ruleDescription}" not found.`);
       return `Rule "${ruleDescription}" not found.`; // Return an error message
@@ -574,12 +586,19 @@ async function interpretRuleByName(ruleDescription,context) {
 }
 
   // Function to pass this context to the executor
-  function interpret(input, context) {
+  function interpret(input) {
     const tokens = tokenize(input);
     const parsed = parse(input); // Ensure this returns the correct structure
-    console.log(parsed);
-    execute(parsed, context); // `parsed` should include condition and action
+    console.log("Sameer parsed",parsed);
+    execute(parsed); // `parsed` should include condition and action
   }
+
+
+
+
+
+
+
 
 
 
@@ -834,5 +853,6 @@ module.exports = {
   getAllDetections,
   fetchRoomID,
   fetchSpaceID,
-  fetchMotionState
+  fetchMotionState,
+  checkInterpreterCondition,
 };
