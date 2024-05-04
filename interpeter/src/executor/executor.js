@@ -54,35 +54,42 @@ function convertOperators(operators) {
 
 
 // function evaluateLogic(results, operators) {
-//     // Check if the length of results is appropriate given the number of operators
 //     if (results.length - 1 !== operators.length) {
 //         console.error(`Mismatch in the number of results and operators: Results Length=${results.length}, Operators Length=${operators.length}`);
 //         throw new Error("The number of operators should be one less than the number of results.");
 //     }
 
-//     // Evaluate the logic
 //     let currentValue = results[0];
 //     for (let i = 0; i < operators.length; i++) {
-//         const operator = operators[i];
 //         const nextValue = results[i + 1];
-//         switch (operator) {
-//             case '&&':
-//                 currentValue = currentValue && nextValue;
-//                 break;
-//             case '||':
-//                 currentValue = currentValue || nextValue;
-//                 break;
-//             default:
-//                 console.error(`Unsupported operator: ${operator}`);
-//                 return false;
+//         switch (operators[i]) {
+//             case '&&': currentValue = currentValue && nextValue; break;
+//             case '||': currentValue = currentValue || nextValue; break;
+//             default: console.error(`Unsupported operator: ${operators[i]}`); return false;
 //         }
 //     }
-
 //     return currentValue;
 // }
 
 
 
+// function evaluateLogic(results, operators) {
+//     if (results.length - 1 !== operators.length) {
+//         console.error(`Mismatch in the number of results and operators: Results Length=${results.length}, Operators Length=${operators.length}`);
+//         throw new Error("The number of operators should be one less than the number of results.");
+//     }
+
+//     let currentValue = results[0];
+//     for (let i = 0; i < operators.length; i++) {
+//         const nextValue = results[i + 1];
+//         switch (operators[i]) {
+//             case '&&': currentValue = currentValue && nextValue; break;
+//             case '||': currentValue = currentValue || nextValue; break;
+//             default: console.error(`Unsupported operator: ${operators[i]}`); return false;
+//         }
+//     }
+//     return currentValue;
+// }
 
 
 function evaluateLogic(results, operators) {
@@ -105,164 +112,85 @@ function evaluateLogic(results, operators) {
 
 }
 
+
 function evaluateCondition(parsed, context) {
-    console.log("evaluateCondition!!!!!!!!!!!!!!!!!!!");
+    console.log("Evaluating conditions...");
     const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
-    // const naturalLanguagePattern = /(?:he|the)\s+(activity|season)\s+is\s+(\w+|in)/i;  // Removed "he" from capture group
-    const VaribalePattern = /^\s*(studying|eating|sleeping)\s*$/i;  // Pattern to catch unary conditions
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
-    const valuePattern = /\b(\d{1,3}|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
-    console.log("context : " + context)     
+    const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping)\b/gi;
     
-    let variable, operator, conditionValue,contextValue,last_varibale,last_operator,last_conditionValue;   
     let results = [];
-  
-    parsed.conditions.forEach((condition) => {
-     
-        console.log("condition : " + condition) 
-        if(myDict.check(condition) === true) 
-        { 
-            condition = myDict.getValue(condition); 
-            console.log("condition : " + condition) 
+    parsed.conditions.forEach(condition => {
+        console.log("Processing condition:", condition);
 
-        }else{
-               console.log("the condition is nont in the Speical dictinory  : " + condition)     
-        }
-        
-        let variableMatch = condition.match(structuredVariablePattern) || [last_varibale] 
-        if (variableMatch[0] === 'in room') {
-            variableMatch[0] = "motionDetected";
+        let variableMatch = condition.match(structuredVariablePattern);
+        let operatorMatch = condition.match(operatorPattern);
+        let valueMatch = condition.match(valuePattern);
+
+        if (!variableMatch || !operatorMatch || !valueMatch) {
+            console.error("Invalid condition format:", condition);
+            results.push(false);
+            return;
         }
 
-        if (variableMatch[0]) {
-            variable = variableMatch[0].toLowerCase(); // Safely call toLowerCase
-        } else {
-            console.error("No valid variable match found");
-            variable = null; // Or assign some default value
-            return  false;
-        } 
+        let variable = variableMatch[0].toLowerCase();
+        let operator = operatorMatch[0].toLowerCase();
+        let conditionValue = valueMatch[0].toLowerCase();
+        let contextValue = context[variable];
 
-        console.log("variable :  " + variable);
-        
-        
-        
-        let operatorMatch = condition.match(operatorPattern) || [last_operator] ;
-        if (operatorMatch[0]) {
-            operator = operatorMatch[0].toLowerCase(); // Safely call toLowerCase
-        } else {
-            console.error("No valid operator match found");
-            return false;
+        // Ensure contextValue is valid for operation
+        if (contextValue === undefined) {
+            console.error("Context value is undefined for variable:", variable);
+            results.push(false);
+            return;
         }
 
-        console.log("operator :  " + operator);
-
-
-        let valueMatch = condition.match(valuePattern) || [last_conditionValue] ;
-        if (valueMatch[0]) {
-            conditionValue = valueMatch[0].toLowerCase(); // Safely call toLowerCase
-        } else { 
-            console.error("No valid value match found");
-            return false;
-         }
-        
-        
-
-       
-       
-        // variable = variableMatch[0].toLowerCase();
-        // operator = operatorMatch[0].toLowerCase().trim();
-        // conditionValue = valueMatch[0].toLowerCase();
-        
-        
-        last_varibale = variable;
-        last_operator = operator;
-        last_conditionValue = conditionValue;
-
-       
-
-        if(conditionValue == 'on' |  conditionValue == 'On' ) 
-        {
-            conditionValue = true;
-
+        // Convert boolean strings to boolean values
+        if (conditionValue === "true" || conditionValue === "false") {
+            conditionValue = conditionValue === "true";
         }
-        if(conditionValue == 'off' |  conditionValue == 'off')
-        {
 
-            conditionValue = false;
-
-        }
-        
-
-        if (conditionValue == 'studying' || conditionValue == 'cooking' || conditionValue == 'eating' ||
-            conditionValue == 'playing' || conditionValue == 'watching_tv') {
-            
-            contextValue = context.hasOwnProperty('activity') ? context['activity'].toString().toLowerCase() : null;
-        } else if (conditionValue == 'spring' || conditionValue == 'summer' || conditionValue == 'fall' ||
-                conditionValue == 'winter') {
-            
-            contextValue = context.hasOwnProperty('season') ? context['season'].toString().toLowerCase() : null;
-        }
-        else{
-            contextValue = context.hasOwnProperty(variable) ? context[variable].toString().toLowerCase() : null;
-        } 
-        
-        String(contextValue,conditionValue)
-        contextValue = String(contextValue).toLowerCase();
-        conditionValue = String(conditionValue).toLowerCase();
-      
-       
-         console.log("condtion is : " + condition) 
-         console.log("variable :  " + variable);
-         console.log("operator :  " + operator);
-         console.log("conditionValue :  " + conditionValue);
-         console.log("contextValue : " + contextValue + " conditionValue : " + conditionValue);
-     
-        
-
+        let result = false;
         switch (operator) {
-           
             case 'is above':
-                console.log("is above")
-                results.push( contextValue > conditionValue);
+                result = parseFloat(contextValue) > parseFloat(conditionValue);
                 break;
             case 'is below':
-                console.log("is below")
-                results.push(contextValue < parseFloatconditionValue);
+                result = parseFloat(contextValue) < parseFloat(conditionValue);
                 break;
             case 'is equal to':
-                console.log("is equal to switch")
-                results.push(contextValue === conditionValue);
+                result = contextValue.toString() === conditionValue;
                 break;
-            case 'is': 
-                console.log("is")
-                results.push(contextValue === conditionValue);
+            case 'is':
+                result = contextValue.toString() === conditionValue;
                 break;
-            case 'is above or equal to':
-                results.push(contextValue  >=  conditionValue );
-                break;
-            case 'is below or equal to':
-                results.push(contextValue <= conditionValue);
-                break;
-            case 'in':  // Checks if the context value contains the given substring or matches one of a list
-                results.push(contextValue === conditionValue);
-                //results.push(contextValue.includes(conditionValue));
+            case 'in':
+                if (typeof contextValue === 'string' || Array.isArray(contextValue)) {
+                    result = contextValue.includes(conditionValue);
+                } else {
+                    console.error("Cannot use 'in' operator on non-string/array context value:", contextValue);
+                    result = false;
+                }
                 break;
             case 'not':
-                results.push(contextValue === conditionValue);
-                //results.push(contextValue.includes(conditionValue));
+                if (typeof contextValue === 'string' || Array.isArray(contextValue)) {
+                    result = !contextValue.includes(conditionValue);
+                } else {
+                    console.error("Cannot use 'not' operator on non-string/array context value:", contextValue);
+                    result = false;
+                }
                 break;
             default:
-                console.error(`Unknown operator: ${operator}`);
-                results.push(false);
+                console.error("Unsupported operator:", operator);
+                result = false;
                 break;
         }
-       
+        results.push(result);
     });
-    console.log("results : " + results)
 
+    console.log("Condition evaluation results:", results);
     return results;
 }
-
 
 
 
@@ -366,3 +294,9 @@ async function execute(parsed) {
 
 
 module.exports = { execute  };
+
+
+
+
+
+
