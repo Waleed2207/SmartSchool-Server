@@ -4,21 +4,21 @@ const RoomDevice = require("../../../models/RoomDevice");
 const axios = require('axios'); 
 
 class TurnDeviceOnCommand extends BaseCommand {
-    constructor(deviceid,roomid,spaceid,state , mode, details) {
+    constructor(device,state,mode,value,room) {
         super();
-        this.device = deviceid;
+        this.device = device;
         this.state = state;
         this.mode = mode;
-        this.details = details; 
-        this.room = roomid;
-        this.space = spaceid;   
+        this.details = value; 
+        this.room = room;
+        //this.space = spaceid;   
 
     }
 
     async execute() {
-        console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
-        console.log(`Turing ${this.device} on ${this.state} in room id ${this.roomid} and Space ID ${this.spaceid}`);
-        
+        // console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
+        // console.log(`Turing ${this.device} on ${this.state} in room id ${this.roomid} and Space ID ${this.spaceid}`);
+        console.log(`Turing ${this.device} on ${this.state}  at mode ${ this.mode} value is ${this.details} in room id ${this.room} `); 
 
         // Assuming this.details is a string like "25 DEGREES"
     

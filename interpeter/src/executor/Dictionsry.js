@@ -80,16 +80,16 @@ function createSpecialDictionary() {
 const myDict = createSpecialDictionary();
 myDict.add("Joe in room 17886285-1875", "detection at  room  is equal to true")
 myDict.add("Joe not in room 17886285-1875 ", "detection at room  is equal to false")
-myDict.add("spring ", "season is spring")
-myDict.add("summer ", "season is summer")
-myDict.add("fall ", "season is fall")
-myDict.add("winter ", "season is winter")
-myDict.add("studying","activity  is studying")
-myDict.add("cooking ","activity is cooking")
-myDict.add("eating ","activity is eating")
-myDict.add("playing ","activity is playing")
-myDict.add("watching_tv ","activity is watching tv")
-myDict.add("sleeping ","activity is sleeping")
+// myDict.add("spring ", "season is spring")
+// myDict.add("summer ", "season is summer")
+// myDict.add("fall ", "season is fall")
+// myDict.add("winter ", "season is winter")
+// myDict.add("studying","activity  is studying")
+// myDict.add("cooking ","activity is cooking")
+// myDict.add("eating ","activity is eating")
+// myDict.add("playing ","activity is playing")
+// myDict.add("watching_tv ","activity is watching tv")
+// myDict.add("sleeping ","activity is sleeping")
 
 
 
