@@ -77,6 +77,9 @@ const addDeviceToRoom = async (space_id,deviceId, deviceName, roomId, deviceStat
   }
 };
 
+
+
+
 const getDevicesByRoomId = async (roomId) => {
   try {
     const devices = await Device.aggregate([
@@ -106,6 +109,25 @@ const getDevicesByRoomId = async (roomId) => {
     };
   }
 };
+
+
+
+
+// async function getDevicesByRoomId(roomid) {
+//   try {
+//       // Your fetching logic here
+//       let devices = await fetchDevices(roomid); // Example function call
+//       if (!devices) {
+//           console.log(`No devices found for room ID: ${roomid}`);
+//           return []; // Return an empty array if no devices are found
+//       }
+//       console.log(`Devices for room ID ${roomid}:`, devices);
+//       return devices;
+//   } catch (error) {
+//       console.error(`Error fetching devices for room ID ${roomid}:`, error);
+//       return []; // Return an empty array in case of error
+//   }
+// }
 
 const getRoomDevicesTest = async (roomId) => {
   try {

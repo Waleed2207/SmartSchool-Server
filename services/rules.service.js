@@ -274,7 +274,7 @@ async function getAllDetections() {
 const getAllRulesDescription = async () =>
  {
   try {
-    //console.log("getallruledescription");
+    console.log("getallruledescription");
     const rules = await Rule.find({});
 
     const activeDevices = await Device.find({device_id: 'YNahUQcM',  state: 'on'});
@@ -446,8 +446,8 @@ async function updateAndProcessRules() {
                     //     const interpretResult = await interpretRuleByName(description, context);
                     //     lightRules.push(description);
                     // }
-                    console.log("interpret Result", interpretResult);
-                    return interpretResult;
+                    console.log("interpret Result in Update and procces roles", interpretResult);
+                    return true;
                 }
 
                   console.log("Room details:", JSON.stringify(room, null, 2));
@@ -464,14 +464,22 @@ async function updateAndProcessRules() {
   }
 }
 
-async function interpeter_result(){
-  const interpretResult = await updateAndProcessRules(); 
-  console.log("in interpeter_result Function ",interpretResult);
-  if(interpretResult === "interpted successfully") {
-    return true;
+async function interpeter_result() {
+  console.log("interpeter_result function called");
+  try {
+      // Since updateAndProcessRules is presumably an async function, await its result.
+      const interpretResult = await updateAndProcessRules();
+      console.log("interpret Result in interpeter_result", interpretResult);
+      if (interpretResult === true) {
+          return true; // Return true for successful interpretation.
+      }
+      return false; // Return false if the result does not match the success condition.
+  } catch (error) {
+      console.error("Error in interpeter_result:", error);
+      throw error; // Proper error handling should be maintained.
   }
-  return false;
 }
+
 
 async function checkInterpreterCondition() {
   const interpretResult = await updateAndProcessRules(); 
@@ -480,7 +488,6 @@ async function checkInterpreterCondition() {
     return true;
   }
   return false;
-  return true;
 }
 
 // Run the function immediately
@@ -488,7 +495,7 @@ async function checkInterpreterCondition() {
 
 // Set an interval to run the function every 30 seconds
 setInterval(updateAndProcessRules, 30000);
-interpeter_result();
+//interpeter_result();
 checkInterpreterCondition();
 /*
 async function processAllRules(context) {
@@ -845,6 +852,7 @@ const toggleActiveStatus = async (ruleId, isActive) => {
 // };
 
 module.exports = {
+
   add_new_Rule,
   getAllRules,
   updateRule,
@@ -854,5 +862,6 @@ module.exports = {
   fetchRoomID,
   fetchSpaceID,
   fetchMotionState,
-  checkInterpreterCondition,
+  interpeter_result,
+    // Make sure it is listed here correctly
 };

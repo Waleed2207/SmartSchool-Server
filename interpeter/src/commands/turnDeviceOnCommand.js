@@ -1,80 +1,100 @@
+
 const BaseCommand = require('./baseCommand');
 const Device = require("../../../models/Device");
 const RoomDevice = require("../../../models/RoomDevice");
-const axios = require('axios'); 
+const axios = require('axios');
+require('dotenv').config();
 
 class TurnDeviceOnCommand extends BaseCommand {
-    constructor(device,state,mode,value,room) {
+    constructor(deviceid, mode, value, device, state, apiKey = process.env.SENSIBO_API_KEY) {
         super();
+        this.deviceid = deviceid;
         this.device = device;
         this.state = state;
         this.mode = mode;
-        this.details = value; 
-        this.room = room;
-        //this.space = spaceid;   
-
+        this.details = value;
+        this.apiKey = apiKey;
     }
 
     async execute() {
-        // console.log(`Turning ${this.device} ${this.state} ${this.mode} with  details: ${this.details}`);
-        // console.log(`Turing ${this.device} on ${this.state} in room id ${this.roomid} and Space ID ${this.spaceid}`);
-        console.log(`Turing ${this.device} on ${this.state}  at mode ${ this.mode} value is ${this.details} in room id ${this.room} `); 
-
-        // Assuming this.details is a string like "25 DEGREES"
-    
-        // //Extract the numeric part from the string
-    //     const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Convert to integer
-    //     console.log(targetTemperature)
-    //     // // Use default values or values from parsed details
-    //     const { device_id = `${process.env.SENSIBO_DEVICE_ID}`, apiKey = `${process.env.SENSIBO_API_KEY}` } = this.details; // Assuming you add device_id and apiKey to this.details if necessary
-    //     console.log(device_id);
-    //     const deviceUrl = `https://home.sensibo.com/api/v2/pods/${device_id}/acStates?apiKey=${apiKey}`;
-    //     const state = true; // Since we're turning the device on
-    //     const payload = {
-    //         acState: {
-    //             on: state,
-    //             targetTemperature,
-    //             mode: this.mode
-    //         }
-    //     };
+        console.log(`Executing Turn On for ${this.device} in mode ${this.mode} with value ${this.details}`);
         
-    //     try {
-    //         const response = await axios.post(deviceUrl, payload, {
-    //             headers: { 'Content-Type': 'application/json' }
-    //         });
-            
-    //         console.log(`Device ${this.device} turned on successfully with temperature: ${targetTemperature} degrees. Response:`, response.data);
-            
-    //         // Update the device state in your local database
-    //         const updateResultDevice = await Device.updateOne(
-    //             { device_id: device_id }, // Assuming device_id is the filter criteria
-    //             { $set: { state: "on", lastUpdated: new Date() }}
-    //         );
-            
-    //         const updateResultRoomDevice = await RoomDevice.updateOne(
-    //             { device_id: device_id },
-    //             { $set: { state: "on", lastUpdated: new Date() }}
-    //         );
-            
-    //         console.log("Device Database update result:", updateResultDevice);
-    //         console.log("RoomDevice Database update result:", updateResultRoomDevice);
-    //     } catch (error) {
-    //         console.error(`Failed to turn on ${this.device}. Error:`, error.message);
-    //     }
-    // }
-    
+        // Start switch-case to handle different device types
+        switch (this.device.toLowerCase()) {
+            case 'ac':
+                await this.turnAcOn();
+                break;
+            case 'light':
+            case 'bulb':
+                await this.turnLightOn();
+                break;
+            case 'fan':
+                await this.turnFanOn();
+                break;
+            case 'projector':
+                await this.turnProjectorOn();
+                break;
+            case 'tv':
+                await this.turnTVOn();
+                break;
+            default:
+                console.log(`Device type ${this.device} is not supported.`);
+                break;
+        }
+    }
 
-    // //add new Device turn on 
-    
-    // Turn_lights(device,details,place){
-    //     this.details =device;
-    //     this.details = details;
-    //     this.place  = place;
-    //     console.log(`Turning ${this.device} ON with details: ${this.details} in ${this.place}`);
+    async turnAcOn() {
+        const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Extract the numeric part from the string like "25 degrees"
+        const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
+        const payload = {
+            acState: {
+                on: true,
+                targetTemperature: targetTemperature,
+                mode: this.mode
+            }
+        };
 
-    //  res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+        try {
+            const response = await axios.post(deviceUrl, payload, {
+                headers: { 'Content-Type': 'application/json' }
+            });
 
+            console.log(`AC turned on successfully at ${targetTemperature} degrees. Response:`, response.data);
+            await this.updateDeviceState("on");
+        } catch (error) {
+            console.error(`Failed to turn on AC. Error:`, error.message);
+        }
+    }
 
+    async turnLightOn() {
+        console.log(`Turning light on with details: ${this.details}`);
+        // res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+
+        await this.updateDeviceState("on");
+    }
+
+    async turnFanOn() {
+        console.log(`Turning fan on with details: ${this.details}`);
+        // Implementation for turning fan on
+        await this.updateDeviceState("on");
+    }
+
+    async turnProjectorOn() {
+        console.log(`Turning projector on with details: ${this.details}`);
+        // Implementation for turning projector on
+        await this.updateDeviceState("on");
+    }
+
+    async turnTVOn() {
+        console.log(`Turning TV on with details: ${this.details}`);
+        // Implementation for turning TV on
+        await this.updateDeviceState("on");
+    }
+
+    async updateDeviceState(state) {
+        const updateResultDevice = await Device.updateOne({ device_id: this.deviceid }, { $set: { state: state, lastUpdated: new Date() }});
+        const updateResultRoomDevice = await RoomDevice.updateOne({ device_id: this.deviceid }, { $set: { state: state, lastUpdated: new Date() }});
+        console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
     }
 }
 

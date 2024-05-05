@@ -1,5 +1,5 @@
 const Room = require("../models/Room");
-
+const RoomDevice = require("../models/RoomDevice");
 const getRooms = async () => {
   try {
     const rooms = await Room.find();
@@ -67,16 +67,45 @@ const getAllRoomNames = async () => {
 };
 
 
+// const getAllRoomIds = async () => {
+//   try {
+//       const rooms = await RoomDevice.find({}, { id: 1 }); // Fetch only the _id field
+//       return rooms.map(room => room.id.toString()); // Return an array of room IDs as strings
+//   } catch (error) {
+//       throw new Error(`Error fetching room IDs - ${error.message}`);
+//   }
+// };
+
+// const getAllRoomIds = async () => {
+//   try {
+//     const roomDevices = await RoomDevice.find(); // Fetch all documents
+
+//     const roomAndDeviceIds = roomDevices.map(device => {
+//       return {
+//         room_id: device.room_id.toString(),
+//         device_id: device.device_id.toString()
+//       };
+//     });
+
+//     return roomAndDeviceIds.filter(entry => entry.room_id && entry.device_id);
+//   } catch (error) {
+//     throw new Error(`Error fetching room and device IDs - ${error.message}`);
+//   }
+// }
+
+
 const getAllRoomIds = async () => {
   try {
-      const rooms = await Room.find({}, { id: 1 }); // Fetch only the _id field
-      return rooms.map(room => room.id.toString()); // Return an array of room IDs as strings
+    const roomDevices = await RoomDevice.find(); // Fetch all documents
+    const roomIds = roomDevices.map(device => {
+      return device.room_id.toString(); // Return the room_id as a string
+      
+    });
+    return roomIds.filter(roomId => roomId); // Filter out undefined values
   } catch (error) {
-      throw new Error(`Error fetching room IDs - ${error.message}`);
+    throw new Error(`Error fetching room IDs - ${error.message}`);
   }
 };
-
-
 
 
 
