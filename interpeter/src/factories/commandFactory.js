@@ -171,7 +171,8 @@ class CommandFactory {
             const turndeviceon = new TurnDeviceOnCommand(deviceid, mode, value, device, state);
             return turndeviceon.execute()
         } else if (state === 'off') {
-            return new TurnDeviceOffCommand(deviceid);
+            const TurnDeviceOff = new TurnDeviceOffCommand(deviceid, mode, value, device, state);
+            return TurnDeviceOff.execute()
         } else {
             console.log("Unknown command state.");
             return null;

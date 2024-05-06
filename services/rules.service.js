@@ -346,6 +346,7 @@ async function updateAndProcessRules() {
 
                   const interpretResult = await interpretRuleByName(description);
                   console.log("Interpret Result for Rule", interpretResult);
+                  return interpretResult;
 
               } catch (error) {
                   console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);

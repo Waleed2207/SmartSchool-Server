@@ -86,6 +86,7 @@ class TurnDeviceOnOffCommand extends BaseCommand {
     }
 
     async updateDeviceState(state) {
+        
         const updateResultDevice = await Device.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
         const updateResultRoomDevice = await RoomDevice.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
         console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
