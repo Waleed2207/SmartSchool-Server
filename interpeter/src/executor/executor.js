@@ -226,8 +226,8 @@ async function execute(parsed) {
     // Adjusting here for direct value usage
     const context = {
         detection: get_MotionState, // Use the value directly if it's not a function
-        activity: currentActivity,
-      //activity: 'studying',
+       // activity: currentActivity,
+        activity: 'studying',
         season: currentSeason,
     };
 
