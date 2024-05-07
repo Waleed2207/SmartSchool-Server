@@ -6,20 +6,20 @@ const axios = require('axios');
 require('dotenv').config();
 
 class TurnDeviceOnCommand extends BaseCommand {
-    constructor(deviceid, mode, value, device, state, apiKey = process.env.SENSIBO_API_KEY) {
+    constructor(deviceid, mode, temperature, device, state, apiKey = process.env.SENSIBO_API_KEY) {
         super();
         this.deviceid = deviceid;
         this.device = device;
         this.state = state;
         this.mode = mode;
-        this.details = value;
+        this.temperature = temperature;  // Assume temperature is already a number.
         this.apiKey = apiKey;
     }
 
+
     async execute() {
-        console.log(`Executing Turn On for ${this.device} in mode ${this.mode} with value ${this.details}`);
+        console.log(`Executing Turn On for ${this.device} in mode ${this.mode} with temperature: ${this.temperature}`);
         
-        // Start switch-case to handle different device types
         switch (this.device.toLowerCase()) {
             case 'ac':
                 await this.turnAcOn();
@@ -43,29 +43,27 @@ class TurnDeviceOnCommand extends BaseCommand {
         }
     }
 
-    async turnAcOn() {
-        const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Extract the numeric part from the string like "25 degrees"
-        const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
-        const payload = {
-            acState: {
-                on: true,
-                targetTemperature: targetTemperature,
-                mode: this.mode
-            }
-        };
+    // async turnAcOn() {
+    //     const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
+    //     const payload = {
+    //         acState: {
+    //             on: true,
+    //             targetTemperature: this.temperature,
+    //             mode: this.mode
+    //         }
+    //     };
 
-        try {
-            const response = await axios.post(deviceUrl, payload, {
-                headers: { 'Content-Type': 'application/json' }
-            });
+    //     try {
+    //         const response = await axios.post(deviceUrl, payload, {
+    //             headers: { 'Content-Type': 'application/json' }
+    //         });
 
-            console.log(`AC turned on successfully at ${targetTemperature} degrees. Response:`, response.data);
-            await this.updateDeviceState("on");
-        } catch (error) {
-            console.error(`Failed to turn on AC. Error:`, error.message);
-        }
-    }
-
+    //         console.log(`AC turned on successfully at ${this.temperature} degrees. Response:`, response.data);
+    //         await this.updateDeviceState("on");
+    //     } catch (error) {
+    //         console.error(`Failed to turn on AC. Error:`, error.message);
+    //     }
+    // }
     async turnLightOn() {
         console.log(`Turning light on with details: ${this.details}`);
         // res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });

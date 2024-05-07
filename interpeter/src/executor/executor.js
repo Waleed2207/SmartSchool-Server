@@ -608,8 +608,8 @@ async function execute(parsed) {
         console.log('Received motion state change:', data);
     const context = {
         detection: data.motionState, 
-         activity: 'outside',
-        //activity:'studying',
+        activity: 'outside',
+       // activity:'studying',
         //activity:currentActivity,
         season: currentSeason,
     };
