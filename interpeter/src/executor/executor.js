@@ -284,7 +284,7 @@ const { forEach, cond, result } = require('lodash');
 const { CommandFactory } = require('../factories/commandFactory');
 const { debug, Console } = require('console');
 const RoomDevice = require("../../../models/RoomDevice");
-const { getAllRoomIds } = require('../../../services/rooms.service');  
+const { getAllRoomIds,getRoomByName,getAllRoomNames } = require('../../../services/rooms.service');  
 const { getCurrentActivity, getCurrentSeason } = require('../../../services/time.service');
 const { get_MotionState } = require('../../../controllers/sensorController');
 const { getDevicesByRoomId } = require("../../../services/devices.service");
@@ -318,135 +318,55 @@ function evaluateLogic(results, operators) {
     return currentValue;
 }
 
-// function getContextType(sentence, context) {
-//     const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping','outside'];
-//     const seasons = ['spring', 'summer', 'fall', 'winter'];
-//     const words = sentence.toLowerCase().split(/\s+/);
-
-//     console.log("get context type words:");
-    
-//     if (sentence.includes("in room")) {
-//         console.log("detection in room is equal to true.");
-//         return true;
-//     } else if (sentence.includes("not in room")) {
-//         console.log("detection in room is equal to false.");
-//         return false;
-//     }
-
-//     for (const word of words) {
-//         if (activities.includes(word)) {
-//             if (context['activity'] === word) {
-//                 console.log("Activity matched:", word);
-//                 return true;
-//             } else {
-//                 console.log("Activity not matched:", word);
-//                 return false;
-//             }
-//         } else if (seasons.includes(word)) {
-//             if (context['season'] === word) {
-//                 console.log("Season matched:", word);
-//                 return true;
-//             } else {
-//                 console.log("Season not matched:", word);
-//                 return false;
-//             }
-//         }
-//     }
-    
-//     return null; 
-// }
 
 
-
-// function getContextType(sentence, context) {
-//     const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping','outside'];
-//     const seasons = ['spring', 'summer', 'fall', 'winter'];
-//     const words = sentence.toLowerCase().split(/\s+/);
-
-//     console.log("get context type words:");
-    
-//     // Check for specific phrases before individual words
-//     if (sentence.includes("in room")) {
-//         if(context['detection'] === true){
-//             console.log("detection in room is equal to true.");
-//             return true;
-//         } else{
-//             console.log("detection in room is equal to false.");
-//             return false;
-//         }  
-        
-        
-//     } else if (sentence.includes("not in room")) {
-//         if(context['detection'] === false){ 
-//             console.log("detection in room is equal to false.");
-//             return false;
-//         }else{
-//             console.log("detection in room is equal to true.");   
-//             return true;
-//         }
-        
-//     }
-
-//     // Check each word against activities and seasons
-//     for (const word of words) {
-//         if (activities.includes(word)) {
-//             if (context['activity'] === word) {
-//                 console.log("Activity matched:", word);
-//                 return true;
-//             } else {
-//                 console.log("Activity not matched:", word);
-//                 return false;
-//             }
-//         } else if (seasons.includes(word)) {
-//             if (context['season'] === word) {
-//                 console.log("Season matched:", word);
-//                 return true;
-//             } else {
-//                 console.log("Season not matched:", word);
-//                 return false;
-//             }
-//         }
-//     }
-    
-//     return null; // Return null if no matches found
-// }
 
 
 function getContextType(sentence, context) {
-    const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping', 'outside'];
+    const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping','outside'];
     const seasons = ['spring', 'summer', 'fall', 'winter'];
     const words = sentence.toLowerCase().split(/\s+/);
 
     console.log("get context type words:");
-    
-    // Check specifically for "not in room" before "in room"
-    if (sentence.includes("not in room")) {
-        if(context['detection'] === false){ 
-           
-            return true;
-        } else { 
-            return false;
-        }
-    } else if (sentence.includes("in room")) {
+    console.log("sentence:",sentence);
+    // Check for specific phrases before individual words
+    if (sentence.includes("in")) {
         if(context['detection'] === true){
+            console.log("detection in room is equal to true.");
             return true;
-        } else {
+        } else{
+            console.log("detection in room is equal to false.");
             return false;
         }  
+        
+        
+    } else if (sentence.includes("not in")) {
+        if(context['detection'] === false){ 
+            console.log("detection in room is equal to false.");
+            return false;
+        }else{
+            console.log("detection in room is equal to true.");   
+            return true;
+        }
+        
     }
 
     // Check each word against activities and seasons
     for (const word of words) {
         if (activities.includes(word)) {
             if (context['activity'] === word) {
+                console.log("Activity matched:", word);
                 return true;
             } else {
+                console.log("Activity not matched:", word);
                 return false;
             }
         } else if (seasons.includes(word)) {
             if (context['season'] === word) {
+                console.log("Season matched:", word);
                 return true;
             } else {
+                console.log("Season not matched:", word);
                 return false;
             }
         }
@@ -455,41 +375,12 @@ function getContextType(sentence, context) {
     return null; // Return null if no matches found
 }
 
-// function getContextType(sentence, context) {
-//     // Define lists of activities and seasons
-//     const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping', 'outside'];
-//     const seasons = ['spring', 'summer', 'fall', 'winter'];
-    
-//     // Convert the sentence to lowercase and split it into individual words
-//     const words = sentence.toLowerCase().split(/\s+/);
 
-//     // Check for specific phrases before individual words
-//     if (sentence.includes("in room")) {
-//         // If "in room" is found, return true if detection is true, otherwise false
-//         return context['detection'] === true;
-//     }else{
-//     // } else if (sentence.includes("not in room")) {
-//         // If "not in room" is found, return true if detection is false, otherwise true
-//         return context['detection'] === false;
-//     }
 
-//     // Check each word against activities and seasons
-//     for (const word of words) {
-//         if (activities.includes(word)) {
-//             // If the word matches an activity and it matches the context activity, return true
-//             return context['activity'] === word;
-//         } else if (seasons.includes(word)) {
-//             // If the word matches a season and it matches the context season, return true
-//             return context['season'] === word;
-//         }
-//     }
-    
-//     // If no matches found, return null
-//     return null;
-// }
 
 function evaluateCondition(parsed, context) {  
     console.log("Evaluating conditions...");
+    console.log("Parsed object:", parsed);  
     const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
     const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room)\b/gi;
@@ -574,45 +465,290 @@ function evaluateCondition(parsed, context) {
     return results;
 }
 
-async function GetRoomIdFromDatabase(parsed) {
-    try {
-        const roomIDs = await getAllRoomIds(); 
-        const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[]\]/g, '\$&')).join('|');
-        const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+// async function GetIDwitRoomNameFromDatabase(parsed) {
+//     try {
+//         console.log("GetIDwitRoomNameFromDatabase"); 
+//         console.log("Parsed object:", parsed);   
+       
+//          const roomNames = await getAllRoomNames();
+//          console.log("Room names from DB:", roomNames);
+ 
+//          // Define the pattern to match room names
+//          const roomNamesPatternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+//          const roomNamesPattern = new RegExp(`\\b(${roomNamesPatternString})\\b`, 'i');
+ 
+//         // Search for a room name in the parsed string
+//         const roomNameMatch = parsed.match(roomNamesPattern);
+//         console.log("Room Name Match:", roomNameMatch); 
 
-        if (parsed && parsed.length > 0) {
-            const roomIdMatch = parsed.match(roomIDPattern); 
-            if (roomIdMatch) {
-                const roomId = roomIdMatch[0]; 
-                return roomId;
-            } else {
-                console.log("No room ID found in the parsed string.");
-                throw new Error("No room ID found in the parsed string.");
-            }
+//         if (roomNameMatch && roomNameMatch[0]) {
+//             const roomName = roomNameMatch[0].trim();
+//             console.log("Fetching details for Room Name:", roomName);
+
+//             const RoomName = await getRoomByName(roomName);
+//             console.log("Room Name from DB:", RoomName);
+
+//             if (!RoomName) {
+//                 console.log("Room Name not found in database.");
+//                 return null;
+//             }
+//         } 
+
+//         const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[]\]/g, '\$&')).join('|');
+//         const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+
+//         if (parsed && parsed.length > 0) {
+//             const roomIdMatch = parsed.match(roomIDPattern); 
+//             if (roomIdMatch) {
+//                 const roomId = roomIdMatch[0]; 
+//                 return roomId;
+//             } else {
+//                 console.log("No room ID found in the parsed string.");
+//                 throw new Error("No room ID found in the parsed string.");
+//             }
+//         } else {
+//             console.log("Parsed object or its conditions property is undefined or empty.");
+//             throw new Error("Parsed object or its conditions property is undefined or empty.");
+//         }
+//     } catch (err) {
+//         console.log("Error in getting room IDs or room details:", err);
+//         return null;
+//     }
+// }
+
+
+async function GetRoomNameFromDatabase(parsed) {
+    try {
+        // console.log("GetIDwitRoomNameFromDatabase"); 
+        // console.log("Parsed object:", parsed);   
+       
+        // Fetch all room names from the database
+        const roomNames = await getAllRoomNames();
+        //console.log("Room names from DB:", roomNames);
+ 
+        // Define the pattern to match room names
+        const roomNamesPatternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+        const roomNamesPattern = new RegExp(`\\b(${roomNamesPatternString})\\b`, 'i');
+ 
+        // Search for a room name in the parsed string
+        const roomNameMatch = parsed.match(roomNamesPattern);
+        //console.log("Room Name Match:", roomNameMatch); 
+
+        if (roomNameMatch && roomNameMatch[0]) {
+            const roomName = roomNameMatch[0].trim();
+            const roomDetails = await getRoomByName(roomName);
+            return { roomName, roomDetails };
+
+            //console.log("Fetching details for Room Name:", roomName);
+
+            // Fetch the room details from the database by room name
+           
+            //console.log("Room Details from DB:", roomDetails);
+
+            // // Check if roomDetails is not null and has the property 'id'
+            // if (roomDetails && (roomDetails.id || roomDetails._id)) {
+            //     const roomId = roomDetails.id || roomDetails._id;
+            //     console.log("Room ID:", roomId);
+            //     return roomId;
+            // } else {
+            //     console.log("Room details are null or missing an 'id'.");
+            //     return null;
+            // }
         } else {
-            console.log("Parsed object or its conditions property is undefined or empty.");
-            throw new Error("Parsed object or its conditions property is undefined or empty.");
+            console.log("No matching room name found in the parsed text.");
+            return { roomName: null, roomDetails: null };
         }
     } catch (err) {
-        console.log("Error in getting room IDs or room details:", err);
-        return null;
+        console.log("Error in getting room ID from room details:", err);
+        return { roomName: null, roomDetails: null };
     }
 }
+
+// async function execute(parsed) {
+//     console.log("Executing parsed conditions and actions");
+
+//     const currentActivity = getCurrentActivity(); 
+//     const currentSeason = getCurrentSeason(); 
+
+//     console.log("Current Activity:", currentActivity);
+//     console.log("Current Season:", currentSeason); 
+//     // console.log('Received motion state change:', data);
+//     //emitter.on('motionStateChange', async data => {}
+//     emitter.on('motionStateChange', async data => {
+//         console.log('Received motion state change:', data);
+//     const context = {
+//         detection: data.motionState, 
+//         activity: 'outside',
+//        // activity:'studying',
+//         //activity:currentActivity,
+//         season: currentSeason,
+//     };
+    
+    
+
+//     const roomDevicesResult = await getDevicesByRoomId(roomid);
+//     if (roomDevicesResult.statusCode !== 200) {
+//         console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//         return;
+//     }
+//     const roomdevices = roomDevicesResult.data;
+
+//     const evaluationConditionResult = evaluateCondition(parsed, context);
+//     const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+//     const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+
+//     console.log("Result of conditions:", result);
+
+   
+//     console.log("Execute Get Room details:");
+//    console.log("Room ID:", roomid);
+
+//     if (!result) {
+//         console.log("Conditions not met, no actions executed.");
+//         return;
+//     }
+//     const roomid = await GetIDwitRoomNameFromDatabase(parsed.conditions[0]);
+//     console.log("roomid:",roomid);  
+//     console.log("Conditions met, executing actions.");
+
+//     if(data.roomId === roomid)
+//     {
+//         for (const action of parsed.actions) {
+//             console.log(`Processing action: ${action}`);
+//             const command = await CommandFactory.createCommand(action, roomid, roomdevices);
+//             if (command) {
+//                 console.log("Command was executed successfully.");
+//             } else {
+//                 console.log('Action could not be executed:', action);
+//             }
+//         }
+//     }
+//     if (parsed.conditions.length === 0) {
+//         console.log('No conditions provided.');
+//     }
+//     if (parsed.actions.length === 0) {
+//         console.log('No actions provided.');
+//     })
+    
+
+// }
+
+// async function execute(parsed) {
+//     console.log("Executing parsed conditions and actions");
+
+//     const currentActivity = getCurrentActivity(); 
+//     const currentSeason = getCurrentSeason(); 
+
+//     console.log("Current Activity:", currentActivity);
+//     console.log("Current Season:", currentSeason); 
+
+//     //emitter.on('motionStateChange', async data => {}
+//     emitter.on('motionStateChange', async data => {
+//         console.log('Received motion state change:', data);
+
+//         const context = {
+//             detection: data.motionState,
+//             // activity: 'outside', // Use the currentActivity from the context
+//             activity: currentActivity,
+//             season: currentSeason,
+//             data: {
+//                 rooomname : "Living Room",
+//                 roomid: "38197016",
+//                 space_id :"61097711",
+//             }
+//         };
+
+//         // Get the room ID before you fetch devices
+//         let roomname,roomDetails = await GetIDwitRoomNameFromDatabase(parsed.conditions[0]);
+//         console.log("Room ID:", roomid);
+
+//         if (!roomid) {
+//             console.error("Failed to fetch the room ID");
+//             return;
+//         }
+
+//         const roomDevicesResult = await getDevicesByRoomId(roomid);
+//         if (roomDevicesResult.statusCode !== 200) {
+//             console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//             return;
+//         }
+//         const roomdevices = roomDevicesResult.data;
+
+//         const evaluationConditionResult = evaluateCondition(parsed, context);
+//         const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+//         const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+
+//         console.log("Result of conditions:", result);
+
+//         if (!result) {
+//             console.log("Conditions not met, no actions executed.");
+//             return;
+//         }
+
+//         console.log("Conditions met, executing actions.");
+
+//         if (context.data.rooomname  === roomname) {
+//             console.log("roomname matched. Processing actions...")
+//             for (const action of parsed.actions) {
+//                 console.log(`Processing action: ${action}`);
+//                 const command = await CommandFactory.createCommand(action, roomid, roomdevices);
+//                 if (command) {
+//                     console.log("Command was executed successfully.");
+//                 } else {
+//                     console.log('Action could not be executed:', action);
+//                 }
+//             }
+//         }else{
+//             console.log("Room name not matched. No actions executed."); 
+//         }
+
+//         if (parsed.conditions.length === 0) {
+//             console.log('No conditions provided.');
+//         }
+//         if (parsed.actions.length === 0) {
+//             console.log('No actions provided.');
+//         }
+//     });
+// }
+
 
 async function execute(parsed) {
     console.log("Executing parsed conditions and actions");
 
     const currentActivity = getCurrentActivity(); 
     const currentSeason = getCurrentSeason(); 
-    emitter.on('motionStateChange', async data => {
-        console.log('Received motion state change:', data);
+
+    console.log("Current Activity:", currentActivity);
+    console.log("Current Season:", currentSeason);
+
     const context = {
-        detection: data.motionState, 
-        activity: 'outside',
-       // activity:'studying',
-        //activity:currentActivity,
-        season: currentSeason,
+        detection: true,
+        //activity: currentActivity,
+        //season: currentSeason,
+        activity: 'learning',
+        season: 'winter',
+        data: {
+            roomname: "Living Room",
+            roomid: "38197016",
+            space_id: "61097711",
+        }
     };
+
+    let { roomName, roomDetails } = await GetIDwitRoomNameFromDatabase(parsed.conditions[0]);
+    //console.log("Room Name:", roomName);
+    //console.log("Room Details:", roomDetails);
+    
+    if (!roomDetails) {
+        console.error("Failed to fetch the room ID");
+        return;
+    }
+
+    const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+    if (roomDevicesResult.statusCode !== 200) {
+        console.error("Failed to fetch room devices:", roomDevicesResult.message);
+        return;
+    }
+    const roomdevices = roomDevicesResult.data;
 
     const evaluationConditionResult = evaluateCondition(parsed, context);
     const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
@@ -620,42 +756,38 @@ async function execute(parsed) {
 
     console.log("Result of conditions:", result);
 
-    const roomid = await GetRoomIdFromDatabase(parsed.conditions[0]);
-    const roomDevicesResult = await getDevicesByRoomId(roomid);
-    if (roomDevicesResult.statusCode !== 200) {
-        console.error("Failed to fetch room devices:", roomDevicesResult.message);
-        return;
-    }
-    const roomdevices = roomDevicesResult.data;
-    //console.log("Execute Get Room details:");
-   // console.log("Room ID:", roomid);
-
     if (!result) {
         console.log("Conditions not met, no actions executed.");
         return;
     }
 
     console.log("Conditions met, executing actions.");
-      if(data.roomId === roomid)
-      {
+
+    if (context.data.roomname.toLocaleLowerCase() === roomName.toLocaleLowerCase() ) {
+        console.log("Room name matched. Processing actions...");
         for (const action of parsed.actions) {
             console.log(`Processing action: ${action}`);
-            const command = await CommandFactory.createCommand(action, roomid, roomdevices);
+            const command = await CommandFactory.createCommand(action, roomDetails.id, roomdevices);
             if (command) {
                 console.log("Command was executed successfully.");
             } else {
                 console.log('Action could not be executed:', action);
             }
         }
-      }
-        if (parsed.conditions.length === 0) {
-            console.log('No conditions provided.');
-        }
-        if (parsed.actions.length === 0) {
-            console.log('No actions provided.');
-        }
-    })
+    } else {
+        console.log("Room name not matched. No actions executed.");
+    }
 
+    if (parsed.conditions.length === 0) {
+        console.log('No conditions provided.');
+    }
+    if (parsed.actions.length === 0) {
+        console.log('No actions provided.');
+    }
 }
 
-module.exports = { execute };
+
+module.exports = {
+    execute,
+    GetRoomNameFromDatabase
+ };

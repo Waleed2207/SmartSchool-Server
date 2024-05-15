@@ -13,6 +13,8 @@ const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
+const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/executor/executor');
+const {interpetermanger} = require('../../SmartSchool-Server/services/interpeter.service');
 
 
 // const { Rules } = require('../models/Rules');
@@ -321,28 +323,29 @@ async function updateAndProcessRules() {
 
       if (descriptionResult.statusCode === 200) {
           const descriptions = descriptionResult.data;
-          const roomIDs = await getAllRoomIds();
-          console.log("Room IDs:", roomIDs);
+          // const roomIDs = await getAllRoomIds();
+          // console.log("Room IDs:", roomIDs);
 
-          const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-          const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+          // const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+          // const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
 
           for (const description of descriptions) {
-              console.log("Processing rule:", description);
-              const roomIDMatches = description.match(roomIDPattern);
-              const roomid = roomIDMatches ? roomIDMatches[0] : null;
+             
 
-              if (!roomid) {
-                  console.error("No room ID matched in the description:", description);
-                  continue;  // Skip to next rule
-              }
+              // const roomIDMatches = description.match(roomIDPattern);
+              // const roomid = roomIDMatches ? roomIDMatches[0] : null;
+
+              // if (!roomid) {
+              //     console.error("No room ID matched in the description:", description);
+              //     continue;  // Skip to next rule
+              // }
 
               try {
-                  const room = await getRoomById(roomid);
-                  if (!room || room.statusCode !== 200) {
-                      console.error(`Room not found or error with ID: ${roomid}`);
-                      continue;  // Skip to next rule
-                  } 
+                  // const room = await getRoomById(roomid);
+                  // if (!room || room.statusCode !== 200) {
+                  //     console.error(`Room not found or error with ID: ${roomid}`);
+                  //     continue;  // Skip to next rule
+                  // } 
 
                   const interpretResult = await interpretRuleByName(description);
                   console.log("Interpret Result for Rule", interpretResult);
@@ -818,5 +821,8 @@ module.exports = {
  // fetchMotionState,
   // interpeter_result,
     // Make sure it is listed here correctly
-    checkInterpreterCondition
+    checkInterpreterCondition,
+    updateAndProcessRules,
+    interpretRuleByName,
+    getAllRulesDescription
 };
