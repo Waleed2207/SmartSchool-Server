@@ -734,7 +734,7 @@ async function execute(parsed) {
         }
     };
 
-    let { roomName, roomDetails } = await GetIDwitRoomNameFromDatabase(parsed.conditions[0]);
+    let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
     //console.log("Room Name:", roomName);
     //console.log("Room Details:", roomDetails);
     

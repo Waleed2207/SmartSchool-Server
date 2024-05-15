@@ -1,6 +1,6 @@
-const Interpreter = require('./interpreter');
-const { getAllRoomNames, getRoomByName } = require('../../../services/rooms.service');
-const {getAllRulesDescription} = require('../../../services/rules.service')
+const {interpreter} = require('./interpeter.js');
+const { getAllRoomNames, getRoomByName } = require('./rooms.service.js');
+const {getAllRulesDescription} = require('./rules.service.js')
 
 async function updateAndProcessRules() {
     try {

@@ -1,21 +1,16 @@
-const {updateAndProcessRules,interpretRuleByName} = require('./rules.service');
+const { updateAndProcessRules, interpretRuleByName } = require('./rules.service');
 
-class Interpreter { 
-    constructor(namespace) {
-        this.namespace = namespace;
-        this.rules = [];
-    }   
-
-    async call_processRules() {
+function interpreter(namespace) {
+    async function call_processRules() {
         try {
-            this.rules = await updateAndProcessRules();
-            return this.rules;
+            const rules = await updateAndProcessRules();
+            return rules;
         } catch (e) {
             throw new Error(e.message);
         }
     }
 
-    async interpretRuleByName(ruleName) {
+    async function interpretRuleByName(ruleName) {
         try {
             const rule = await interpretRuleByName(ruleName);
             return rule;
@@ -24,9 +19,17 @@ class Interpreter {
         }
     }
 
-    belongsToNamespace(room) {
-        return room.name_space === this.namespace;
+    function belongsToNamespace(room) {
+        return room.name_space === namespace;
     }
+
+    return {
+        call_processRules,
+        interpretRuleByName,
+        belongsToNamespace
+    };
 }
 
-module.exports = Interpreter;
+module.exports = {
+    interpreter
+};

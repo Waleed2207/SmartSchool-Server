@@ -14,7 +14,7 @@ const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // I
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
 const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/executor/executor');
-const {interpetermanger} = require('../../SmartSchool-Server/services/interpeter.service');
+const { interpetermanger } = require('../../SmartSchool-Server/services/interpetermanger.js');
 
 
 // const { Rules } = require('../models/Rules');
