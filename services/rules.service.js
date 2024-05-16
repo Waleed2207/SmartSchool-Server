@@ -11,9 +11,16 @@ const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
+<<<<<<< Updated upstream
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState } = require('../controllers/sensorController.js');
 
+=======
+const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
+//const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
+const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/executor/executor');
+// const InterpreterManager = require('./interpetermanger.js');
+>>>>>>> Stashed changes
 
 // const { Rules } = require('../models/Rules');
 // const {
@@ -414,11 +421,20 @@ async function updateAndProcessRules() {
   }
   */
 
+
+
+
 // Run the function immediately
 
 
 // Set an interval to run the function every 30 seconds
+<<<<<<< Updated upstream
 setInterval(updateAndProcessRules, 30000);
+=======
+//setInterval(updateAndProcessRules, 30000);
+//interpeter_result();
+//checkInterpreterCondition();
+>>>>>>> Stashed changes
 
 /*
 async function processAllRules(context) {
@@ -751,6 +767,11 @@ const toggleActiveStatus = async (ruleId, isActive) => {
     toast.error("Failed to update rule status.");
   }
 };
+
+
+
+
+
 // const removeAllRules = async () => {
 //   try {
 //     await Rule.deleteMany({});
@@ -766,6 +787,7 @@ const toggleActiveStatus = async (ruleId, isActive) => {
 //     // await Rule.deleteMany
 //   } catch (err) {}
 // };
+
 
 module.exports = {
   add_new_Rule,
