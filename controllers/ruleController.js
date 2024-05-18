@@ -4,6 +4,7 @@ const {
     getAllRules,
     updateRule,
     deleteRuleById,
+    getRulesBySpaceId,
     checkIfRuleIsAlreadyExists,
     operatorFormatter,
     validateRule,
@@ -19,6 +20,20 @@ exports.ruleControllers={
     async get_Rules(req, res){
         const response = await getAllRules();
         res.status(response.statusCode).json(response.data);
+    },
+    async get_Rules_By_SPACE_ID(req, res) {
+      // Extracting space ID from request parameters
+      const space_id = req.params.space_id;
+      
+      // Fetching rules by space ID
+      const response = await getRulesBySpaceId(space_id);
+    
+      // Sending the response with appropriate status code and data
+      if (response.statusCode === 200) {
+        res.status(200).json(response.data);
+      } else {
+        res.status(response.statusCode).json({ message: response.message });
+      }
     },
     // Define the route for adding a new rule
     async add_Rule(req, res){

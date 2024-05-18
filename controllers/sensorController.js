@@ -10,8 +10,8 @@ const {
   updateAcMode,
   updateSensiboMode,
   analyzeFunc,
+  TurnON_OFF_LIGHT,
 } = require("./../api/sensibo.js");
-const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/rooms.service.js");
 const _ = require("lodash");
 
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
@@ -84,12 +84,24 @@ exports.sensorControllers={
           res.status(500).json({ error: `Server error: ${error.message}` });
       }
     },
+    async TurnON_OFF_LIGHT(req,res) {
+      const { state, rasp_ip, id } = req.body;
+      try {
+        const switchResponse = await TurnON_OFF_LIGHT(state, rasp_ip, id);
+        res.status(200).json(switchResponse); // Respond with the switchResponse data
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to turn on/off light' });
+      }
+
+    },
 
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {
           try {
-            const rasp_ip = req.query.rasp_ip; // Correctly accessing clientIp from params
-            const state = await getAcState(rasp_ip);
+            const { rasp_ip, device_id } = req.query;
+            console.log("Fetched raspi_pi and dev", rasp_ip,device_id);
+
+            const state = await getAcState(rasp_ip, device_id);
             console.log("Fetched AC state:", state);
     
             if (!state) {

@@ -147,7 +147,7 @@ const analyzeFunc = async (func) => {
 //   }
 // };
 
-const getAcState = async (rasp_ip) => {
+const getAcState = async (rasp_ip, device_id) => {
     if (!rasp_ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(rasp_ip)) {
         console.error("Invalid IP address provided:", rasp_ip);
         return res.status(400).json({ error: "Invalid IP address" });
@@ -243,8 +243,21 @@ const validateDegree = (temperature) => {
 //     return { statusCode: err.response?.status || 500, data: err.message };
 //   }
 // };
-
+  const TurnON_OFF_LIGHT = async (state, rasp_ip, id)=> {
+    const endpoint = `http://${rasp_ip}:5009/${state}`; // Construct the endpoint URL
+  
+    try {
+      const response = await axios.post(endpoint); // Make a GET request to the endpoint
+      console.log(response.data); // Log the response data
+      return response.data; // Return the response data if needed
+    } catch (error) {
+      console.error('Error turning on/off light:', error);
+      throw error; // Throw the error to handle it in the calling function if needed
+    }
+    
+  };
 const switchAcState = async (id, state, rasp_ip, temperature = null) => {
+  // console.log(rasp_ip);
   const apiUrl = `http://${rasp_ip}:5009/api-sensibo/switch_ac_state`; // Ensure this matches your Flask server URL
   console.log(id);
   const actualDeviceId = id === "YNahUQcM" ? "YNahUQcM" : process.env.SENSIBO_DEVICE_ID;
@@ -438,4 +451,5 @@ module.exports = {
   analyzeFunc,
   updateAcMode,
   updateSensiboMode,
+  TurnON_OFF_LIGHT
 };

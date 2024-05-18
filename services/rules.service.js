@@ -78,7 +78,7 @@ const validateRule = async (rule) => {
   }
 
   if (
-    !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom)\b/i.test(
+    !/\b(kitchen|living room|dining room|bedroom|bathroom|bedroom|Classroom)\b/i.test(
       rule
     )
   ) {
@@ -405,6 +405,7 @@ const add_new_Rule = async (ruleData) => {
     },
     id: ruleData.id || Math.floor(10000000 + Math.random() * 90000000).toString(),
     action: ruleData.action,
+    space_id: ruleData.space_id
   });
 
   console.log("rule going to save in the database");
@@ -439,6 +440,23 @@ const getAllRules = async () => {
     };
   }
 };
+
+const getRulesBySpaceId = async (space_id) => {
+  try {
+    // Modify the query to filter rules based on the space ID
+    const rules = await Rule.find({ space_id: space_id });
+    return {
+      statusCode: 200,
+      data: rules,
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      message: `Error fetching rules for space ID ${space_id} - ${error}`,
+    };
+  }
+};
+
 // Function to format the description of a rule
 const descriptionFormatter = async (description) => {
   let formattedDescription = description.trim();
@@ -637,6 +655,7 @@ module.exports = {
   toggleActiveStatus,
   // removeRuleFromDB,
   deleteRuleById,
+  getRulesBySpaceId
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
