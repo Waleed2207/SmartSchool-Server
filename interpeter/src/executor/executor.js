@@ -651,28 +651,29 @@ async function GetRoomNameFromDatabase(parsed) {
 //             // activity: 'outside', // Use the currentActivity from the context
 //             activity: currentActivity,
 //             season: currentSeason,
-//             data: {
-//                 rooomname : "Living Room",
-//                 roomid: "38197016",
-//                 space_id :"61097711",
-//             }
+
+//                 rooomname : data.roomName,
+//                 roomid: data.roomid,
+//                 space_id :data.space_id,
+           
 //         };
 
 //         // Get the room ID before you fetch devices
-//         let roomname,roomDetails = await GetIDwitRoomNameFromDatabase(parsed.conditions[0]);
-//         console.log("Room ID:", roomid);
+//       let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+//         console.log("Room Name:", roomName);
+//         console.log("Room Details:", roomDetails);
+    
+//     if (!roomDetails) {
+//         console.error("Failed to fetch the room ID");
+//         return;
+//     }
 
-//         if (!roomid) {
-//             console.error("Failed to fetch the room ID");
-//             return;
-//         }
-
-//         const roomDevicesResult = await getDevicesByRoomId(roomid);
-//         if (roomDevicesResult.statusCode !== 200) {
-//             console.error("Failed to fetch room devices:", roomDevicesResult.message);
-//             return;
-//         }
-//         const roomdevices = roomDevicesResult.data;
+//       //  const roomDevicesResult = await getDevicesByRoomId(roomid);
+//         //if (roomDevicesResult.statusCode !== 200) {
+//         //     console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//         //     return;
+//         // }
+//        // const roomdevices = roomDevicesResult.data;
 
 //         const evaluationConditionResult = evaluateCondition(parsed, context);
 //         const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
@@ -687,11 +688,11 @@ async function GetRoomNameFromDatabase(parsed) {
 
 //         console.log("Conditions met, executing actions.");
 
-//         if (context.data.rooomname  === roomname) {
+//         if (context.data.roomName  === roomName) {
 //             console.log("roomname matched. Processing actions...")
 //             for (const action of parsed.actions) {
 //                 console.log(`Processing action: ${action}`);
-//                 const command = await CommandFactory.createCommand(action, roomid, roomdevices);
+//                 const command = await CommandFactory.createCommand(action, roomName);
 //                 if (command) {
 //                     console.log("Command was executed successfully.");
 //                 } else {
@@ -712,79 +713,271 @@ async function GetRoomNameFromDatabase(parsed) {
 // }
 
 
+
+
+
 async function execute(parsed) {
     console.log("Executing parsed conditions and actions");
 
-    const currentActivity = getCurrentActivity(); 
-    const currentSeason = getCurrentSeason(); 
+    const currentActivity = await getCurrentActivity(); 
+    const currentSeason = await getCurrentSeason(); 
 
     console.log("Current Activity:", currentActivity);
-    console.log("Current Season:", currentSeason);
+    console.log("Current Season:", currentSeason); 
 
-    const context = {
-        detection: true,
-        //activity: currentActivity,
-        //season: currentSeason,
-        activity: 'learning',
-        season: 'winter',
-        data: {
-            roomname: "Living Room",
-            roomid: "38197016",
-            space_id: "61097711",
+    emitter.on('motionStateChange', async data => {
+        console.log('Received From the Ras Pi change:', data);
+
+        const context = {
+            detection: data.motionState,
+            activity: 'outside',
+            season: 'spring',
+            roomName: data.roomName,
+            roomid: data.roomid,
+            space_id: data.space_id,
+        };
+
+        // Get the room ID before you fetch devices
+        let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+        //console.log("Room Name:", roomName);
+        //console.log("Room Details:", roomDetails);
+
+        if (!roomDetails) {
+            console.error("Failed to fetch the room ID");
+            return;
         }
-    };
 
-    let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
-    //console.log("Room Name:", roomName);
-    //console.log("Room Details:", roomDetails);
-    
-    if (!roomDetails) {
-        console.error("Failed to fetch the room ID");
-        return;
-    }
+        const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+        if (roomDevicesResult.statusCode !== 200) {
+            console.error("Failed to fetch room devices:", roomDevicesResult.message);
+            return;
+        }
+        const roomdevices = roomDevicesResult.data;
 
-    const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
-    if (roomDevicesResult.statusCode !== 200) {
-        console.error("Failed to fetch room devices:", roomDevicesResult.message);
-        return;
-    }
-    const roomdevices = roomDevicesResult.data;
+        //console.log('Fetched room devices:', JSON.stringify(roomdevices, null, 2));
 
-    const evaluationConditionResult = evaluateCondition(parsed, context);
-    const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
-    const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+        const evaluationConditionResult = evaluateCondition(parsed, context);
+        const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+        const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
 
-    console.log("Result of conditions:", result);
+        console.log("Result of conditions:", result);
 
-    if (!result) {
-        console.log("Conditions not met, no actions executed.");
-        return;
-    }
+        if (!result) {
+            console.log("Conditions not met, no actions executed.");
+            return;
+        }
 
-    console.log("Conditions met, executing actions.");
+        console.log("Conditions met, executing actions.");
 
-    if (context.data.roomname.toLocaleLowerCase() === roomName.toLocaleLowerCase() ) {
-        console.log("Room name matched. Processing actions...");
-        for (const action of parsed.actions) {
-            console.log(`Processing action: ${action}`);
-            const command = await CommandFactory.createCommand(action, roomDetails.id, roomdevices);
-            if (command) {
-                console.log("Command was executed successfully.");
-            } else {
-                console.log('Action could not be executed:', action);
+        if (data.roomName && roomName && data.roomName.toLowerCase() === roomName.toLowerCase()) {
+            console.log("Room name matched. Processing actions...");
+            for (const action of parsed.actions) {
+                console.log(`Processing action: ${action}`);
+                try {
+                    const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
+                    if (commandExecuted) {
+                        console.log("Command was executed successfully.");
+                    } else {
+                        console.log('Action could not be executed:', action);
+                    }
+                } catch (error) {
+                    console.error("Error during execution:", error);
+                }
             }
+        } else {
+            console.log("Room name not matched or undefined. No actions executed.");
         }
-    } else {
-        console.log("Room name not matched. No actions executed.");
-    }
 
-    if (parsed.conditions.length === 0) {
-        console.log('No conditions provided.');
-    }
-    if (parsed.actions.length === 0) {
-        console.log('No actions provided.');
-    }
+        if (parsed.conditions.length === 0) {
+            console.log('No conditions provided.');
+        }
+        if (parsed.actions.length === 0) {
+            console.log('No actions provided.');
+        }
+    });
 }
+
+  
+
+//SZ
+// async function execute(parsed) {
+//     console.log("Executing parsed conditions and actions");
+
+//     const currentActivity = getCurrentActivity(); 
+//     const currentSeason = getCurrentSeason(); 
+
+//     console.log("Current Activity:", currentActivity);
+//     console.log("Current Season:", currentSeason); 
+
+//     emitter.on('motionStateChange', async data => {
+//         console.log('Received From the Ras Pi change:', data);
+
+//         const context = {
+//             detection: data.motionState,
+//             activity: 'studying',
+//             season: 'spring',
+//             //activity: currentActivity,
+//            //season: currentSeason,
+//             roomName: data.roomName, // Changed rooomname to roomName
+//             roomid: data.roomid,
+//             space_id: data.space_id,
+//         };
+//     // const context = {
+//     //     detection: true,
+//     //     //activity: currentActivity,
+//     //     //season: currentSeason,
+//     //     activity: 'learning',
+//     //     season: 'winter',
+//     //     data: {
+//     //         roomname: "Class247",
+//     //         roomid: "38197016",
+//     //         space_id: "61097711",
+//     //     }
+//     // };
+
+//         // Get the room ID before you fetch devices
+//         let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+//         console.log("Room Name:", roomName);
+//         console.log("Room Details:", roomDetails);
+    
+//         if (!roomDetails) {
+//             console.error("Failed to fetch the room ID");
+//             return;
+//         }
+
+//         const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+//         if (roomDevicesResult.statusCode !== 200) {
+//             console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//             return;
+//         }
+//         const roomdevices = roomDevicesResult.data;
+//         const evaluationConditionResult = evaluateCondition(parsed, context);
+//         const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+//         const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+
+//         console.log("Result of conditions:", result);
+
+//         if (!result) {
+//             console.log("Conditions not met, no actions executed.");
+//             return;
+//         }
+
+//         console.log("Conditions met, executing actions.");
+
+//         // if (context.roomName === roomName) { // Access context.roomName directly
+//         //     console.log("roomname matched. Processing actions...")
+//         //     for (const action of parsed.actions) {
+//         //         console.log(`Processing action: ${action}`);
+//         //         const command = await CommandFactory.createCommand(action, roomName);
+//         //         if (command) {
+//         //             console.log("Command was executed successfully.");
+//         //         } else {
+//         //             console.log('Action could not be executed:', action);
+//         //         }
+//         //     }
+//         // } else {
+//         //     console.log("Room name not matched. No actions executed."); 
+//         // }
+
+//         if (data.roomName.toLocaleLowerCase() === roomName.toLocaleLowerCase() ) {
+//             console.log("Room name matched. Processing actions...");
+//             for (const action of parsed.actions) {
+//                 console.log(`Processing action: ${action}`);
+                
+//                 const command = await CommandFactory.createCommand(action, roomDetails.roomName, roomdevices);
+//                 if (command) {
+//                     console.log("Command was executed successfully.");
+//                 } else {
+//                     console.log('Action could not be executed:', action);
+//                 }
+//             }
+//         } else {
+//             console.log("Room name not matched. No actions executed.");
+//         }
+
+//         if (parsed.conditions.length === 0) {
+//             console.log('No conditions provided.');
+//         }
+//         if (parsed.actions.length === 0) {
+//             console.log('No actions provided.');
+//         }
+//     });
+// }
+
+//gbd
+// async function execute(parsed) {
+//     console.log("Executing parsed conditions and actions");
+
+//     const currentActivity = getCurrentActivity(); 
+//     const currentSeason = getCurrentSeason(); 
+
+//     console.log("Current Activity:", currentActivity);
+//     console.log("Current Season:", currentSeason);
+
+//     const context = {
+//         detection: true,
+//         //activity: currentActivity,
+//         //season: currentSeason,
+//         activity: 'learning',
+//         season: 'winter',
+//         data: {
+//             roomname: "Class247",
+//             roomid: "38197016",
+//             space_id: "61097711",
+//         }
+//     };
+
+//     let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+//     //console.log("Room Name:", roomName);
+//     //console.log("Room Details:", roomDetails);
+    
+//     if (!roomDetails) {
+//         console.error("Failed to fetch the room ID");
+//         return;
+//     }
+
+//     const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+//     if (roomDevicesResult.statusCode !== 200) {
+//         console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//         return;
+//     }
+//     const roomdevices = roomDevicesResult.data;
+
+//     const evaluationConditionResult = evaluateCondition(parsed, context);
+//     const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+//     const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+
+//     console.log("Result of conditions:", result);
+
+//     if (!result) {
+//         console.log("Conditions not met, no actions executed.");
+//         return;
+//     }
+
+//     console.log("Conditions met, executing actions.");
+
+//     if (context.data.roomname.toLocaleLowerCase() === roomName.toLocaleLowerCase() ) {
+//         console.log("Room name matched. Processing actions...");
+//         for (const action of parsed.actions) {
+//             console.log(`Processing action: ${action}`);
+//             const command = await CommandFactory.createCommand(action, roomDetails.id, roomdevices);
+//             if (command) {
+//                 console.log("Command was executed successfully.");
+//             } else {
+//                 console.log('Action could not be executed:', action);
+//             }
+//         }
+//     } else {
+//         console.log("Room name not matched. No actions executed.");
+//     }
+
+//     if (parsed.conditions.length === 0) {
+//         console.log('No conditions provided.');
+//     }
+//     if (parsed.actions.length === 0) {
+//         console.log('No actions provided.');
+//     }
+// }
 
 
 module.exports = {

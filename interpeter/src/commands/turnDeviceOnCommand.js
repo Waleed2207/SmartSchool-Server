@@ -43,32 +43,35 @@ class TurnDeviceOnCommand extends BaseCommand {
         }
     }
 
-    // async turnAcOn() {
-    //     const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
-    //     const payload = {
-    //         acState: {
-    //             on: true,
-    //             targetTemperature: this.temperature,
-    //             mode: this.mode
-    //         }
-    //     };
+    async turnAcOn() {
+        // const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
+        // const payload = {
+        //     acState: {
+        //         on: true,
+        //         targetTemperature: this.temperature,
+        //         mode: this.mode
+        //     }
+        // };
 
-    //     try {
-    //         const response = await axios.post(deviceUrl, payload, {
-    //             headers: { 'Content-Type': 'application/json' }
-    //         });
+        // try {
+        //     const response = await axios.post(deviceUrl, payload, {
+        //         headers: { 'Content-Type': 'application/json' }
+        //     });
 
-    //         console.log(`AC turned on successfully at ${this.temperature} degrees. Response:`, response.data);
-    //         await this.updateDeviceState("on");
-    //     } catch (error) {
-    //         console.error(`Failed to turn on AC. Error:`, error.message);
-    //     }
-    // }
+        //     console.log(`AC turned on successfully at ${this.temperature} degrees. Response:`, response.data);
+        //     await this.updateDeviceState("on");
+        // } catch (error) {
+        //     console.error(`Failed to turn on AC. Error:`, error.message);
+        // }
+    }
     async turnLightOn() {
-        console.log(`Turning light on with details: ${this.details}`);
-        // res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
-
-        await this.updateDeviceState("on");
+        console.log(`Executing Turn On for light`);
+        const updateResult = await Device.updateOne(
+            { device_id: this.deviceId },
+            { $set: { state: 'on' } }
+        );
+        console.log('Database update result:', updateResult);
+        return updateResult;
     }
 
     async turnFanOn() {

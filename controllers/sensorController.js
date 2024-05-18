@@ -13,13 +13,14 @@ const {
 } = require("./../api/sensibo.js");
 const { getRooms, getRoomById, getRoomIdByRoomName } = require("./../services/rooms.service.js");
 const _ = require("lodash");
-
+const { checkInterpreterCondition } = require("./../services/rules.service.js");
+const emitter = require("./../interpeter/src/events.js");
 let motionState = false; // This should reflect the real motion state, possibly stored in a database
 let RoomID = false; 
 let SpaceID = false;
 let DeviceID = false;
 let clientIp = false;
-
+let roomName = false;
 exports.sensorControllers={
 
     async getSensor(req, res) {
@@ -42,48 +43,143 @@ exports.sensorControllers={
           ROOM_ID: RoomID,
           SPACE_ID: SpaceID,
           DEVICE_ID: DeviceID,
-          CLIENT_IP: clientIp
+          CLIENT_IP: clientIp,
+          ROOM_NAME: roomName
       });
   },
   
+      
+  
 
-    async update_Motion_DetectedState(req, res) {
-      try {
-        const { state: lightState, room_id: roomId, space_id: spaceId , device_id: deviceId, raspberry_pi_ip: raspberryPiIP } = req.body;
-        
-        console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'in Space ID:', spaceId, 'using Device ID:', deviceId, 'from Raspberry Pi:', raspberryPiIP);
-        // Update the global motionState
-        motionState = lightState === 'on';
-        RoomID = roomId;
-        SpaceID = spaceId;
-        DeviceID = deviceId;
-        clientIp= raspberryPiIP
-        // Validate the state before processing
-        if (lightState !== 'on' && lightState !== 'off') {
-            return res.status(400).json({ error: `Invalid light state: ${lightState}` });
-        }
-        
-          console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-          res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
-          
-          // Update the room's 'motionDetected' field
-          await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
-          console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
 
-          // Update the specific device's state
-          await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-          console.log(`Device state updated for Device ID: ${deviceId}`);
 
-          // Additionally, update the RoomDevice state
-          await RoomDevice.updateOne(
-              { room_id: roomId, device_id: deviceId },
-              { $set: { state: lightState } }
-          );
-      } catch (error) {
-          console.error('Error:', error.message);
-          res.status(500).json({ error: `Server error: ${error.message}` });
+  async  update_Motion_DetectedState(req, res) {
+    try {
+      const { state: lightState, room_id: roomId, space_id: spaceId, device_id: deviceId, raspberry_pi_ip: raspberryPiIP, room_name: Room_name } = req.body;
+  
+      console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'from room name', Room_name, 'in Space ID:', spaceId, 'using Device ID:', deviceId,
+        'from Raspberry Pi:', raspberryPiIP);
+  
+      // Validate the state before processing
+      if (lightState !== 'on' && lightState !== 'off') {
+        return res.status(400).json({ error: `Invalid light state: ${lightState}` });
       }
-    },
+  
+      // Check interpreter condition
+      const interpreterConditionResult = await checkInterpreterCondition();
+      console.log("Interpreter condition result:", interpreterConditionResult);
+  
+      if (interpreterConditionResult) {
+        console.log("Active rules found, updating light state.");
+  
+        // Update the room's 'motionDetected' field
+        await Room.updateOne({ id: roomId }, { $set: { motionDetected: lightState === 'on' } });
+        console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
+  
+        // Update the specific device's state
+        await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+        console.log(`Device state updated for Device ID: ${deviceId}`);
+  
+        // Additionally, update the RoomDevice state
+        await RoomDevice.updateOne(
+          { room_id: roomId, device_id: deviceId },
+          { $set: { state: lightState } }
+        );
+        console.log("RoomDevice state updated.");
+  
+        emitter.emit('motionStateChange', { roomId: roomId, motionState: lightState === 'on', roomName: Room_name });
+        return res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState: lightState === 'on' });
+      } else {
+        console.log("No active rules, light state not changed.");
+        return res.status(200).json({ message: `No active rules, light state remains unchanged`, motionState: false });
+      }
+    } catch (error) {
+      console.error('Error:', error.message);
+      res.status(500).json({ error: `Server error: ${error.message}` });
+    }
+  },
+  
+       
+  // async update_Motion_DetectedState(req, res) {
+  //   try {
+  //     const { state: lightState, room_id: roomId, space_id: spaceId , device_id: deviceId, raspberry_pi_ip: raspberryPiIP ,room_name: Room_name} = req.body;
+      
+  //     console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'from room name', Room_name,'in Space ID:', spaceId, 'using Device ID:', deviceId, 
+  //                 'from Raspberry Pi:', raspberryPiIP);
+  //     // Update the global motionState
+  //     motionState = lightState === 'on';
+  //     RoomID = roomId;
+  //     SpaceID = spaceId;
+  //     DeviceID = deviceId;
+  //     clientIp= raspberryPiIP;
+  //     roomName = Room_name;
+  //     // Validate the state before processing
+  //     if (lightState !== 'on' && lightState !== 'off') {
+  //         return res.status(400).json({ error: `Invalid light state: ${lightState}` });
+  //     }
+      
+  //       console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+  //       //if(checkInterpreterCondition(roomId,lightState)===true){
+  //       res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+  //       emitter.emit('motionStateChange', { roomId: roomId, motionState: motionState, roomName: Room_name });
+      
+  //       // Update the room's 'motionDetected' field
+  //       await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
+  //       console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
+
+  //       // Update the specific device's state
+  //       await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+  //       console.log(`Device state updated for Device ID: ${deviceId}`);
+
+  //       // Additionally, update the RoomDevice state
+  //       await RoomDevice.updateOne(
+  //           { room_id: roomId, device_id: deviceId },
+  //           { $set: { state: lightState } }
+  //       );
+  //  //   }
+  //   } catch (error) {
+  //       console.error('Error:', error.message);
+  //       res.status(500).json({ error: `Server error: ${error.message}` });
+  //   }
+  // },
+
+    // async update_Motion_DetectedState(req, res) {
+    //   try {
+    //     const { state: lightState, room_id: roomId, space_id: spaceId , device_id: deviceId, raspberry_pi_ip: raspberryPiIP } = req.body;
+        
+    //     console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'in Space ID:', spaceId, 'using Device ID:', deviceId, 'from Raspberry Pi:', raspberryPiIP);
+    //     // Update the global motionState
+    //     motionState = lightState === 'on';
+    //     RoomID = roomId;
+    //     SpaceID = spaceId;
+    //     DeviceID = deviceId;
+    //     clientIp= raspberryPiIP
+    //     // Validate the state before processing
+    //     if (lightState !== 'on' && lightState !== 'off') {
+    //         return res.status(400).json({ error: `Invalid light state: ${lightState}` });
+    //     }
+        
+    //       console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+    //       res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+          
+    //       // Update the room's 'motionDetected' field
+    //       await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
+    //       console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
+
+    //       // Update the specific device's state
+    //       await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+    //       console.log(`Device state updated for Device ID: ${deviceId}`);
+
+    //       // Additionally, update the RoomDevice state
+    //       await RoomDevice.updateOne(
+    //           { room_id: roomId, device_id: deviceId },
+    //           { $set: { state: lightState } }
+    //       );
+    //   } catch (error) {
+    //       console.error('Error:', error.message);
+    //       res.status(500).json({ error: `Server error: ${error.message}` });
+    //   }
+    // },
 
     // --------------------------------- Sensibo- AC ---------------------------------
       async get_SensiboAC_State(req, res) {

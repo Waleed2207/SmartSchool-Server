@@ -191,21 +191,21 @@ const getAllRulesDescription = async () => {
       const rules = await Rule.find({});
       console.log(`Total rules fetched: ${rules.length}`);
 
-      const activeDevices = await Device.find({device_id: 'YNahUQcM', state: 'on'});
-      console.log(`Active devices found: ${activeDevices.length}`);
+      //const activeDevices = await Device.find({device_id: 'YNahUQcM', state: 'on'});
+     // console.log(`Active devices found: ${activeDevices.length}`);
 
       let activeDescriptions = [];
 
       // Check whether to filter by device or return all active rules
-      if (activeDevices.length > 0) {
+      //if (activeDevices.length > 0) {
           // When specific device is ON, return rules related to this device and are active
-          activeDescriptions = rules.filter(rule => rule.isActive && rule.device_id === 'YNahUQcM').map(rule => rule.description);
-          console.log(`Active descriptions related to the device: ${activeDescriptions.length}`);
-      } else {
+        //  activeDescriptions = rules.filter(rule => rule.isActive && rule.device_id === 'YNahUQcM').map(rule => rule.description);
+          //console.log(`Active descriptions related to the device: ${activeDescriptions.length}`);
+    //  } else {
           // Device is OFF or no specific device found, return all active rules
           activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
           console.log(`All active descriptions: ${activeDescriptions.length}`);
-      }
+     // }
 
       if (activeDescriptions.length > 0) {
           return {
@@ -227,6 +227,53 @@ const getAllRulesDescription = async () => {
   }
 };
 
+
+
+
+// const getAllRulesDescription = async () => {
+//   try {
+//       console.log("Starting to fetch all rules description.");
+      
+//       // Fetch all rules
+//       const rules = await Rule.find({});
+//       console.log(`Total rules fetched: ${rules.length}`);
+
+//       // Fetch active devices with specific criteria
+//       const activeDevices = await Device.find({device_id: 'YNahUQcM', state: 'on'});
+//       console.log(`Active devices found: ${activeDevices.length}`);
+
+//       let activeDescriptions = [];
+
+//       // Check whether to filter by device or return all active rules
+//       // if (activeDevices.length > 0) {
+//       //     // When specific device is ON, return rules related to this device and are active
+//       //     activeDescriptions = rules.filter(rule => rule.isActive && rule.device_id === 'YNahUQcM').map(rule => rule.description);
+//       //     console.log(`Active descriptions related to the device: ${activeDescriptions.length}`);
+//       // } else {
+//           // Device is OFF or no specific device found, return all active rules
+//           activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
+//           console.log(`All active descriptions: ${activeDescriptions.length}`);
+//       // }
+
+//       if (activeDescriptions.length > 0) {
+//           return {
+//               statusCode: 200,
+//               data: activeDescriptions,
+//           };
+//       } else {
+//           return {
+//               statusCode: 404,
+//               message: "No active rules found",
+//           };
+//       }
+//   } catch (error) {
+//       console.error('Error fetching rules:', error);
+//       return {
+//           statusCode: 500,
+//           message: `Error fetching rules - ${error.message}`,
+//       };
+//   }
+// };
 
 // Define the async function that fetches sensor data and processes rules
 // async function updateAndProcessRules() {
@@ -316,54 +363,89 @@ const getAllRulesDescription = async () => {
 
 
 
-async function updateAndProcessRules() {
-  try {
-      const descriptionResult = await getAllRulesDescription();
-      console.log(descriptionResult);
+// async function updateAndProcessRules() {
+//   try {
+//       const descriptionResult = await getAllRulesDescription();
+//       console.log(descriptionResult);
 
-      if (descriptionResult.statusCode === 200) {
-          const descriptions = descriptionResult.data;
-          // const roomIDs = await getAllRoomIds();
-          // console.log("Room IDs:", roomIDs);
+//       if (descriptionResult.statusCode === 200) {
+//           const descriptions = descriptionResult.data;
+//           // const roomIDs = await getAllRoomIds();
+//           // console.log("Room IDs:", roomIDs);
 
-          // const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-          // const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
+//           // const roomIDpatternString = roomIDs.map(id => id.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+//           // const roomIDPattern = new RegExp(`(${roomIDpatternString})`, 'gi');
 
-          for (const description of descriptions) {
+//           for (const description of descriptions) {
              
 
-              // const roomIDMatches = description.match(roomIDPattern);
-              // const roomid = roomIDMatches ? roomIDMatches[0] : null;
+//               // const roomIDMatches = description.match(roomIDPattern);
+//               // const roomid = roomIDMatches ? roomIDMatches[0] : null;
 
-              // if (!roomid) {
-              //     console.error("No room ID matched in the description:", description);
-              //     continue;  // Skip to next rule
-              // }
+//               // if (!roomid) {
+//               //     console.error("No room ID matched in the description:", description);
+//               //     continue;  // Skip to next rule
+//               // }
 
-              try {
-                  // const room = await getRoomById(roomid);
-                  // if (!room || room.statusCode !== 200) {
-                  //     console.error(`Room not found or error with ID: ${roomid}`);
-                  //     continue;  // Skip to next rule
-                  // } 
+//               try {
+//                   // const room = await getRoomById(roomid);
+//                   // if (!room || room.statusCode !== 200) {
+//                   //     console.error(`Room not found or error with ID: ${roomid}`);
+//                   //     continue;  // Skip to next rule
+//                   // } 
 
-                  const interpretResult = await interpretRuleByName(description);
-                  console.log("Interpret Result for Rule", interpretResult);
-                  return interpretResult;
+//                   const interpretResult = await interpretRuleByName(description);
+//                   console.log("Interpret Result for Rule", interpretResult);
+//                   return interpretResult;
 
-              } catch (error) {
-                  console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);
-                  continue;  // Skip to next rule
-              }
+//               } catch (error) {
+//                   console.error(`Failed to retrieve room with ID "${roomid}":`, error.message);
+//                   continue;  // Skip to next rule
+//               }
+//           }
+//       } else {
+//           console.error('Failed to get rule descriptions:', descriptionResult.message);
+//       }
+//   } catch (error) {
+//       console.error('Error processing rule descriptions:', error);
+//   }
+// }
+
+
+
+
+
+
+
+async function updateAndProcessRules() {
+  try {
+    const descriptionResult = await getAllRulesDescription();
+    console.log("descriptionResult:", descriptionResult);
+
+    if (descriptionResult.statusCode === 200) {
+      const descriptions = descriptionResult.data;
+      console.log("Descriptions of rules:", descriptions);
+
+      for (const description of descriptions) {
+        try {
+          const interpretResult = await interpretRuleByName(description);
+          console.log("Interpret result for rule:", description, interpretResult);
+
+          if (interpretResult.includes("successfully")) {
+            return "Rule interpreted successfully";
           }
-      } else {
-          console.error('Failed to get rule descriptions:', descriptionResult.message);
+        } catch (error) {
+          console.error(`Failed to interpret rule "${description}":`, error.message);
+        }
       }
+    } else {
+      console.error('Failed to get rule descriptions:', descriptionResult.message);
+    }
   } catch (error) {
-      console.error('Error processing rule descriptions:', error);
+    console.error('Error processing rule descriptions:', error);
   }
+  return "No active rules";
 }
-
 
 
 
@@ -437,15 +519,20 @@ async function updateAndProcessRules() {
 //   }
 // }
 
-
 async function checkInterpreterCondition() {
-  const interpretResult = await updateAndProcessRules(); 
-  console.log("in interpeter_result Function ",interpretResult);
-  if(interpretResult === "interpted successfully") {
-    return true;
+  try {
+    const interpretResult = await updateAndProcessRules(); 
+    console.log("in checkInterpreterCondition Function, interpretResult:", interpretResult);
+    if (interpretResult === "Rule interpreted successfully") {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking interpreter condition:', error);
+    return false; // Return false in case of an error
   }
-  return false;
 }
+
 
 // Run the function immediately
 
