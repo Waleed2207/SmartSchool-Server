@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['Admin', 'Owner', 'User'],
     default: 'User',
   },
+  space_id: {
+    type: String,
+    required: true,
+  },
 });
 
 // Hash and salt the password before saving a new user
