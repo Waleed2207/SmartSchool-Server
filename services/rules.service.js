@@ -929,8 +929,8 @@ module.exports = {
     checkInterpreterCondition,
     updateAndProcessRules,
     interpretRuleByName,
-    getAllRulesDescription
-  getRulesBySpaceId
+      getAllRulesDescription,
+    getRulesBySpaceId
   // validateRule,
   // insertRuleToDBMiddleware,
   // removeAllRules,
