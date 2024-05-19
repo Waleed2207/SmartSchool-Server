@@ -5,6 +5,8 @@ const ruleRouter = new Router();
 
 //GET 
 ruleRouter.get('/rules', ruleControllers.get_Rules);
+ruleRouter.get('/rules/:space_id', ruleControllers.get_Rules_By_SPACE_ID);
+
 
 //POST
 ruleRouter.post('/rules', ruleControllers.add_Rule);

@@ -36,12 +36,14 @@ const get_Space = async () => {
     }
   
     try {
-      const { type, icon, rasp_ip } = spaceDetails;
+      const { type, space_name, icon, city,rasp_ip } = spaceDetails;
       const newSpace_id = Math.floor(10000000 + Math.random() * 90000000);
       const newSpace = new Space({
         space_id: newSpace_id,
+        space_name,
         type,
         icon,
+        city,
         rasp_ip
       });
       const Icon = icon === "school" ? "ClassRoom" : (icon === "home" ? "couch" : "other");
@@ -74,11 +76,26 @@ const get_Space = async () => {
       throw new Error(err.message);  // Throw any other errors to be handled by the caller
     }
   }
+  const get_Space_By_Name = async (space_name) => {
+    try {
+      const space = await Space.find({ type: space_name });  // Find one space with the given space_id
+      if (!space) {
+        console.log(`No space found for ID: ${space_name}`);
+        return null;  // Return null if no space is found
+      }
+      return {statusCode: 200,
+              data: space};  
+    } catch (err) {
+      console.error(`Error fetching space with ID ${spaceId}:`, err);
+      throw new Error(err.message);  // Throw any other errors to be handled by the caller
+    }
+  }
   
 
   module.exports = {
     get_Space,
     createNewSpace,
     addRoomToSpace,
-    get_Space_By_ID
+    get_Space_By_ID,
+    get_Space_By_Name
   }  

@@ -20,6 +20,11 @@ const UserSchema = new mongoose.Schema({
     enum: ['Admin', 'Owner', 'User'],
     default: 'User',
   },
+  space_name: {
+    type: String,
+    enum: ['SmartHome', 'SmartSchool', 'All'],
+    default: 'All',
+  },
   space_id: {
     type: String,
     required: true,
