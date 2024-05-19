@@ -6,12 +6,20 @@ const spaceSchema = new mongoose.Schema({
     unique: true,
     required: true
   },
+  space_name: {
+    type: String,
+    default: "",
+  },
   type: {
     type: String,
     required: true,
     enum: ["SmartSchool", "SmartHome"],
   },
   icon: {
+    type: String,
+    default: "",
+  },
+  city:{
     type: String,
     default: "",
   },

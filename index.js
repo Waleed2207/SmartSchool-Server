@@ -26,14 +26,15 @@
 
 
 
-// // import Routers
-// const {devicesRouter} = require("./routers/devicesRouter");
-// const {loginRouter} = require("./routers/loginRouter");
-// const {sensorRouter} = require("./routers/sensorRouter");
-// const {ruleRouter} = require("./routers/ruleRouter");
-// const {roomRouter} = require("./routers/roomRouter");
-// const {suggestionsRouter} = require("./routers/suggestionsRouter");
-// const {mindolifeRouter} = require('./routers/gatewaysRouter');
+// // // import Routers
+//     const {devicesRouter} = require("./routers/devicesRouter");
+//     const {loginRouter} = require("./routers/loginRouter");
+//     const {sensorRouter} = require("./routers/sensorRouter");
+//     const {ruleRouter} = require("./routers/ruleRouter");
+//     const {roomRouter} = require("./routers/roomRouter");
+//     const {spacesRouter} = require("./routers/spacesRouter");
+//     const {suggestionsRouter} = require("./routers/suggestionsRouter");
+//     const {mindolifeRouter} = require('./routers/gatewaysRouter');
 
 // // Connect to MongoDB 
 // connectDB();
@@ -51,6 +52,7 @@
 // server.use('/api-sensors', sensorRouter);
 // server.use('/api-rule', ruleRouter);
 // server.use('/api-room', roomRouter);
+// server.use('/api-space', spacesRouter);
 // server.use('/api-suggestion', suggestionsRouter);
 // server.use('/api-mindolife', mindolifeRouter);
 
@@ -77,7 +79,7 @@
 
 
 
-// // server.listen(port, () => console.log(`listening on port ${port}`));
+// server.listen(port, () => console.log(`listening on port ${port}`));
 
 
 

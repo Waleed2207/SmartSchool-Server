@@ -13,6 +13,7 @@ sensorRouter.get('/temperature', sensorControllers.get_Temperature);
 
 // POST
 sensorRouter.post('/motion-detected', sensorControllers.update_Motion_DetectedState);
+sensorRouter.post('/action', sensorControllers.TurnON_OFF_LIGHT);
 sensorRouter.post('/sensibo/mode', sensorControllers.update_AC_Mode);
 sensorRouter.post('/sensibo', sensorControllers.TurnON_OFF_AC);
 
