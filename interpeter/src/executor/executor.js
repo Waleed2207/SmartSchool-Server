@@ -716,85 +716,172 @@ async function GetRoomNameFromDatabase(parsed) {
 
 
 
+// async function execute(parsed) {
+//     console.log("Executing parsed conditions and actions");
+
+//     const currentActivity = await getCurrentActivity(); 
+//     const currentSeason = await getCurrentSeason(); 
+
+//     console.log("Current Activity:", currentActivity);
+//     console.log("Current Season:", currentSeason); 
+  
+//     emitter.on('motionStateChange', async data => {
+//         console.log('Received From the Ras Pi change:', data);
+
+//         const context = {
+//             detection: data.motionState,
+//             activity: 'outside',
+//             season: 'spring',
+//             roomName: data.roomName,
+//             roomid: data.roomid,
+//             space_id: data.space_id,
+//         };
+
+//         // Get the room ID before you fetch devices
+//         let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+//         //console.log("Room Name:", roomName);
+//         //console.log("Room Details:", roomDetails);
+
+//         if (!roomDetails) {
+//             console.error("Failed to fetch the room ID");
+//             return;
+//         }
+
+//         const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+//         if (roomDevicesResult.statusCode !== 200) {
+//             console.error("Failed to fetch room devices:", roomDevicesResult.message);
+//             return;
+//         }
+//         const roomdevices = roomDevicesResult.data;
+
+//         //console.log('Fetched room devices:', JSON.stringify(roomdevices, null, 2));
+
+//         const evaluationConditionResult = evaluateCondition(parsed, context);
+//         const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+//         const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+
+//         console.log("Result of conditions:", result);
+
+//         if (!result) {
+//             console.log("Conditions not met, no actions executed.");
+//             return;
+//         }
+
+//         console.log("Conditions met, executing actions.");
+
+//         if (data.roomName && roomName && data.roomName.toLowerCase() === roomName.toLowerCase()) {
+//             console.log("Room name matched. Processing actions...");
+//             for (const action of parsed.actions) {
+//                 console.log(`Processing action: ${action}`);
+//                 try {
+//                     const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
+//                     if (commandExecuted) {
+//                         console.log("Command was executed successfully.");
+//                     } else {
+//                         console.log('Action could not be executed:', action);
+//                     }
+//                 } catch (error) {
+//                     console.error("Error during execution:", error);
+//                 }
+//             }
+//         } else {
+//             console.log("Room name not matched or undefined. No actions executed.");
+//         }
+
+//         if (parsed.conditions.length === 0) {
+//             console.log('No conditions provided.');
+//         }
+//         if (parsed.actions.length === 0) {
+//             console.log('No actions provided.');
+//         }
+//     });
+// }
 async function execute(parsed) {
     console.log("Executing parsed conditions and actions");
 
-    const currentActivity = await getCurrentActivity(); 
-    const currentSeason = await getCurrentSeason(); 
+    const currentActivity = await getCurrentActivity();
+    const currentSeason = await getCurrentSeason();
 
     console.log("Current Activity:", currentActivity);
-    console.log("Current Season:", currentSeason); 
+    console.log("Current Season:", currentSeason);
 
-    emitter.on('motionStateChange', async data => {
-        console.log('Received From the Ras Pi change:', data);
+    // Mock data to replace emitter.on event
+    const mockData = {
+        motionState: 'detected', // or 'not detected'
+        roomName: 'Living Room',
+        roomid: '12345',
+        space_id: '67890',
+        name_space : "SmartHome"
+    };
 
-        const context = {
-            detection: data.motionState,
-            activity: 'outside',
-            season: 'spring',
-            roomName: data.roomName,
-            roomid: data.roomid,
-            space_id: data.space_id,
-        };
+    console.log('Received mock data:', mockData);
 
-        // Get the room ID before you fetch devices
-        let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
-        //console.log("Room Name:", roomName);
-        //console.log("Room Details:", roomDetails);
+    const context = {
+        detection: mockData.motionState,
+        activity: 'outside',
+        season: 'spring',
+        roomName: mockData.roomName,
+        roomid: mockData.roomid,
+        space_id: mockData.space_id,
+    };
 
-        if (!roomDetails) {
-            console.error("Failed to fetch the room ID");
-            return;
-        }
+    // Get the room ID before you fetch devices
+    let { roomName, roomDetails } = await GetRoomNameFromDatabase(parsed.conditions[0]);
+    //console.log("Room Name:", roomName);
+    //console.log("Room Details:", roomDetails);
 
-        const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
-        if (roomDevicesResult.statusCode !== 200) {
-            console.error("Failed to fetch room devices:", roomDevicesResult.message);
-            return;
-        }
-        const roomdevices = roomDevicesResult.data;
+    if (!roomDetails) {
+        console.error("Failed to fetch the room ID");
+        return;
+    }
 
-        //console.log('Fetched room devices:', JSON.stringify(roomdevices, null, 2));
+    const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
+    if (roomDevicesResult.statusCode !== 200) {
+        console.error("Failed to fetch room devices:", roomDevicesResult.message);
+        return;
+    }
+    const roomdevices = roomDevicesResult.data;
 
-        const evaluationConditionResult = evaluateCondition(parsed, context);
-        const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
-        const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
+    //console.log('Fetched room devices:', JSON.stringify(roomdevices, null, 2));
 
-        console.log("Result of conditions:", result);
+    const evaluationConditionResult = evaluateCondition(parsed, context);
+    const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
+    const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
 
-        if (!result) {
-            console.log("Conditions not met, no actions executed.");
-            return;
-        }
+    console.log("Result of conditions:", result);
 
-        console.log("Conditions met, executing actions.");
+    if (!result) {
+        console.log("Conditions not met, no actions executed.");
+        return;
+    }
 
-        if (data.roomName && roomName && data.roomName.toLowerCase() === roomName.toLowerCase()) {
-            console.log("Room name matched. Processing actions...");
-            for (const action of parsed.actions) {
-                console.log(`Processing action: ${action}`);
-                try {
-                    const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
-                    if (commandExecuted) {
-                        console.log("Command was executed successfully.");
-                    } else {
-                        console.log('Action could not be executed:', action);
-                    }
-                } catch (error) {
-                    console.error("Error during execution:", error);
+    console.log("Conditions met, executing actions.");
+
+    if (mockData.roomName && roomName && mockData.roomName.toLowerCase() === roomName.toLowerCase()) {
+        console.log("Room name matched. Processing actions...");
+        for (const action of parsed.actions) {
+            console.log(`Processing action: ${action}`);
+            try {
+                const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
+                if (commandExecuted) {
+                    console.log("Command was executed successfully.");
+                } else {
+                    console.log('Action could not be executed:', action);
                 }
+            } catch (error) {
+                console.error("Error during execution:", error);
             }
-        } else {
-            console.log("Room name not matched or undefined. No actions executed.");
         }
+    } else {
+        console.log("Room name not matched or undefined. No actions executed.");
+    }
 
-        if (parsed.conditions.length === 0) {
-            console.log('No conditions provided.');
-        }
-        if (parsed.actions.length === 0) {
-            console.log('No actions provided.');
-        }
-    });
+    if (parsed.conditions.length === 0) {
+        console.log('No conditions provided.');
+    }
+    if (parsed.actions.length === 0) {
+        console.log('No actions provided.');
+    }
 }
 
   

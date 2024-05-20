@@ -8,6 +8,7 @@ const {
   getSensiboSensors,
   parseSensorAndWriteToMongo,
   updateAcMode,
+  get_MotionState,
   updateSensiboMode,
   analyzeFunc,
   TurnON_OFF_LIGHT,

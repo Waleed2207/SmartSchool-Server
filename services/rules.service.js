@@ -1,4 +1,4 @@
-const Rule = require("../models/Rule");
+//const Rule = require("../models/Rule");
 const Device = require("./../models/Device.js");
 const RoomDevice = require("./../models/RoomDevice");
 const { ObjectId, Int32 } = require("bson");
@@ -12,11 +12,18 @@ const { parse } = require('../interpeter/src/parser/parser');
 const { execute } = require('../interpeter/src/executor/executor');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getRoomByName,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
-const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
+//const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
 const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/executor/executor');
-const { interpetermanger } = require('../../SmartSchool-Server/services/interpetermanger.js');
+const  InterpeterManger  = require('../../SmartSchool-Server/interpeter/src/InterpeterClass/InterpeterManger.js');
+
+  console.log("tetsting");
+  console.log("Main function called");
+  const manager = new InterpeterManger();
+  manager.main().catch(e => console.error(e));
 
 
+
+ 
 // const { Rules } = require('../models/Rules');
 // const {
 //   OPERATORS_MAP_FORMATTER,
@@ -185,47 +192,48 @@ function stringifyCondition(condition) {
 
 
 
-const getAllRulesDescription = async () => {
-  try {
-      console.log("Starting to fetch all rules description.");
-      const rules = await Rule.find({});
-      console.log(`Total rules fetched: ${rules.length}`);
+// const getAllRulesDescription = async () => {
+//   try {
+//       console.log("Starting to fetch all rules description.");
+//       const rules = await Rule.find({});
+//       console.log(`Total rules fetched: ${rules.length}`);
 
-      //const activeDevices = await Device.find({device_id: 'YNahUQcM', state: 'on'});
-     // console.log(`Active devices found: ${activeDevices.length}`);
+//       //const activeDevices = await Device.find({device_id: 'YNahUQcM', state: 'on'});
+//      // console.log(`Active devices found: ${activeDevices.length}`);
 
-      let activeDescriptions = [];
+//       let activeDescriptions = [];
+//       activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
+//       console.log(`All active descriptions: ${activeDescriptions.length}`);
+//       if (activeDescriptions.length > 0) {
+//         return {
+//             statusCode: 200,
+//             data: activeDescriptions,
+//         };
+//     } else {
+//         return {
+//             statusCode: 404,
+//             message: "No active rules found",
+//         };
+//     }
+//       // Check whether to filter by device or return all active rules
+//       //if (activeDevices.length > 0) {
+//           // When specific device is ON, return rules related to this device and are active
+//         //  activeDescriptions = rules.filter(rule => rule.isActive && rule.device_id === 'YNahUQcM').map(rule => rule.description);
+//           //console.log(`Active descriptions related to the device: ${activeDescriptions.length}`);
+//     //  } else {
+//           // Device is OFF or no specific device found, return all active rules
+          
+//      // }
 
-      // Check whether to filter by device or return all active rules
-      //if (activeDevices.length > 0) {
-          // When specific device is ON, return rules related to this device and are active
-        //  activeDescriptions = rules.filter(rule => rule.isActive && rule.device_id === 'YNahUQcM').map(rule => rule.description);
-          //console.log(`Active descriptions related to the device: ${activeDescriptions.length}`);
-    //  } else {
-          // Device is OFF or no specific device found, return all active rules
-          activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
-          console.log(`All active descriptions: ${activeDescriptions.length}`);
-     // }
-
-      if (activeDescriptions.length > 0) {
-          return {
-              statusCode: 200,
-              data: activeDescriptions,
-          };
-      } else {
-          return {
-              statusCode: 404,
-              message: "No active rules found",
-          };
-      }
-  } catch (error) {
-      console.error('Error fetching rules:', error);
-      return {
-          statusCode: 500,
-          message: `Error fetching rules - ${error}`,
-      };
-  }
-};
+     
+//   } catch (error) {
+//       console.error('Error fetching rules:', error);
+//       return {
+//           statusCode: 500,
+//           message: `Error fetching rules - ${error}`,
+//       };
+//   }
+// };
 
 
 
@@ -417,35 +425,35 @@ const getAllRulesDescription = async () => {
 
 
 
-async function updateAndProcessRules() {
-  try {
-    const descriptionResult = await getAllRulesDescription();
-    console.log("descriptionResult:", descriptionResult);
+// async function updateAndProcessRules() {
+//   try {
+//     const descriptionResult = await getAllRulesDescription();
+//     console.log("descriptionResult:", descriptionResult);
 
-    if (descriptionResult.statusCode === 200) {
-      const descriptions = descriptionResult.data;
-      console.log("Descriptions of rules:", descriptions);
+//     if (descriptionResult.statusCode === 200) {
+//       const descriptions = descriptionResult.data;
+//       console.log("Descriptions of rules:", descriptions);
 
-      for (const description of descriptions) {
-        try {
-          const interpretResult = await interpretRuleByName(description);
-          console.log("Interpret result for rule:", description, interpretResult);
+//       for (const description of descriptions) {
+//         try {
+//           const interpretResult = await interpretRuleByName(description);
+//           console.log("Interpret result for rule:", description, interpretResult);
 
-          if (interpretResult.includes("successfully")) {
-            return "Rule interpreted successfully";
-          }
-        } catch (error) {
-          console.error(`Failed to interpret rule "${description}":`, error.message);
-        }
-      }
-    } else {
-      console.error('Failed to get rule descriptions:', descriptionResult.message);
-    }
-  } catch (error) {
-    console.error('Error processing rule descriptions:', error);
-  }
-  return "No active rules";
-}
+//           if (interpretResult.includes("successfully")) {
+//             return "Rule interpreted successfully";
+//           }
+//         } catch (error) {
+//           console.error(`Failed to interpret rule "${description}":`, error.message);
+//         }
+//       }
+//     } else {
+//       console.error('Failed to get rule descriptions:', descriptionResult.message);
+//     }
+//   } catch (error) {
+//     console.error('Error processing rule descriptions:', error);
+//   }
+//   return "No active rules";
+// }
 
 
 
@@ -521,6 +529,7 @@ async function updateAndProcessRules() {
 
 async function checkInterpreterCondition() {
   try {
+  
     const interpretResult = await updateAndProcessRules(); 
     console.log("in checkInterpreterCondition Function, interpretResult:", interpretResult);
     if (interpretResult === "Rule interpreted successfully") {
@@ -534,13 +543,17 @@ async function checkInterpreterCondition() {
 }
 
 
+
+
+
+
 // Run the function immediately
 
 
-// Set an interval to run the function every 30 seconds
-setInterval(updateAndProcessRules, 30000);
-//interpeter_result();
-checkInterpreterCondition();
+// // Set an interval to run the function every 30 seconds
+//setInterval(updateAndProcessRules, 30000);
+// interpeter_result();
+ //checkInterpreterCondition();
 
 // async function processAllRules(context) {
 //   try {
@@ -897,13 +910,25 @@ const toggleActiveStatus = async (ruleId, isActive) => {
     toast.error("Failed to update rule status.");
   }
 };
-// const removeAllRules = async () => {
-//   try {
-//     await Rule.deleteMany({});
-//   } catch (err) {
-//     console.log(`Error deleting all rules ${err.message}`);
-//   }
-// };
+
+
+
+
+const removeAllRules = async () => {
+  try {
+    await Rule.deleteMany({});
+  } catch (err) {
+    console.log(`Error deleting all rules ${err.message}`);
+  }
+};
+
+
+
+
+// if (require.main === module) {
+//   main().catch(e => console.error(e));
+// }
+
 
 // const removeUIOnlyRules = async (ruleId) => {
 //   try {
@@ -913,25 +938,27 @@ const toggleActiveStatus = async (ruleId, isActive) => {
 //   } catch (err) {}
 // };
 
+
+
 module.exports = {
 
-  add_new_Rule,
-  getAllRules,
-  updateRule,
-  toggleActiveStatus,
-  deleteRuleById,
+  // add_new_Rule,
+  // getAllRules,
+  // updateRule,
+  // toggleActiveStatus,
+  // deleteRuleById,
+  // checkInterpreterCondition,
+  // updateAndProcessRules,
+  // interpretRuleByName,
+  //getAllRulesDescription,
+  // getRulesBySpaceId
+  // validateRule,
+  // insertRuleToDBMiddleware,
+  // removeAllRules,
   //getAllDetections,
   //fetchRoomID,
   //fetchSpaceID,
  // fetchMotionState,
   // interpeter_result,
     // Make sure it is listed here correctly
-    checkInterpreterCondition,
-    updateAndProcessRules,
-    interpretRuleByName,
-      getAllRulesDescription,
-    getRulesBySpaceId
-  // validateRule,
-  // insertRuleToDBMiddleware,
-  // removeAllRules,
 };

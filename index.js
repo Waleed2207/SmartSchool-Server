@@ -81,7 +81,7 @@
 
 // server.listen(port, () => console.log(`listening on port ${port}`));
 
-
+console.log('inedx.js   1');
 
 // imports
 const express = require("express");
