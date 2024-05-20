@@ -10,7 +10,7 @@ class Interpeter {
             throw new Error("Cannot instantiate an abstract class.");
         }
         this.namespace = namespace;
-        console.log(`AbstractInterpreter created with namespace: ${namespace}`);
+        console.log(`Interpeter created with namespace: ${namespace}`);
     }
 
     

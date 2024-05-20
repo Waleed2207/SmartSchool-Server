@@ -116,6 +116,9 @@ class InterpeterManger {
                     const smartSchoolInterpreter = new SmartSchoolInterpreter(roomDetails.name_space);
                     smartSchoolInterpreter.updateAndProcessRules();
                     //console.log('SmartSchool');
+                }else{
+                    console.log('Unknown namespace');
+                    return null;
                 }
             }
             
