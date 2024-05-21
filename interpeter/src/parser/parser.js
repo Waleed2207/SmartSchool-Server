@@ -26,11 +26,6 @@ function splitPhrases(phraseStr,special_Operators) {
     return matches;
 }
 /*
-
-function splitPhrases(phrase) {
-    // Placeholder for actual implementation that splits a phrase into manageable units
-    return phrase.split(',');
-}
 */
 
 function parse(input) {
@@ -95,38 +90,6 @@ function parse(input) {
 
 
 module.exports = { parse };
-
-
-/*
-
-    
-   
-   
-
-*/
-
-/*
-
-function parse(tokens) {
-    const thenIndex = tokens.findIndex(token => token.toLowerCase() === 'then');
-    const ifIndex = tokens.findIndex(token => token.toLowerCase() === 'if');
-    
-    // Assume the condition part is everything between "IF" and "THEN"
-    const conditionTokens = tokens.slice(ifIndex + 1, thenIndex);
-    const actionTokens = tokens.slice(thenIndex + 1);
-    
-    // Split the condition tokens by "AND"
-    const conditions = [];
-    let conditionStartIndex = 0;
-    conditionTokens.forEach((token, index) => {
-        if (token.toLowerCase() === 'and') {
-            const singleConditionTokens = conditionTokens.slice(conditionStartIndex, index);
-            conditions.push(buildConditionObject(singleConditionTokens));
-            conditionStartIndex = index + 1;
-        }
-    });
-*/
-
 
 
 
