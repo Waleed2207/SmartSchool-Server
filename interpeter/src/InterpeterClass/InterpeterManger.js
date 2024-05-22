@@ -5,8 +5,12 @@ const Rule = require("../../../models/Rule");
  const SmartSchoolInterpreter = require('./SmartSchoolInterpeter');
 
 class InterpeterManger {
+   
     constructor() {
-        console.log('InterpeterManger created');
+        
+        const smartHomeInterpreter = new SmartHomeInterpreter('SmartHome');
+        const smartSchoolInterpreter = new SmartSchoolInterpreter('SmartSchool');
+        this.Interpeters = [smartHomeInterpreter, smartSchoolInterpreter];
     }
 
     // createInterpreter(namespace) {
@@ -23,13 +27,13 @@ class InterpeterManger {
 
     async getAllRulesDescription() {
         try {
-            console.log("Starting to fetch all rules description.");
+          
             const rules = await Rule.find({});
-            console.log(`Total rules fetched: ${rules.length}`);
+            //console.log(`Total rules fetched: ${rules.length}`);
 
             let activeDescriptions = [];
             activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
-            console.log(`All active descriptions: ${activeDescriptions.length}`);
+            //console.log(`All active descriptions: ${activeDescriptions.length}`);
             if (activeDescriptions.length > 0) {
                 return {
                     statusCode: 200,
@@ -103,20 +107,14 @@ class InterpeterManger {
         const descriptionResult = await this.getAllRulesDescription();
         if (descriptionResult.statusCode === 200) {
             const descriptions = descriptionResult.data;
-            console.log("Descriptions of rules:", descriptions);
+            //console.log("Descriptions of rules:", descriptions);
             for (const description of descriptions) {
-                console.log(`Rule description: ${description}`);
                 let { roomName, roomDetails } = await this.GetRoomNameFromDatabase(description);
-                // console.log("Room Details:", roomDetails);
                 if (roomDetails.name_space === 'SmartHome') {
-                    //console.log('SmartHome');
-                    const smartHomeInterpreter = new SmartHomeInterpreter(roomDetails.name_space);
-                    smartHomeInterpreter.updateAndProcessRules();
+                    this.Interpeters[0].updateAndProcessRules();
                 } else if (roomDetails.name_space === 'SmartSchool') {
-                    const smartSchoolInterpreter = new SmartSchoolInterpreter(roomDetails.name_space);
-                    smartSchoolInterpreter.updateAndProcessRules();
-                    //console.log('SmartSchool');
-                }else{
+                    this.Interpeters[1].updateAndProcessRules();
+                } else {
                     console.log('Unknown namespace');
                     return null;
                 }

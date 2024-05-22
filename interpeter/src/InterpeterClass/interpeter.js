@@ -3,6 +3,7 @@ const { tokenize } = require('../../src/lexer/lexer');
 const { parse } = require('../../src/parser/parser');
 const { execute } = require('../../src/executor/executor');
 const Rule = require("../../../models/Rule");
+const { log } = require('console');
 
 class Interpeter {
     constructor(namespace) {
@@ -10,20 +11,20 @@ class Interpeter {
             throw new Error("Cannot instantiate an abstract class.");
         }
         this.namespace = namespace;
-        console.log(`Interpeter created with namespace: ${namespace}`);
+        //console.log(`Interpeter created with namespace: ${namespace}`);
     }
 
     
 
       async getAllRulesDescription() {
         try {
-            console.log("Starting to fetch all rules description.");
+   
             const rules = await Rule.find({});
-            console.log(`Total rules fetched: ${rules.length}`);
+            //console.log(`Total rules fetched: ${rules.length}`);
 
             let activeDescriptions = [];
             activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
-            console.log(`All active descriptions: ${activeDescriptions.length}`);
+        
             if (activeDescriptions.length > 0) {
                 return {
                     statusCode: 200,
@@ -44,27 +45,46 @@ class Interpeter {
         }
     }
 
-    async interpretRuleByName(ruleDescription){
+    async interpretRuleByName(ruleDescription) {
         try {
-          //console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
-          // Find the rule by its description using await for the asynchronous operation
-          const rule = await Rule.findOne({ description: ruleDescription });
-          
-          if (rule) {
-            //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-            //console.log(`Interpreting rule: ${input}`); 
-          
-            this.interpret(ruleDescription);
-            return `Rule "${ruleDescription}" interpreted successfully.)}`; // Return a success message
-          } else {
-            console.log(`Rule "${ruleDescription}" not found.`);
-            return `Rule "${ruleDescription}" not found.`; // Return an error message
-          }
+            // Find rules by their description using await for the asynchronous operation
+            const rules = await Rule.find({ description: ruleDescription });
+            if (rules.length > 0) {
+                const interpretedRules = [];
+        
+                for (const rule of rules) {
+                    // Assuming interpret function processes a rule
+                    this.interpret(rule.description);
+                    interpretedRules.push({
+                        description: rule.description,
+                        interpreted: true,
+                        details: rule
+                    }); // Collect each rule and its details in the array
+                }
+        
+                return {
+                    success: true,
+                    message: `Interpreted ${interpretedRules.length} rule(s) successfully.`,
+                    rules: interpretedRules
+                }; // Return a detailed result object
+            } else {
+                console.log(`No rules found with description "${ruleDescription}".`);
+                return {
+                    success: false,
+                    message: `No rules found with description "${ruleDescription}".`,
+                    rules: []
+                }; // Return a detailed result object
+            }
         } catch (error) {
-          console.error(`Error fetching rule - ${error}`);
-          return `Error fetching rule - ${error}`; // Return an error message
+            console.error(`Error fetching rules - ${error}`);
+            return {
+                success: false,
+                message: `Error fetching rules: ${error.message}`,
+                rules: []
+            }; // Return a detailed error result object
         }
     }
+    
 
     interpret(input){
         const tokens = tokenize(input);
@@ -74,19 +94,19 @@ class Interpeter {
     }    
 
     async  updateAndProcessRules(){
-        
+        let conter = 0 ;
         try {
         const descriptionResult = await this.getAllRulesDescription();
-        console.log("descriptionResult:", descriptionResult);
+        //console.log("descriptionResult:", descriptionResult);
     
         if (descriptionResult.statusCode === 200) {
             const descriptions = descriptionResult.data;
-            console.log("Descriptions of rules:", descriptions);
+           
     
             for (const description of descriptions) {
             try {
                 const interpretResult = await this.interpretRuleByName(description);
-                console.log("Interpret result for rule:", description, interpretResult);
+                //console.log("Interpret result for rule:", description, interpretResult);
     
                 if (interpretResult.includes("successfully")) {
                 return "Rule interpreted successfully";

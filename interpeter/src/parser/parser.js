@@ -35,14 +35,12 @@ function splitPhrases(phrase) {
 
 function parse(input) {
 
-    
-    //console.log("parser input :  " + input);
-    // Check if input is a string and split into tokens if necessary
-    console.log("Parse!!!!!!!!!!!!!!!")
+   
+   
     const tokens = typeof input === 'string' ? input.split(/\s+/) : input;
     const thenIndex = tokens.findIndex(token => token.toUpperCase() === 'THEN')
     let match;
-    console.log("tokens : " + tokens);
+   
 
     let operators = {
         condition_operators: [],
@@ -65,9 +63,7 @@ function parse(input) {
         }
     });
     
-    console.log("the condition operator " + operators.condition_operators)
-    console.log("the action operator " + operators.action__operators)
-
+    
 
     if (thenIndex === -1) {
         throw new Error("Syntax error: 'THEN' keyword not found.");

@@ -17,7 +17,7 @@ function tokenize(input) {
             console.log(input)
         }
     });
-    console.log(input.split('%%').flatMap(part => part.match(/\S+/g)))
+    //console.log(input.split('%%').flatMap(part => part.match(/\S+/g)))
     return input.split('%%').flatMap(part => part.match(/\S+/g) || []);
 }
 

@@ -43,7 +43,16 @@ class TurnDeviceOnOffCommand extends BaseCommand {
     }
 
     async turnAc() {
-        const targetTemperature = parseInt(this.details.split(' ')[0], 10); // Extract the numeric part from the string like "25 degrees"
+
+       
+        const targetTemperature = parseInt(this.details, 10);
+        if (!isNaN(targetTemperature)) {
+            // Proceed with using targetTemperature
+            console.log(`Target temperature: ${targetTemperature}`);
+        } else {
+            console.error('Error: Unable to parse target temperature from details.');
+        }
+        console.log(`Target temperature: ${targetTemperature}`);
         const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
         const payload = {
             acState: {

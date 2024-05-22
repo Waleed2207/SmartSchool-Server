@@ -146,8 +146,7 @@ function getRoomNameByDeviceName(data, deviceName) {
 
 class CommandFactory {
     static async createCommand(action, roomid, roomdevices, roomname) {
-        console.log(`Action processing: "${action}"`);
-
+       
         // Validate roomdevices is an array before proceeding
         if (!Array.isArray(roomdevices)) {
             console.error("Invalid roomdevices data. Expected an array.");
@@ -206,52 +205,6 @@ class CommandFactory {
 
 
 
-// class CommandFactory {
-//     static async createCommand(action, roomid, roomdevices, roomname) {
-//         console.log(`Action processing: "${action}"`);
 
-//         // Validate roomdevices is an array before proceeding
-//         if (!Array.isArray(roomdevices)) {
-//             console.error("Invalid roomdevices data. Expected an array.");
-//             return null;  // Exit if roomdevices is not an array, and do not execute any command
-//         }
-
-//         const commandTypePattern = /\b(TURN|turn)\b/i;
-//         const statePattern = /\b(ON|OFF)\b/i;
-//         const modePattern = /\b(COOL|HEAT|FAN)\b/i;
-//         const temperaturePattern = /\b(\d{1,3})\b/;
-
-//         const commandTypeMatch = action.match(commandTypePattern);
-//         const deviceMatches = await searchDevicesInAction(action); // Ensuring this is correct
-//         const stateMatch = action.match(statePattern);
-//         const modeMatch = action.match(modePattern);
-//         const temperatureMatch = action.match(temperaturePattern);
-
-//         const commandType = commandTypeMatch ? commandTypeMatch[0].toLowerCase() : '';
-//         const device = deviceMatches.length > 0 ? deviceMatches[0] : '';
-//         const state = stateMatch ? stateMatch[0].toLowerCase() : '';
-//         const mode = modeMatch ? modeMatch[0].toLowerCase() : '';
-//         const temperature = temperatureMatch ? parseInt(temperatureMatch[0], 10) : 0;
-//         const deviceid = getDeviceIdByName(roomdevices, device);
-//       //  const roomname = get
-//         console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
-
-//         if (deviceid === null) {
-//             console.error("Device ID not found for the action. Action cannot be executed.");
-//             return null;
-//         }
-
-//         if (state === 'on') {
-//             const turndeviceon = new TurnDeviceOnCommand(deviceid, mode, temperature, device, state);
-//             return turndeviceon.execute()
-//         } else if (state === 'off') {
-//             const TurnDeviceOff = new TurnDeviceOffCommand(deviceid, mode, temperature, device, state);
-//             return TurnDeviceOff.execute()
-//         } else {
-//             console.log("Unknown command state.");
-//             return null;
-//         }
-//     }
-// }
 
 module.exports = { CommandFactory };
