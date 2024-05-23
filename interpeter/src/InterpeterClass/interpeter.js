@@ -16,15 +16,11 @@ class Interpeter {
 
     
 
-      async getAllRulesDescription() {
+    async getAllRulesDescription() {
         try {
-   
             const rules = await Rule.find({});
-            //console.log(`Total rules fetched: ${rules.length}`);
-
-            let activeDescriptions = [];
-            activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
-        
+            let activeDescriptions = rules.filter(rule => rule.isActive).map(rule => rule.description);
+    
             if (activeDescriptions.length > 0) {
                 return {
                     statusCode: 200,
@@ -45,13 +41,12 @@ class Interpeter {
         }
     }
 
-    async interpretRuleByName(ruleDescription) {
+    async interpretRuleByName(ruledescription) {
         try {
-            // Find rules by their description using await for the asynchronous operation
-            const rules = await Rule.find({ description: ruleDescription });
+            const rules = await Rule.find({ description: ruledescription });
             if (rules.length > 0) {
                 const interpretedRules = [];
-        
+    
                 for (const rule of rules) {
                     // Assuming interpret function processes a rule
                     this.interpret(rule.description);
@@ -59,21 +54,21 @@ class Interpeter {
                         description: rule.description,
                         interpreted: true,
                         details: rule
-                    }); // Collect each rule and its details in the array
+                    });
                 }
-        
+    
                 return {
                     success: true,
                     message: `Interpreted ${interpretedRules.length} rule(s) successfully.`,
                     rules: interpretedRules
-                }; // Return a detailed result object
+                };
             } else {
                 console.log(`No rules found with description "${ruleDescription}".`);
                 return {
                     success: false,
                     message: `No rules found with description "${ruleDescription}".`,
                     rules: []
-                }; // Return a detailed result object
+                };
             }
         } catch (error) {
             console.error(`Error fetching rules - ${error}`);
@@ -81,51 +76,39 @@ class Interpeter {
                 success: false,
                 message: `Error fetching rules: ${error.message}`,
                 rules: []
-            }; // Return a detailed error result object
+            };
         }
     }
     
 
     interpret(input){
-        const tokens = tokenize(input);
+        console.log(`Interpreting rule: ${input}`);
+        //const tokens = tokenize(input);
         const parsed = parse(input); // Ensure this returns the correct structure
-        //console.log("Sameer parsed",parsed);
         execute(parsed); // `parsed` should include condition and action
     }    
 
-    async  updateAndProcessRules(){
-        let conter = 0 ;
+    async updateAndProcessRules(ruledescription) {
         try {
-        const descriptionResult = await this.getAllRulesDescription();
-        //console.log("descriptionResult:", descriptionResult);
-    
-        if (descriptionResult.statusCode === 200) {
-            const descriptions = descriptionResult.data;
-           
-    
-            for (const description of descriptions) {
+        
             try {
-                const interpretResult = await this.interpretRuleByName(description);
-                //console.log("Interpret result for rule:", description, interpretResult);
-    
-                if (interpretResult.includes("successfully")) {
-                return "Rule interpreted successfully";
+                        
+                const interpretResult = await this.interpretRuleByName(ruledescription);   
+                // Check if interpretResult includes 'successfully'
+                if (interpretResult.success) {
+                    console.log("Rule interpreted successfully");
+                   
                 }
             } catch (error) {
                 console.error(`Failed to interpret rule "${description}":`, error.message);
             }
-            }
-        } else {
-            console.error('Failed to get rule descriptions:', descriptionResult.message);
-        }
+          
+           
         } catch (error) {
-        console.error('Error processing rule descriptions:', error);
+            console.error('Error processing rule descriptions:', error);
         }
-        return "No active rules";
+        return "No active rules"; // Return this if no rules are processed successfully
     }
-
-    
-  
    
 
     belongsToNamespace(room) {
@@ -143,3 +126,25 @@ if (require.main === module) {
 }
 
 module.exports = Interpeter;
+
+
+ // if (descriptionResult.statusCode === 200) {
+            //     const descriptions = descriptionResult.data;
+    
+            //     for (const description of descriptions) {
+            //         console.log(`Processing rule "${description}"...`);
+            //         try {
+                        
+    
+            //             // Check if interpretResult includes 'successfully'
+            //             if (interpretResult.success) {
+            //                 console.log("Rule interpreted successfully");
+            //             }
+            //         } catch (error) {
+            //             console.error(`Failed to interpret rule "${description}":`, error.message);
+            //         }
+            //     }
+            //     // If all rules are processed without breaking the loop
+            // } else {
+            //     console.error('Failed to get rule descriptions:', descriptionResult.message);
+            // }

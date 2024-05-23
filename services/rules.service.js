@@ -113,13 +113,12 @@ async function checkInterpreterCondition() {
 // Function to interpret a rule by its description
 async function interpretRuleByName(ruleDescription) {
   try {
-    console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
+    //console.log("interpretrulebyname%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^%^% ");
     // Find the rule by its description using await for the asynchronous operation
     const rule = await Rule.findOne({ description: ruleDescription });
     
     if (rule) {
-      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;
-      //console.log(`Interpreting rule: ${input}`); 
+      //const input = stringifyCondition(rule.condition) + ' THEN ' + rule.action;; 
     
       interpret(ruleDescription);
       return `Rule "${ruleDescription}" interpreted successfully.)}`; // Return a success message

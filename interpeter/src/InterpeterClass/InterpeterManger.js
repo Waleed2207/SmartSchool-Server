@@ -56,12 +56,11 @@ class InterpeterManger {
 
     async  GetRoomNameFromDatabase(parsed) {
         try {
-            // console.log("GetIDwitRoomNameFromDatabase"); 
-            // console.log("Parsed object:", parsed);   
+              
            
             // Fetch all room names from the database
             const roomNames = await getAllRoomNames();
-            //console.log("Room names from DB:", roomNames);
+         
      
             // Define the pattern to match room names
             const roomNamesPatternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -76,21 +75,6 @@ class InterpeterManger {
                 const roomDetails = await getRoomByName(roomName);
                 return { roomName, roomDetails };
     
-                //console.log("Fetching details for Room Name:", roomName);
-    
-                // Fetch the room details from the database by room name
-               
-                //console.log("Room Details from DB:", roomDetails);
-    
-                // // Check if roomDetails is not null and has the property 'id'
-                // if (roomDetails && (roomDetails.id || roomDetails._id)) {
-                //     const roomId = roomDetails.id || roomDetails._id;
-                //     console.log("Room ID:", roomId);
-                //     return roomId;
-                // } else {
-                //     console.log("Room details are null or missing an 'id'.");
-                //     return null;
-                // }
             } else {
                 console.log("No matching room name found in the parsed text.");
                 return { roomName: null, roomDetails: null };
@@ -105,15 +89,15 @@ class InterpeterManger {
     async main() {
         console.log('Main');
         const descriptionResult = await this.getAllRulesDescription();
+        
         if (descriptionResult.statusCode === 200) {
             const descriptions = descriptionResult.data;
-            //console.log("Descriptions of rules:", descriptions);
-            for (const description of descriptions) {
-                let { roomName, roomDetails } = await this.GetRoomNameFromDatabase(description);
+            for (const ruledescription of descriptions) {
+                let { roomName, roomDetails } = await this.GetRoomNameFromDatabase(ruledescription);
                 if (roomDetails.name_space === 'SmartHome') {
-                    this.Interpeters[0].updateAndProcessRules();
+                    await this.Interpeters[0].updateAndProcessRules(ruledescription);
                 } else if (roomDetails.name_space === 'SmartSchool') {
-                    this.Interpeters[1].updateAndProcessRules();
+                    await this.Interpeters[1].updateAndProcessRules(ruledescription);
                 } else {
                     console.log('Unknown namespace');
                     return null;

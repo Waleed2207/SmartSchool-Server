@@ -171,7 +171,7 @@ class CommandFactory {
         const temperature = temperatureMatch ? parseInt(temperatureMatch[0], 10) : 0;
         const deviceid = this.getDeviceIdByName(roomdevices, device);
 
-        console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
+        //console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
 
         if (deviceid === null) {
             console.error("Device ID not found for the action. Action cannot be executed.");

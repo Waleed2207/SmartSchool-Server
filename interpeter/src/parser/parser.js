@@ -47,7 +47,7 @@ function parse(input) {
         action__operators: []
     };
 
-   ;
+   
      
     const SpecialOperatorPattern = /\b(or|and|Or|And)\b/gi;
 
@@ -93,13 +93,7 @@ function parse(input) {
 module.exports = { parse };
 
 
-/*
 
-    
-   
-   
-
-*/
 
 /*
 

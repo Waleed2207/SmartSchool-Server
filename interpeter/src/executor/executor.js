@@ -54,6 +54,7 @@ function evaluateLogic(results, operators) {
 
 
 function getContextType(sentence, context) {
+    console.log("IN (get context type) Function");
     const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping', 'outside'];
     const seasons = ['spring', 'summer', 'fall', 'winter'];
     const words = sentence.toLowerCase().split(/\s+/);
@@ -109,8 +110,7 @@ function getContextType(sentence, context) {
 
 
 function evaluateCondition(parsed, context) {  
-    //console.log("Evaluating conditions...");
-    //console.log("Parsed object:", parsed);  
+    console.log("IN (evaluate condition) Function"); 
     const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
     const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
     const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room)\b/gi;
@@ -201,7 +201,7 @@ function evaluateCondition(parsed, context) {
 async function GetRoomNameFromDatabase(parsed) {
     try {
        
-       
+       console.log("Get Room Name From Database Function")
         // Fetch all room names from the database
         const roomNames = await getAllRoomNames();
         ;
@@ -230,7 +230,8 @@ async function GetRoomNameFromDatabase(parsed) {
 
 
 async function execute(parsed) {
-    
+    console.log("Executing rule:");
+    //console.log("Executing", parsed);
     const currentActivity = await getCurrentActivity();
     const currentSeason = await getCurrentSeason();
 
@@ -239,7 +240,7 @@ async function execute(parsed) {
 
     // Mock data to replace emitter.on event
     const LivingRoom = {
-        motionState: false, // or 'not detected'
+        motionState: true, // or 'not detected'
         roomName: 'Living Room',
         roomid: '38197016',
         space_id: '61097711',
@@ -269,15 +270,15 @@ async function execute(parsed) {
    
 
     const context = {
-        detection : bathroom.motionState,
+        detection : LivingRoom.motionState,
         //detection: mockData.motionState,
         // activity: currentActivity,
         // season: currentSeason,
         activity: 'studying',
         season: 'spring',
-        roomName: bathroom.roomName,
-        roomid: bathroom.roomid,
-        space_id: bathroom.space_id,
+        roomName: LivingRoom.roomName,
+        roomid: LivingRoom.roomid,
+        space_id: LivingRoom.space_id,
     };
 
     // Get the room ID before you fetch devices
@@ -307,15 +308,13 @@ async function execute(parsed) {
         return;
     }
 
-    
-    console.log("Room Name: " +  roomName + " mocdata : " + LivingRoom.roomName);
     if (context.roomName.toLowerCase() === roomName.toLowerCase()) {
         for (const action of parsed.actions) {
             try {
                 console.log("Executing action:", action);
                 const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
                 if (commandExecuted) {
-                    console.log("Command was executed successfully.");
+                    console.log("Command " + commandExecuted + "successfully executed.");
                 } else {
                     console.log('Action could not be executed:', action);
                 }
@@ -326,7 +325,7 @@ async function execute(parsed) {
     } else {
         console.log("Room name not matched or undefined. No actions executed.");
     }
-    console.log("try1");
+
 
     if (parsed.conditions.length === 0) {
         console.log('No conditions provided.');

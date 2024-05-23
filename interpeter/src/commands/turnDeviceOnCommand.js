@@ -44,6 +44,7 @@ class TurnDeviceOnCommand extends BaseCommand {
     }
 
     async turnAcOn() {
+        console.log(`Turning AC on with details: ${this.details}`);
         // const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
         // const payload = {
         //     acState: {
@@ -71,25 +72,29 @@ class TurnDeviceOnCommand extends BaseCommand {
             { $set: { state: 'on' } }
         );
         console.log('Database update result:', updateResult);
-        return updateResult;
+        //return updateResult;
+        return "turn Light On";
     }
 
     async turnFanOn() {
         console.log(`Turning fan on with details: ${this.details}`);
         // Implementation for turning fan on
         await this.updateDeviceState("on");
+        return "turn Fan On" ; 
     }
 
     async turnProjectorOn() {
         console.log(`Turning projector on with details: ${this.details}`);
         // Implementation for turning projector on
         await this.updateDeviceState("on");
+        return "turn Projector On";
     }
 
     async turnTVOn() {
         console.log(`Turning TV on with details: ${this.details}`);
         // Implementation for turning TV on
         await this.updateDeviceState("on");
+        return "turnTVOn";
     }
 
     async updateDeviceState(state) {
