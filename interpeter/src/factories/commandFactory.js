@@ -147,7 +147,7 @@ function getRoomNameByDeviceName(data, deviceName) {
 
 class CommandFactory {
     static async createCommand(action, roomid, roomdevices, roomname) {
-       
+        console.log("we are the champions of the worlds");
         // Validate roomdevices is an array before proceeding
         if (!Array.isArray(roomdevices)) {
             console.error("Invalid roomdevices data. Expected an array.");
@@ -196,7 +196,7 @@ class CommandFactory {
             return null;
         }
     }
-
+    
     static async searchDevicesInAction(action) {
         // Implementation for searching devices in action text
         // Adjust the search logic according to your application's needs
