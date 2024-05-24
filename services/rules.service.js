@@ -19,7 +19,11 @@ const  InterpeterManger  = require('../../SmartSchool-Server/interpeter/src/Inte
   console.log("tetsting");
   console.log("Main function called");
   const manager = new InterpeterManger();
+
   manager.main().catch(e => console.error(e));
+  setInterval(() => {
+    manager.main().catch(e => console.error(e));
+}, 30000);
 
 
 

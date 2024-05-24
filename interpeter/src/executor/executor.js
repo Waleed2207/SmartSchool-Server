@@ -19,7 +19,7 @@ function convertOperators(operators) {
 }
 
 function evaluateLogic(results, operators) {
-    console.log("IN (evaluate logic) Function");
+  
 
     if (results.length - 1 !== operators.length) {
         throw new Error("The number of operators should be one less than the number of results.");
@@ -54,7 +54,7 @@ function evaluateLogic(results, operators) {
 
 
 function getContextType(sentence, context) {
-    console.log("IN (get context type) Function");
+
     const activities = ['studying', 'cooking', 'eating', 'playing', 'watching_tv', 'sleeping', 'outside'];
     const seasons = ['spring', 'summer', 'fall', 'winter'];
     const words = sentence.toLowerCase().split(/\s+/);
@@ -110,13 +110,12 @@ function getContextType(sentence, context) {
 
 
 function evaluateCondition(parsed, context) {  
-    console.log("IN (evaluate condition) Function"); 
-    const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
-    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
-    const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room)\b/gi;
-    
-    let results = [],result = null;
-    parsed.conditions.forEach(condition => {
+        const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
+        const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
+        const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room)\b/gi;
+        
+        let results = [],result = null;
+        parsed.conditions.forEach(condition => {
         result = getContextType(condition, context);
         if(result !== null)
         {
@@ -201,10 +200,8 @@ function evaluateCondition(parsed, context) {
 async function GetRoomNameFromDatabase(parsed) {
     try {
        
-       console.log("Get Room Name From Database Function")
         // Fetch all room names from the database
         const roomNames = await getAllRoomNames();
-        ;
  
         // Define the pattern to match room names
         const roomNamesPatternString = roomNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -234,6 +231,7 @@ async function execute(parsed) {
     //console.log("Executing", parsed);
     const currentActivity = await getCurrentActivity();
     const currentSeason = await getCurrentSeason();
+    let success = false;
 
     //console.log("Current Activity:", currentActivity);
     //console.log("Current Season:", currentSeason);
@@ -287,13 +285,11 @@ async function execute(parsed) {
 
     if (!roomDetails) {
         console.error("Failed to fetch the room ID");
-        return;
     }
 
     const roomDevicesResult = await getDevicesByRoomId(roomDetails.id);
     if (roomDevicesResult.statusCode !== 200) {
         console.error("Failed to fetch room devices:", roomDevicesResult.message);
-        return;
     }
     const roomdevices = roomDevicesResult.data;
 
@@ -305,16 +301,17 @@ async function execute(parsed) {
    
     if (!result) {
         console.log("Conditions not met, no actions executed.");
-        return;
     }
 
     if (context.roomName.toLowerCase() === roomName.toLowerCase()) {
         for (const action of parsed.actions) {
             try {
-                console.log("Executing action:", action);
+                // console.log("Executing action:", action);
                 const commandExecuted = await CommandFactory.createCommand(action, roomDetails.id, roomdevices, roomName);
+                console.log("Command Executed:", commandExecuted);  
                 if (commandExecuted) {
                     console.log("Command " + commandExecuted + "successfully executed.");
+                    success = true;
                 } else {
                     console.log('Action could not be executed:', action);
                 }
@@ -333,6 +330,7 @@ async function execute(parsed) {
     if (parsed.actions.length === 0) {
         console.log('No actions provided.');
     }
+    return success;
 }
 
   

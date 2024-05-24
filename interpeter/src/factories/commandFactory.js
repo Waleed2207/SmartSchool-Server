@@ -3,6 +3,7 @@ const TurnDeviceOffCommand = require('../commands/turnDeviceOffCommand');
 const { getDevices } = require('../../../services/devices.service');
 const { getAllRoomIds } = require('../../../services/rooms.service');
 const Device = require("../../../models/Device");
+const {getDeviceById} = require('../../../services/devices.service');
 
 // const constructDeviceRegex = async () => {
 //     try {
@@ -179,11 +180,17 @@ class CommandFactory {
         }
 
         if (state === 'on') {
+            const device = await getDeviceById(deviceid);
+            if(device.state == 'on'){
+                console.log("Device is already on");    
+                return null;
+            } 
             const turndeviceon = new TurnDeviceOnCommand(deviceid, mode, temperature, device, state);
-            return await turndeviceon.execute();
         } else if (state === 'off') {
+            if(device.state == 'off'){
+                return null;
+            }
             const turndeviceoff = new TurnDeviceOffCommand(deviceid, mode, temperature, device, state);
-            return await turndeviceoff.execute();
         } else {
             console.log("Unknown command state.");
             return null;

@@ -300,7 +300,26 @@ const getRoomsByDeviceName = async (deviceName) => {
   return roomsDevices;
 }
 
-
+const getDeviceById = async (deviceId) => {
+  try {
+    const device = await Device.findOne({ device_id: deviceId });
+    if (!device) {
+      return {
+        statusCode: 404,
+        message: "Device not found",
+      };
+    }
+    return {
+      statusCode: 200,
+      data: device,
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      message: err.message,
+    };
+  }
+};
 
 module.exports = {
   getDevices,
@@ -315,5 +334,6 @@ module.exports = {
   getDeviceIdByDeviceName,
   getRoomsByDeviceName,
   getDevice_By_SpaceID,
-  updateRoomDevices
+  updateRoomDevices,
+  getDeviceById
 };

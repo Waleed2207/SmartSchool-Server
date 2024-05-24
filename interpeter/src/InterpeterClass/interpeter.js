@@ -49,19 +49,18 @@ class Interpeter {
     
                 for (const rule of rules) {
                     // Assuming interpret function processes a rule
-                    this.interpret(rule.description);
-                    interpretedRules.push({
-                        description: rule.description,
-                        interpreted: true,
-                        details: rule
-                    });
+                    const success = await this.interpret(rule.description);
+                    if (success) {
+                        interpretedRules.push({
+                            description: rule.description,
+                            interpreted: true,
+                            details: rule,
+                            success: success,
+                        });
+                    }
+                    
                 }
     
-                return {
-                    success: true,
-                    message: `Interpreted ${interpretedRules.length} rule(s) successfully.`,
-                    rules: interpretedRules
-                };
             } else {
                 console.log(`No rules found with description "${ruleDescription}".`);
                 return {
@@ -81,11 +80,12 @@ class Interpeter {
     }
     
 
-    interpret(input){
+    async interpret(input){
         console.log(`Interpreting rule: ${input}`);
         //const tokens = tokenize(input);
         const parsed = parse(input); // Ensure this returns the correct structure
-        execute(parsed); // `parsed` should include condition and action
+       const success = await execute(parsed);
+       return success; // `parsed` should include condition and action
     }    
 
     async updateAndProcessRules(ruledescription) {
@@ -100,7 +100,7 @@ class Interpeter {
                    
                 }
             } catch (error) {
-                console.error(`Failed to interpret rule "${description}":`, error.message);
+                console.error(`Failed to interpret rule "${ruledescription}":`, error.message);
             }
           
            

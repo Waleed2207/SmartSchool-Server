@@ -2,6 +2,7 @@
 const BaseCommand = require('./baseCommand');
 const Device = require("../../../models/Device");
 const RoomDevice = require("../../../models/RoomDevice");
+
 const axios = require('axios');
 require('dotenv').config();
 
@@ -19,28 +20,32 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     async execute() {
         console.log(`Executing Turn On for ${this.device} in mode ${this.mode} with temperature: ${this.temperature}`);
-        
+        let string = "";
+
+
         switch (this.device.toLowerCase()) {
             case 'ac':
-                await this.turnAcOn();
+                string = await this.turnAcOn();
                 break;
             case 'light':
+                string = await this.turnLightOn();
             case 'bulb':
-                await this.turnLightOn();
+                string = await  this.turnLightOn();
                 break;
             case 'fan':
-                await this.turnFanOn();
+                string = await this.turnFanOn();
                 break;
             case 'projector':
-                await this.turnProjectorOn();
+                string = await this.turnProjectorOn();
                 break;
             case 'tv':
-                await this.turnTVOn();
+                string =  await this.turnTVOn();
                 break;
             default:
                 console.log(`Device type ${this.device} is not supported.`);
                 break;
         }
+        return string;
     }
 
     async turnAcOn() {
@@ -64,6 +69,7 @@ class TurnDeviceOnCommand extends BaseCommand {
         // } catch (error) {
         //     console.error(`Failed to turn on AC. Error:`, error.message);
         // }
+        return "turn AC On";
     }
     async turnLightOn() {
         console.log(`Executing Turn On for light`);

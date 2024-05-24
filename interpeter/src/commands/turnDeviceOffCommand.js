@@ -17,34 +17,37 @@ class TurnDeviceOnOffCommand extends BaseCommand {
 
     async execute() {
         console.log(`Executing Turn ${this.state} for ${this.device} in mode ${this.mode} with value ${this.details}`);
+        let string = " ";
         
+      
         // Start switch-case to handle different device types
         switch (this.device.toLowerCase()) {
             case 'ac':
-                await this.turnAc();
+                string = await this.turnAc();
                 break;
             case 'light':
+                string = await this.turnLight();
             case 'bulb':
-                await this.turnLight();
+                string = await this.turnLight();
                 break;
             case 'fan':
-                await this.turnFan();
+                string = await this.turnFan();
                 break;
             case 'projector':
-                await this.turnProjector();
+                string = await this.turnProjector();
                 break;
             case 'tv':
-                await this.turnTV();
+                string = await this.turnTV();
                 break;
             default:
                 console.log(`Device type ${this.device} is not supported.`);
                 break;
         }
+        return string;
     }
 
     async turnAc() {
 
-       
         const targetTemperature = parseInt(this.details, 10);
         if (!isNaN(targetTemperature)) {
             // Proceed with using targetTemperature
@@ -72,26 +75,31 @@ class TurnDeviceOnOffCommand extends BaseCommand {
         } catch (error) {
             console.error(`Failed to turn ${this.state} AC. Error:`, error.message);
         }
+        return "turn AC Off"
     }
 
     async turnLight() {
         console.log(`Turning light ${this.state} with details: ${this.details}`);
         await this.updateDeviceState(this.state);
+        return "turn Light Off";
     }
 
     async turnFan() {
         console.log(`Turning fan ${this.state} with details: ${this.details}`);
         await this.updateDeviceState(this.state);
+        return "turn Fan Off";
     }
 
     async turnProjector() {
         console.log(`Turning projector ${this.state} with details: ${this.details}`);
         await this.updateDeviceState(this.state);
+        return "turn Projector Off";
     }
 
     async turnTV() {
         console.log(`Turning TV ${this.state} with details: ${this.details}`);
         await this.updateDeviceState(this.state);
+        return "turn TV Off";
     }
 
     async updateDeviceState(state) {
@@ -99,6 +107,7 @@ class TurnDeviceOnOffCommand extends BaseCommand {
         const updateResultDevice = await Device.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
         const updateResultRoomDevice = await RoomDevice.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
         console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
+       
     }
 }
 
