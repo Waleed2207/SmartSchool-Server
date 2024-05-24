@@ -25,9 +25,19 @@ const { execute } = require('../interpeter/src/executor/executor');
 //   return devices;
 // };
 
+<<<<<<< Updated upstream
 // const decideOnState = (rule) => {
 //   return /\b(off)\b/i.test(rule) ? "on" : "off";
 // };
+=======
+  console.log("tetsting");
+  console.log("Main function called");
+  const manager = new InterpeterManger();
+// Set an interval to call main every 30 seconds (30000 milliseconds)
+setInterval(() => {
+  manager.main().catch(e => console.error(e));
+}, 30000);
+>>>>>>> Stashed changes
 
 // const validateSensor = async (rule) => {
 //   const parsedRule = rule.split(" ");

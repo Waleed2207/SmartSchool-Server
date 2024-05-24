@@ -61,6 +61,7 @@ class TurnDeviceOnCommand extends BaseCommand {
     // }
     
 
+<<<<<<< Updated upstream
     // //add new Device turn on 
     
     // Turn_lights(device,details,place){
@@ -68,6 +69,18 @@ class TurnDeviceOnCommand extends BaseCommand {
     //     this.details = details;
     //     this.place  = place;
     //     console.log(`Turning ${this.device} ON with details: ${this.details} in ${this.place}`);
+=======
+    async turnAcOn() {
+        console.log(`Turning AC on with details: ${this.temperature}`);
+        // const deviceUrl = `https://home.sensibo.com/api/v2/pods/${this.deviceid}/acStates?apiKey=${this.apiKey}`;
+        // const payload = {
+        //     acState: {
+        //         on: true,
+        //         targetTemperature: this.temperature,
+        //         mode: this.mode
+        //     }
+        // };
+>>>>>>> Stashed changes
 
     //  res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
 

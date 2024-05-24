@@ -22,6 +22,7 @@ class CommandFactory {
         const details = parts.slice(7).join(' '); // Any additional details after the state
         console.log(details);
 
+<<<<<<< Updated upstream
         switch (commandType) {
             case 'TURN':
                 // Based on the state, return the corresponding command
@@ -36,6 +37,26 @@ class CommandFactory {
             // ... handle other command types
             default:
                 throw new Error(`Unknown command type: ${commandType}`);
+=======
+        const commandTypeMatch = action.match(commandTypePattern);
+        const deviceMatches = await this.searchDevicesInAction(action); // Ensuring this is correct
+        const stateMatch = action.match(statePattern);
+        const modeMatch = action.match(modePattern);
+        const temperatureMatch = action.match(temperaturePattern);
+
+        const commandType = commandTypeMatch ? commandTypeMatch[0].toLowerCase() : '';
+        const device = deviceMatches.length > 0 ? deviceMatches[0] : '';
+        const state = stateMatch ? stateMatch[0].toLowerCase() : '';
+        const mode = modeMatch ? modeMatch[0].toLowerCase() : '';
+        const temperature = temperatureMatch ? parseInt(temperatureMatch[0], 10) : 0;
+        const deviceid = this.getDeviceIdByName(roomdevices, device);
+
+        console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
+
+        if (deviceid === null) {
+            console.error("Device ID not found for the action. Action cannot be executed.");
+            return null;
+>>>>>>> Stashed changes
         }
     }
 }
