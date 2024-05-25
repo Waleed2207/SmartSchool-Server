@@ -1,19 +1,19 @@
 const mongoose = require("mongoose");
 
 const roomSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
   id: {
     type: String,
     required: true,
   },
   space_id: {
     type: String,
-    required: true
-  },
-  name_space: {
-    type: String,
     required: true,
   },
-  name: {
+  name_space: {
     type: String,
     required: true,
   },
@@ -36,6 +36,6 @@ const roomSchema = new mongoose.Schema({
   },
 });
 
-const Room = mongoose.model("rooms", roomSchema);
+const Room = mongoose.model("Room", roomSchema); // Note the singular 'Room'
 
 module.exports = Room;
