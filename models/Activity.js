@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const ActivitySchema = new mongoose.Schema({
+const ActivitySchema = new Schema({
   name: { type: String, required: true },
-  startTime: { type: Number, required: true },
-  endTime: { type: Number, required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true }
+  startTime: { type: Date, required: true }, // Ensure this is defined as Date
+  endTime: { type: Date, required: true }, // Ensure this is defined as Date
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  room: { type: String, required: true }
 });
 
 module.exports = mongoose.model('Activity', ActivitySchema);

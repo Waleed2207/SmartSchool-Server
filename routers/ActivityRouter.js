@@ -5,8 +5,8 @@ const validateObjectId = require('../middleware/validateObjectId');
 
 const router = express.Router();
 
-router.get('/activities', authenticate, activityController.getAllActivities);
-router.get('/current-activity', authenticate, activityController.getCurrentActivity);
+router.get('/activities/:roomId', authenticate, validateObjectId, activityController.getAllActivitiesByRoom);
+router.get('/current-activity/:roomId', authenticate, validateObjectId, activityController.getCurrentActivity);
 router.post('/add-activity', authenticate, validateObjectId, activityController.addActivity);
 
 module.exports = router;
