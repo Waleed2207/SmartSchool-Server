@@ -87,7 +87,7 @@ const signInUser = async (email, password) => {
   const token = jwt.sign(
     { _id: user._id, role: user.role, space_name: user.space_name, space_id: user.space_id },
     secretKey,
-    { expiresIn: '1h' }
+   // { expiresIn: '1h' }
   );
 
   // Save the token to the user's tokens array

@@ -1,61 +1,10 @@
-const mongoose = require('mongoose');
-const Activity = require('../models/Activity');
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-const getAllActivitiesByRoom = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const roomId = req.params.roomId;
-    const activities = await Activity.find({ user: userId, room: roomId }).populate('room');
-    res.json(activities);
-  } catch (error) {
-    console.error('Error fetching all activities:', error);
-    res.status(500).json({ error: 'Error fetching all activities' });
-  }
-};
-
-const getCurrentActivity = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const roomId = req.params.roomId;
-    const currentTime = dayjs().utc().toDate();
-
-    console.log(`Fetching current activity for user: ${userId}, room: ${roomId} at time: ${currentTime.toISOString()}`);
-
-    const currentActivity = await Activity.findOne({
-      user: new mongoose.Types.ObjectId(userId),
-      room: new mongoose.Types.ObjectId(roomId),
-      startTime: { $lte: currentTime },
-      endTime: { $gt: currentTime }
-    }).populate('room');
-
-    console.log("Query Result: ", currentActivity);
-
-    if (!currentActivity) {
-      console.log("No current activity found");
-      return res.status(404).json({ error: 'No current activity found' });
-    }
-
-    console.log("Current activity found:", currentActivity);
-    res.json(currentActivity);
-  } catch (error) {
-    console.error('Error fetching current activity:', error);
-    res.status(500).json({ error: 'Error fetching current activity' });
-  }
-};
+const { createActivity, getCurrentUserActivity, getAllUserActivities } = require('../services/activity.service');
 
 const addActivity = async (req, res) => {
   try {
-    const { name, startTime, endTime, room } = req.body;
+    const { name, startTime, endTime } = req.body;
 
-    console.log('Received data:', req.body);
-
-    if (!name || !startTime || !endTime || !room) {
+    if (!name || !startTime || !endTime) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -66,15 +15,20 @@ const addActivity = async (req, res) => {
       return res.status(400).json({ error: 'Invalid time format' });
     }
 
-    const activity = new Activity({
+    if (endTimeDate <= startTimeDate) {
+      return res.status(400).json({ error: 'End time must be after start time' });
+    }
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: 'Unauthorized: User ID missing' });
+    }
+
+    const activity = await createActivity({
       name,
       startTime: startTimeDate,
       endTime: endTimeDate,
-      user: req.user._id,
-      room: new mongoose.Types.ObjectId(room)
+      user: req.user._id
     });
-
-    await activity.save();
 
     res.status(201).json(activity);
   } catch (error) {
@@ -83,8 +37,37 @@ const addActivity = async (req, res) => {
   }
 };
 
+const getAllActivities = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const activities = await getAllUserActivities(userId);
+
+    res.json(activities);
+  } catch (error) {
+    console.error('Error fetching all activities:', error);
+    res.status(500).json({ error: 'Error fetching all activities' });
+  }
+};
+
+const getCurrentActivity = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const currentActivity = await getCurrentUserActivity(userId);
+
+    if (!currentActivity) {
+      return res.status(404).json({ error: 'No current activity found' });
+    }
+
+    res.json(currentActivity);
+  } catch (error) {
+    console.error('Error fetching current activity:', error);
+    res.status(500).json({ error: 'Error fetching current activity' });
+  }
+};
+
 module.exports = {
-  getAllActivitiesByRoom,
-  getCurrentActivity,
-  addActivity
+  addActivity,
+  getAllActivities,
+  getCurrentActivity
 };

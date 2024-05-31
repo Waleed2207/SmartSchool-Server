@@ -1,12 +1,12 @@
 const express = require('express');
 const activityController = require('../controllers/activityController');
 const authenticate = require('../middleware/authenticate');
-const validateObjectId = require('../middleware/validateObjectId');
 
 const router = express.Router();
 
-router.get('/activities/:roomId', authenticate, validateObjectId, activityController.getAllActivitiesByRoom);
-router.get('/current-activity/:roomId', authenticate, validateObjectId, activityController.getCurrentActivity);
-router.post('/add-activity', authenticate, validateObjectId, activityController.addActivity);
+// Ensure that the controller functions are correctly referenced
+router.post('/add-activity', authenticate, activityController.addActivity);
+router.get('/activities', authenticate, activityController.getAllActivities);
+router.get('/current-activity', authenticate, activityController.getCurrentActivity);
 
 module.exports = router;
