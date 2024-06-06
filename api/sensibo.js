@@ -332,7 +332,7 @@ const switchAcState = async (id, state, rasp_ip, temperature = null) => {
 
 const getSensiboSensors = async () => {
   try {
-    const flaskUrl = `http://10.100.102.14:5009/api-sensibo/get_sensor_data`; 
+    const flaskUrl = `http://10.0.0.29:5009/api-sensibo/get_sensor_data`; 
 
     // Send a GET request to the Flask app
     const response = await axios.get(flaskUrl);

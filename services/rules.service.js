@@ -29,44 +29,51 @@ const { execute } = require('../interpeter/src/executor/executor');
 //   return /\b(off)\b/i.test(rule) ? "on" : "off";
 // };
 
-// const validateSensor = async (rule) => {
-//   const parsedRule = rule.split(" ");
-//   const usersResponse = await getUsers();
-//   const users = usersResponse.data.map(
-//     ({ fullName }) => fullName.split(" ")[0]
-//   );
+const validateSensor = async (rule) => {
+  try {
+    if (typeof rule !== 'string') {
+      throw new Error('Invalid rule format');
+    }
 
-//   const sensorsResponse = await getSensors();
-//   const sensors = sensorsResponse.map(({ name }) => name);
+    const parsedRule = rule.split(" ");
+    const usersResponse = await getUsers();
+    const users = usersResponse.data.map(({ fullName }) => fullName.split(" ")[0]);
 
-//   const sensorsFromRuleString = [];
+    const sensorsResponse = await getSensors();
+    const sensors = sensorsResponse.map(({ name }) => name);
 
-//   parsedRule.forEach((word, idx) => {
-//     if (word === "AND" || word === "IF") {
-//       sensorsFromRuleString.push(parsedRule[idx + 1]);
-//     }
-//   });
+    const sensorsFromRuleString = [];
 
-//   let invalidSensor = null;
+    parsedRule.forEach((word, idx) => {
+      if (word === "AND" || word === "IF") {
+        sensorsFromRuleString.push(parsedRule[idx + 1]);
+      }
+    });
 
-//   sensorsFromRuleString.forEach((sensor) => {
-//     if (!users.includes(sensor) && !sensors.includes(sensor)) {
-//       invalidSensor = sensor;
-//     }
-//   });
+    const invalidSensor = sensorsFromRuleString.find(
+      (sensor) => !users.includes(sensor) && !sensors.includes(sensor)
+    );
 
-//   if (invalidSensor) {
-//     return {
-//       statusCode: 400,
-//       message: `We don't recognize ${invalidSensor}`,
-//     };
-//   }
+    if (invalidSensor) {
+      return {
+        statusCode: 400,
+        message: `We don't recognize ${invalidSensor}`,
+      };
+    }
 
-//   return {
-//     statusCode: 200,
-//     message: `All sensors are valid`,
-//   };
-// };
+    return {
+      statusCode: 200,
+      message: `All sensors are valid`,
+    };
+  } catch (error) {
+    console.error('Error validating sensors:', error);
+    return {
+      statusCode: 500,
+      message: 'Internal server error while validating sensors',
+    };
+  }
+};
+
 
 const validateRule = async (rule) => {
   const parsedRule = rule.split(" ");
@@ -541,64 +548,30 @@ const descriptionFormatter = async (description) => {
 //   }
 // };
 
-
-const updateRule = async (ruleId, updateFields) => {
+const updateRule = async (ruleId, updateData) => {
   try {
-    // Extract the 'rule' field from updateFields
-    let rule = _.get(updateFields, "rule", "");
-
-    if (rule !== "") {
-      // Process and validate the 'rulxe' field
-      const formattedRule = await ruleFormatter(rule);
-      const ruleValidation = await validateRule(formattedRule);
-      console.log(formattedRule);
-    if (updateFields.description) {
-      const formattedDescription = await descriptionFormatter(updateFields.description);
-      const tempMatch = formattedDescription.match(/(\d+)°C/);
-      console.log(tempMatch);
-      if (tempMatch) {
-        const formattedAction = `Turn AC ON to cool mode at ${tempMatch[1]}`;
-        updateFields.action = formattedAction; // Now updating the action here
-      }
-      updateFields.description = formattedDescription;
+    // Validate if ruleId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(ruleId)) {
+      throw new Error('Invalid rule ID format');
     }
 
-    // Validate the sensor condition if it's being updated
-    if (updateFields.condition) {
-      const sensorValidation = await validateSensor(updateFields.condition);
-      if (sensorValidation.statusCode === 400) {
-        return sensorValidation;
-      }
+    if (updateData.action && !Array.isArray(updateData.action)) {
+      updateData.action = [updateData.action]; // Ensure action is an array
     }
 
-      if (ruleValidation.statusCode === 400) {
-        return {
-          statusCode: ruleValidation.statusCode,
-          message: ruleValidation.message,
-        };
-      }
+    const updatedRule = await Rule.findByIdAndUpdate(
+      ruleId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
 
-      // Update the 'rule' field in updateFields
-      updateFields = {
-        ...updateFields,
-        rule: formattedRule,
-        normalizedRule: rule,
-      };
-    }
-
-    // Update the rule in the database
-    await Rule.updateOne({ id: ruleId }, { $set: updateFields });
-    return {
-      statusCode: 200,
-      message: "Rule updated successfully",
-    };
+    return updatedRule;
   } catch (error) {
-    return {
-      statusCode: 500,
-      message: `Error updating rule - ${error}`,
-    };
+    console.error('Error updating rule:', error);
+    throw new Error('Error updating rule');
   }
 };
+
 async function deleteRuleById(ruleId) {
   try {
     const result = await Rule.deleteOne({ id: ruleId });

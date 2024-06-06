@@ -23,6 +23,7 @@ const getRoomById = async (id) => {
     return { statusCode: 500, data: e.message };
   }
 };
+
 const get_Rooms_By_SpaceId = async (space_id) => {
   try {
     const rooms = await Room.find({ space_id: space_id }); // Use find to return all rooms

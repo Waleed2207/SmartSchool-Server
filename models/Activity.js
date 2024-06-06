@@ -5,14 +5,6 @@ const activitySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  startTime: {
-    type: Date,
-    required: true
-  },
-  endTime: {
-    type: Date,
-    required: true
-  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

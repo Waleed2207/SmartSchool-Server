@@ -12,6 +12,7 @@ const {
     removeAllRules,
     removeRuleFromDB,
   } = require("./../services/rules.service.js");
+  const mongoose = require('mongoose');
 
   
 exports.ruleControllers={
@@ -43,13 +44,25 @@ exports.ruleControllers={
         const response = await add_new_Rule(rule);
         res.status(response.statusCode).send(response.message);
     },
-    async update_Rule(req, res){
-        const updateFields = { ...req.body }; // Includes isActive and any other fields
-        const id = req.params.id;
-        const response = await updateRule(id, updateFields);
-        return res.status(response.statusCode).send(response.message);
-
+    async update_Rule (req, res)  {
+      try {
+        const { ruleId } = req.params;
+        const updateData = req.body;
+    
+        // Ensure ruleId is valid
+        if (!mongoose.Types.ObjectId.isValid(ruleId)) {
+          return res.status(400).json({ error: 'Invalid rule ID format' });
+        }
+    
+        const updatedRule = await updateRule(ruleId, updateData);
+    
+        res.status(200).json(updatedRule);
+      } catch (error) {
+        console.error('Error updating rule:', error);
+        res.status(500).json({ error: 'Failed to update rule' });
+      }
     },
+    
     async delete_Rule_ByID(req, res){
         const id = req.params.id;
         try {

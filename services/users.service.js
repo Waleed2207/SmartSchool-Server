@@ -91,7 +91,7 @@ const signInUser = async (email, password) => {
   );
 
   // Save the token to the user's tokens array
-  user.tokens = user.tokens.concat({ token });
+  user.tokens = [{ token }];
   await user.save();
 
   const userData = {

@@ -30,13 +30,26 @@ exports.roomControllers={
         }
     },
     async get_Rooms_ById(req, res) {
-        try {
-            const id = req.params.id;
-            const response = await getRoomById(id);
-            return res.status(200).send(response.data);
-          } catch (err) {
-            return res.status(400).send({ message: err.message });
+      try {
+        const id = req.params.id;
+        if (!id) {
+          return res.status(400).send({ message: "Room ID is required" });
+        }
+  
+        const response = await getRoomById(id);
+  
+        if (response.statusCode === 200) {
+          if (!response.data) {
+            return res.status(404).send({ message: "Room not found" });
           }
+          return res.status(200).send(response.data);
+        } else {
+          return res.status(500).send({ message: response.data });
+        }
+      } catch (err) {
+        console.error("Error fetching room data:", err.message);
+        return res.status(500).send({ message: err.message });
+      }
     },
     async  get_Rooms_By_SpaceId(req, res) {
       try {

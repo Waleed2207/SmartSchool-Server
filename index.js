@@ -148,7 +148,7 @@ const { spacesRouter } = require("./routers/spacesRouter");
 const { suggestionsRouter } = require("./routers/suggestionsRouter");
 const { mindolifeRouter } = require('./routers/gatewaysRouter');
 const activitiesRouter = require('./routers/ActivityRouter'); // Importing correctly
-
+const calendarRouter = require('./routers/calendarRouter');
 // Connect to MongoDB 
 connectDB();
 connectToWs();
@@ -167,7 +167,7 @@ server.use('/api-space', spacesRouter);
 server.use('/api-suggestion', suggestionsRouter);
 server.use('/api-mindolife', mindolifeRouter);
 server.use('/api-activities', activitiesRouter); // Using correctly
-
+server.use('/api-calendar', calendarRouter);
 server.use((req, res) => {
     res.status(400).send('Something is broken!');
 });
