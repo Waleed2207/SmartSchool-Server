@@ -346,7 +346,7 @@ const getSensiboSensors = async () => {
       return null; // Return null to indicate no data found
     }
   } catch (err) {
-    console.error("Error fetching sensor data from Flask or :", err.message);
+    console.error("Error fetching sensor data from Flask:", err.message);
     return null; // Return null to indicate failure
   }
 };

@@ -3,11 +3,7 @@ const mongoose = require('mongoose');
 const ruleSchema = new mongoose.Schema({
 
   description: String,
-  condition: {
-      variable: String,
-      operator: String,
-      value: Number
-  },
+  condition: String ,
   id: {
     type: String,
     required: true
@@ -16,7 +12,6 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  action: String,
   isStrict: {
     type: Boolean,
     default: false

@@ -179,6 +179,41 @@ const getDevice_By_SpaceID = async (space_ID) => {
   }
 };
 
+const getDeviceBySpaceID_ByRoomName = async (spaceID, roomName) => {
+  try {
+    const decodedRoomName = decodeURIComponent(roomName);
+    console.log(`Querying with spaceID: ${spaceID}, roomName: ${decodedRoomName}`);
+    
+    // Log the exact query
+    console.log('Executing query:', { space_id: spaceID, name: decodedRoomName });
+
+    const rooms = await Room.find({ space_id: spaceID, name: { $regex: new RegExp(`^${decodedRoomName}$`, 'i') } });
+
+    // Log the query result
+    console.log('Query Result:', rooms);
+
+    if (rooms.length === 0) {
+      console.log('No rooms found for the given spaceID and roomName');
+      return [];
+    }
+    
+    // Extract devices from each room and combine into a single array if needed
+    const devices = rooms.map(room => room.devices).flat();
+
+    return devices;
+
+  } catch (err) {
+    console.error('Error fetching devices:', err.message);
+    return {
+      statusCode: 500,
+      message: err.message,
+    };
+  }
+}
+
+
+
+
 
 const setRoomDeviceState = async (id, state) => {
   try {
@@ -293,5 +328,6 @@ module.exports = {
   getDeviceIdByDeviceName,
   getRoomsByDeviceName,
   getDevice_By_SpaceID,
-  updateRoomDevices
+  updateRoomDevices,
+  getDeviceBySpaceID_ByRoomName
 };

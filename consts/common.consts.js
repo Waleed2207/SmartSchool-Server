@@ -6,7 +6,15 @@ const SENSORS = {
     SEASON: 'season',
     SOIL: 'soil'
   }
-  
+  const ACTIVITY = {
+    STUDYING: 'studying',
+    PLAYING: 'playing',
+    SLEEPING: 'sleeping',
+    EATING: 'eating',
+    COOKING: 'cooking',
+    WATCHING_TV: 'watching_tv'
+    }
+
   const ML_DEVICES = {
     LIGHTS: 'lights',
     FAN: 'fan',
@@ -34,5 +42,6 @@ const DAY_TIME = {
     SENSORS,
     ML_DEVICES,
     SEASONS,
-    DAY_TIME
+    DAY_TIME,
+    ACTIVITY
   }

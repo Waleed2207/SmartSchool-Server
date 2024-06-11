@@ -101,6 +101,8 @@ const {roomRouter} = require("./routers/roomRouter");
 const {spacesRouter} = require("./routers/spacesRouter");
 const {suggestionsRouter} = require("./routers/suggestionsRouter");
 const {mindolifeRouter} = require('./routers/gatewaysRouter');
+const {activityRouter} = require('./routers/activityRouter');
+const {calendarRouter} = require('./routers/calendarRouter');
 
 // Connect to MongoDB 
 connectDB();
@@ -120,6 +122,9 @@ server.use('/api-room', roomRouter);
 server.use('/api-space', spacesRouter);
 server.use('/api-suggestion', suggestionsRouter);
 server.use('/api-mindolife', mindolifeRouter);
+server.use('/api-activities', activityRouter); 
+server.use('/api-calendar', calendarRouter);
+
 
 server.use((req, res) => {
     res.status(400).send('Something is broken!');
