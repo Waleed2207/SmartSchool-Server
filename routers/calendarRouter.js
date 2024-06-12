@@ -11,3 +11,4 @@ router.put('/events/:eventId', authenticate, calendarController.updateTheEvent);
 router.delete('/events/:eventId', authenticate, calendarController.deleteTheEvent);
 
 module.exports = router;
+

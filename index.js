@@ -137,7 +137,7 @@ const { connectToWs } = require("./ws.js");
 const server = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config();
-
+require('./listeners/eventListener');
 // Import Routers
 const { devicesRouter } = require("./routers/devicesRouter");
 const { loginRouter } = require("./routers/loginRouter");
@@ -173,3 +173,6 @@ server.use((req, res) => {
 });
 
 server.listen(port, () => console.log(`listening on port ${port}`));
+
+
+

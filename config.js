@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
+const { initializeLinkedList } = require('./services/calendar.service');
 
-console.log(process.env.MONGO_URL); // This should print your MongoDB URI
 const connectDB = async () => {
 
   try {
@@ -9,10 +9,12 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
+    initializeLinkedList(); 
     console.log('MongoDB connected...');
   } catch (err) {
     console.error(err);
   }
 };
+
 
 module.exports = connectDB;

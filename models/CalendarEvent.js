@@ -8,14 +8,11 @@ const calendarEventSchema = new mongoose.Schema({
   description: {
     type: String
   },
-  start: {
+  time: {
     type: Date,
     required: true
   },
-  end: {
-    type: Date,
-    required: true
-  },
+
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
