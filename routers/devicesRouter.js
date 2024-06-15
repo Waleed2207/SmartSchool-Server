@@ -11,6 +11,8 @@ devicesRouter.get('/devices_with_thresholds', devicescontrollers.getDevicesWithT
 devicesRouter.get('/devices-by-room/:roomId', devicescontrollers.getDeviceByRoomID);
 devicesRouter.get('/room-devices/:roomId', devicescontrollers.getRoomDeviceByRoomID);
 devicesRouter.get('/room-devices-test/:roomId', devicescontrollers.getRoomDeviceTESTByRoomID);
+devicesRouter.get('/device/space/:spaceID/:roomName', devicescontrollers.getDeviceBySpaceID_ByRoomName);
+
 
 //POST
 devicesRouter.post('/devices', devicescontrollers.createDevice);

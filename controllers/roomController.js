@@ -77,16 +77,28 @@ exports.roomControllers={
       }
     },
     
-    async get_RoomDevices_ByRoomId(req, res) {
-        try {
-
-            const roomId = req.params.roomId;
-            const response = await getRoomDevices(roomId);
-            return res.status(200).send(response.data)
-          } catch (err) {
+    // async get_RoomDevices_ByRoomId(req, res) {
+    //     try {
+    //        const space_id = req.params.space_id;
+    //         const roomId = req.params.roomId;
+    //         const response = await getRoomDevices(roomId,space_id);
+    //         return res.status(200).send(response.data)
+    //       } catch (err) {
         
-          } 
+    //       } 
+    // },
+
+    async get_RoomDevices_ByRoomId (req, res)  {
+      try {
+        const { spaceId, roomId } = req.params;
+        const devices = await Device.find({ spaceId, roomId });
+        res.json(devices);
+      } catch (error) {
+        console.error('Error fetching devices:', error);
+        res.status(500).json({ message: 'Error fetching devices' });
+      }
     },
+    
     async TestDB(req, res) {
         try {
             await addSuggestionsToDatabase();

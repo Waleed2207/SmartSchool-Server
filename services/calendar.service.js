@@ -1,153 +1,3 @@
-// const mongoose = require('mongoose');
-// const CalendarEvent = require('../models/CalendarEvent');
-// const LinkedList = require('../utils/LinkedList');
-
-// const eventsLinkedList = new LinkedList();
-// let isLinkedListInitialized = false;
-
-// const initializeLinkedList = async () => {
-//   try {
-//     if (!isLinkedListInitialized) {
-//       const events = await CalendarEvent.find().sort({ time: 1 });
-//       events.forEach(event => {
-//         if (!eventsLinkedList.contains(event._id.toString())) {
-//           eventsLinkedList.add(event._id.toString(), event._doc);
-//         }
-//       });
-//       console.log('Linked list initialized from database.');
-//       eventsLinkedList.print();
-//       isLinkedListInitialized = true;
-//     } else {
-//       console.log('Linked list is already initialized.');
-//     }
-//   } catch (error) {
-//     console.error('Error initializing linked list:', error);
-//   }
-// };
-
-// const createEvent = async ({ title, description, time, user, eventType, space_id }) => {
-//   try {
-//     console.log('Creating event with data:', { title, description, time, user, eventType, space_id });
-
-//     const event = new CalendarEvent({
-//       title,
-//       description,
-//       time: new Date(time),
-//       user: new mongoose.Types.ObjectId(user),
-//       eventType,
-//       space_id
-//     });
-
-//     await event.save();
-//     eventsLinkedList.add(event._id.toString(), event._doc);
-//     eventsLinkedList.print();
-
-//     return event;
-//   } catch (error) {
-//     console.error('Error creating event:', error);
-//     throw new Error('Error creating event');
-//   }
-// };
-
-// const getAllEvents = async (userId, spaceId) => {
-//   try {
-//     const events = await CalendarEvent.find({
-//       user: new mongoose.Types.ObjectId(userId),
-//       space_id: spaceId
-//     }).sort({ time: 1 });
-//     return events;
-//   } catch (error) {
-//     console.error('Error fetching all events:', error);
-//     throw new Error('Error fetching all events');
-//   }
-// };
-
-// const getEventById = async (eventId, userId) => {
-//   try {
-//     const event = await CalendarEvent.findOne({ _id: new mongoose.Types.ObjectId(eventId), user: new mongoose.Types.ObjectId(userId) });
-//     return event;
-//   } catch (error) {
-//     console.error('Error fetching event by ID:', error);
-//     throw new Error('Error fetching event');
-//   }
-// };
-
-// const updateEvent = async (eventId, userId, updates) => {
-//   try {
-//     if (updates.time) {
-//       updates.time = new Date(updates.time);
-//     }
-    
-//     const event = await CalendarEvent.findOneAndUpdate(
-//       { _id: new mongoose.Types.ObjectId(eventId), user: new mongoose.Types.ObjectId(userId) },
-//       updates,
-//       { new: true }
-//     );
-
-//     if (event) {
-//       eventsLinkedList.update(eventId, event._doc);
-//     }
-
-//     return event;
-//   } catch (error) {
-//     console.error('Error updating event:', error);
-//     throw new Error('Error updating event');
-//   }
-// };
-
-// const deleteEvent = async (eventId, userId) => {
-//   try {
-//     const event = await CalendarEvent.findOneAndDelete({ 
-//       _id: new mongoose.Types.ObjectId(eventId), 
-//       user: new mongoose.Types.ObjectId(userId) 
-//     });
-    
-//     if (event) {
-//       const removed = eventsLinkedList.remove(eventId);
-//       if (!removed) {
-//         console.warn('Event ID not found in linked list');
-//       }
-//       console.log('Current Linked List Nodes after deletion:');
-//       eventsLinkedList.print();
-//     } else {
-//       throw new Error('Event not found or not authorized to delete this event');
-//     }
-//   } catch (error) {
-//     console.error('Error deleting event:', error);
-//     throw new Error('Error deleting event');
-//   }
-// };
-
-// initializeLinkedList();
-
-// // Function to print the nodes every 30 seconds
-// const printNodesInterval = setInterval(() => {
-//   console.log('Current Linked List Nodes:');
-//   eventsLinkedList.print();
-// }, 30000); // 30 seconds interval
-
-// // Stop the interval after a certain time if needed
-// // setTimeout(() => {
-// //   clearInterval(printNodesInterval);
-// // }, 60000); // Stop after 1 minute
-
-// module.exports = {
-//   createEvent,
-//   getAllEvents,
-//   getEventById,
-//   updateEvent,
-//   deleteEvent,
-//   initializeLinkedList,
-// };
-
-
-
-
-
-
-
-
-// services/calendar.service.js
 const mongoose = require('mongoose');
 const CalendarEvent = require('../models/CalendarEvent');
 const LinkedList = require('../utils/LinkedList');
@@ -158,13 +8,13 @@ const eventsLinkedList = new LinkedList();
 let isLinkedListInitialized = false;
 let eventTimer = null;
 
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id) && new mongoose.Types.ObjectId(id).toString() === id;
+};
+
 const getAllEvents = async (userId, spaceId) => {
   try {
-    const events = await CalendarEvent.find({
-      user: new mongoose.Types.ObjectId(userId),
-      space_id: spaceId
-    }).sort({ time: 1 });
-    return events;
+    return await CalendarEvent.find({ user: userId, space_id: spaceId }).sort({ time: 1 });
   } catch (error) {
     console.error('Error fetching all events:', error);
     throw new Error('Error fetching all events');
@@ -175,7 +25,7 @@ const getEventById = async (eventId, userId) => {
   try {
     const event = await CalendarEvent.findOne({
       _id: new mongoose.Types.ObjectId(eventId),
-      user: new mongoose.Types.ObjectId(userId)
+      user: new mongoose.Types.ObjectId(userId),
     });
     return event;
   } catch (error) {
@@ -188,7 +38,7 @@ const initializeLinkedList = async () => {
   try {
     if (!isLinkedListInitialized) {
       const events = await CalendarEvent.find().sort({ time: 1 });
-      events.forEach(event => {
+      events.forEach((event) => {
         if (!eventsLinkedList.contains(event._id.toString())) {
           eventsLinkedList.add(event._id.toString(), event._doc);
         }
@@ -206,28 +56,20 @@ const initializeLinkedList = async () => {
   }
 };
 
-const createEvent = async ({ title, description, time, user, eventType, space_id }) => {
+const createEvent = async ({ title, description, time, user, eventType, space_id, roomName, roomDevices }) => {
   try {
-    console.log('Creating event with data:', { title, description, time, user, eventType, space_id });
-
     const event = new CalendarEvent({
       title,
       description,
       time: new Date(time),
       user: new mongoose.Types.ObjectId(user),
       eventType,
-      space_id
+      space_id,
+      roomName,
+      roomDevices: roomDevices.map(device => new mongoose.Types.ObjectId(device))
     });
 
     await event.save();
-    eventsLinkedList.add(event._id.toString(), event._doc);
-    eventsLinkedList.print();
-
-    const headEventTime = eventsLinkedList.head ? new Date(eventsLinkedList.head.data.time).getTime() : null;
-    if (!eventTimer || new Date(time).getTime() < headEventTime) {
-      updateEventTimer(time);
-    }
-
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
@@ -240,7 +82,16 @@ const updateEvent = async (eventId, userId, updates) => {
     if (updates.time) {
       updates.time = new Date(updates.time);
     }
-    
+
+    if (updates.roomDevices) {
+      updates.roomDevices = updates.roomDevices.map((device) => {
+        if (!isValidObjectId(device)) {
+          throw new Error(`Invalid ObjectId: ${device}`);
+        }
+        return new mongoose.Types.ObjectId(device);
+      });
+    }
+
     const event = await CalendarEvent.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(eventId), user: new mongoose.Types.ObjectId(userId) },
       updates,
@@ -267,9 +118,9 @@ const deleteEvent = async (eventId, userId) => {
   try {
     const event = await CalendarEvent.findOneAndDelete({
       _id: new mongoose.Types.ObjectId(eventId),
-      user: new mongoose.Types.ObjectId(userId)
+      user: new mongoose.Types.ObjectId(userId),
     });
-    
+
     if (event) {
       const removed = eventsLinkedList.remove(eventId);
       if (!removed) {

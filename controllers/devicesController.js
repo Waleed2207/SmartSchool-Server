@@ -12,11 +12,22 @@ const {
     createNewDevice,
     getRoomDevicesTest,
     getDevice_By_SpaceID,
-    updateRoomDevices
+    updateRoomDevices,
+    getDeviceBySpaceID_ByRoomName
+
   } = require("./../services/devices.service.js");
 
 exports.devicescontrollers = {
 
+  async getDeviceBySpaceID_ByRoomName(req, res) {
+    const { spaceID, roomName } = req.params;
+    try {
+        const devices = await getDeviceBySpaceID_ByRoomName(spaceID, roomName);
+        return res.json(devices);
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Server Error', error });
+    }
+},
   // Get all devices from DB
   async getDevices(req, res) {
     const devices = await getDevices();
@@ -104,6 +115,6 @@ exports.devicescontrollers = {
         return res.status(500).send(err.message);
       }
   },
-    
+
 
 }  

@@ -1,42 +1,40 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const calendarEventSchema = new mongoose.Schema({
+const CalendarEventSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
-    type: String
+    type: String,
   },
   time: {
     type: Date,
-    required: true
+    required: true,
   },
-
   user: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   eventType: {
     type: String,
-    enum: ['holiday', 'weekend', 'lecture'],
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+    required: true,
   },
   space_id: {
-    type: String, // Change this from ObjectId to String
-    required: true
-  }
+    type: String,
+    required: true,
+  },
+  roomName: {
+    type: String,
+    required: true,
+  },
+  roomDevices: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Device',
+    required: true,
+  }],
 });
 
-const CalendarEvent = mongoose.model('CalendarEvent', calendarEventSchema);
-
-module.exports = CalendarEvent;
+module.exports = mongoose.model('CalendarEvent', CalendarEventSchema);

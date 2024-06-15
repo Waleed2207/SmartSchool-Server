@@ -1,112 +1,3 @@
-// const { createEvent, getAllEvents, getEventById, updateEvent, deleteEvent } = require('../services/calendar.service');
-// const mongoose = require('mongoose');
-
-// const addEvent = async (req, res) => {
-//   try {
-//     const { title, description, time, eventType, space_id } = req.body;
-
-//     if (!title || !time || !eventType || !space_id) {
-//       return res.status(400).json({ error: 'Missing required fields' });
-//     }
-
-//     if (!req.user || !req.user._id) {
-//       return res.status(401).json({ error: 'Unauthorized: User ID missing' });
-//     }
-
-//     const event = await createEvent({
-//       title,
-//       description,
-//       time,
-//       user: req.user._id,
-//       eventType,
-//       space_id
-//     });
-
-//     res.status(201).json(event);
-//   } catch (error) {
-//     console.error('Error adding event:', error);
-//     res.status(500).json({ error: 'Failed to add event' });
-//   }
-// };
-
-// const getEvents = async (req, res) => {
-//   try {
-//     const { spaceId } = req.params;
-
-//     console.log('Fetching events for spaceId:', spaceId);
-
-//     const events = await getAllEvents(req.user._id, spaceId);
-//     res.json(events);
-//   } catch (error) {
-//     console.error('Error fetching events:', error);
-//     res.status(500).json({ error: 'Error fetching events' });
-//   }
-// };
-
-// // Other controller methods...
-
-// const getEvent = async (req, res) => {
-//   try {
-//     const event = await getEventById(req.params.eventId, req.user._id);
-//     if (!event) {
-//       return res.status(404).json({ error: 'Event not found' });
-//     }
-//     res.json(event);
-//   } catch (error) {
-//     console.error('Error fetching event:', error);
-//     res.status(500).json({ error: 'Error fetching event' });
-//   }
-// };
-
-// const updateTheEvent = async (req, res) => {
-//   try {
-//     const updates = req.body;
-//     if (updates.time) {
-//       updates.time = new Date(updates.time);
-//       if (isNaN(updates.time.getTime())) {
-//         return res.status(400).json({ error: 'Invalid time format' });
-//       }
-//     }
-    
-//     const event = await updateEvent(req.params.eventId, req.user._id, updates);
-//     if (!event) {
-//       return res.status(404).json({ error: 'Event not found' });
-//     }
-//     res.json(event);
-//   } catch (error) {
-//     console.error('Error updating event:', error);
-//     res.status(500).json({ error: 'Error updating event' });
-//   }
-// };
-
-// const deleteTheEvent = async (req, res) => {
-//   try {
-//     const { eventId } = req.params;
-//     const userId = req.user._id;
-
-//     if (!eventId) {
-//       return res.status(400).json({ error: 'Event ID is required' });
-//     }
-
-//     await deleteEvent(eventId, userId);
-//     res.status(204).send();
-//   } catch (error) {
-//     console.error('Error deleting event:', error);
-//     res.status(500).json({ error: 'Error deleting event' });
-//   }
-// };
-
-// module.exports = {
-//   addEvent,
-//   getEvents,
-//   getEvent,
-//   updateTheEvent,
-//   deleteTheEvent
-// };
-
-
-
-// controllers/calendarController.js
 const mongoose = require('mongoose');
 const { createEvent, getAllEvents, getEventById, updateEvent, deleteEvent } = require('../services/calendar.service');
 const LinkedList = require('../utils/LinkedList');
@@ -115,6 +6,12 @@ const Timer = require('../utils/Timer');
 const eventsLinkedList = new LinkedList();
 let isLinkedListInitialized = false;
 let eventTimer = null;
+
+const deviceMap = {
+  'AC': '60d21b4667d0d8992e610c85',
+  'light': '60d21b4667d0d8992e610c86',
+  // Add more devices as needed
+};
 
 const initializeLinkedList = async () => {
   try {
@@ -129,7 +26,6 @@ const initializeLinkedList = async () => {
       eventsLinkedList.print();
       isLinkedListInitialized = true;
 
-      // Start the event timer
       startEventTimer();
     } else {
       console.log('Linked list is already initialized.');
@@ -141,11 +37,19 @@ const initializeLinkedList = async () => {
 
 const addEvent = async (req, res) => {
   try {
-    const { title, description, time, eventType, space_id } = req.body;
+    const { title, description, time, eventType, space_id, roomName, roomDevices } = req.body;
 
-    if (!title || !time || !eventType || !space_id) {
+    if (!title || !time || !eventType || !space_id || !roomName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    const validatedDevices = roomDevices.map((device) => {
+      const deviceId = deviceMap[device];
+      if (!deviceId || !mongoose.Types.ObjectId.isValid(deviceId)) {
+        throw new Error(`Invalid ObjectId: ${device}`);
+      }
+      return new mongoose.Types.ObjectId(deviceId);
+    });
 
     const event = await createEvent({
       title,
@@ -153,10 +57,11 @@ const addEvent = async (req, res) => {
       time,
       user: req.user._id,
       eventType,
-      space_id
+      space_id,
+      roomName,
+      roomDevices: validatedDevices,
     });
 
-    // Add the event to the linked list
     eventsLinkedList.add(event._id.toString(), event._doc);
 
     res.status(201).json(event);
@@ -199,7 +104,17 @@ const updateTheEvent = async (req, res) => {
         return res.status(400).json({ error: 'Invalid time format' });
       }
     }
-    
+
+    if (updates.roomDevices) {
+      updates.roomDevices = updates.roomDevices.map((device) => {
+        const deviceId = deviceMap[device];
+        if (!deviceId || !mongoose.Types.ObjectId.isValid(deviceId)) {
+          throw new Error(`Invalid ObjectId: ${device}`);
+        }
+        return new mongoose.Types.ObjectId(deviceId);
+      });
+    }
+
     const event = await updateEvent(req.params.eventId, req.user._id, updates);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
@@ -228,15 +143,12 @@ const deleteTheEvent = async (req, res) => {
   }
 };
 
-// Function to start the event timer
 const startEventTimer = () => {
-  // Get the time of the first event in the linked list
   const nextEventTime = eventsLinkedList.head ? eventsLinkedList.head.data.time : null;
 
   if (nextEventTime) {
     console.log('Next event time:', nextEventTime);
     eventTimer = new Timer(async () => {
-      // Get the first event from the linked list
       const eventNode = eventsLinkedList.head;
 
       if (!eventNode) {
@@ -244,19 +156,16 @@ const startEventTimer = () => {
         return;
       }
 
-      // Send the event data to another service
       try {
-        await sendEventData(eventNode.data); // Replace sendEventData with your actual function to send data to another service
+        await sendEventData(eventNode.data);
       } catch (error) {
         console.error('Error sending event data:', error);
         return;
       }
 
-      // Remove the event node from the linked list
       eventsLinkedList.remove(eventNode.id);
       console.log('Event data sent and node removed from the linked list');
 
-      // Restart the timer for the next event
       startEventTimer();
     });
 
