@@ -56,9 +56,9 @@ const initializeLinkedList = async () => {
   }
 };
 
-const createEvent = async ({ title, description, time, user, eventType, space_id, roomDevices, roomName, repeat = 'none' , repeatCount = 0}) => {
+const createEvent = async ({ title, description, time, user, eventType, space_id, roomDevices, roomName, repeat = 'none' , repeatCount = 0, raspberryPiIP, roomDevicesID, room_id, state}) => {
   try {
-    console.log('Creating event with data:', { title, description, time, user, eventType, space_id, roomDevices, roomName, repeat , repeatCount });
+    console.log('Creating event with data:', { title, description, time, user, eventType, space_id, roomDevices, roomName, repeat , repeatCount, raspberryPiIP, roomDevicesID });
 
     const event = new CalendarEvent({
       title,
@@ -71,6 +71,10 @@ const createEvent = async ({ title, description, time, user, eventType, space_id
       roomName,
       repeat,
       repeatCount,
+      raspberryPiIP,
+      roomDevicesID,
+      room_id,
+      state,
     });
 
     await event.save();

@@ -1,9 +1,10 @@
-
 const mongoose = require('mongoose');
 const { createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, initializeLinkedList } = require('../services/calendar.service');
 const LinkedList = require('../utils/LinkedList');
 const Timer = require('../utils/Timer');
 const Device = require('../models/Device'); // Assuming you have a Device model
+const Room = require('../models/Room'); // Assuming you have a Room model
+const { sendEventData } = require('../services/event.service');
 
 const eventsLinkedList = new LinkedList();
 let isLinkedListInitialized = false;
@@ -13,16 +14,25 @@ const fetchDeviceMap = async () => {
   const devices = await Device.find({});
   const deviceMap = {};
   devices.forEach(device => {
-    deviceMap[device.name] = device._id.toString();
+    deviceMap[device.name.toLowerCase()] = device.device_id; // Convert keys to lower case
   });
-  console.log('Device map:', deviceMap); // Add this line to log the device map
+  console.log('Device map:', deviceMap);
   return deviceMap;
+};
+
+const fetchRoomIdByName = async (roomName) => {
+  const room = await Room.findOne({ name: roomName });
+  if (!room) {
+    throw new Error(`Room not found: ${roomName}`);
+  }
+  return room.id;
 };
 
 const addEvent = async (req, res) => {
   try {
-    const { title, description, time, eventType, space_id, roomDevices, roomName, repeat = 'none', repeatCount = 0 } = req.body;
-
+    const { title, description, time, eventType, space_id, roomDevices, roomName, repeat = 'none', repeatCount = 0, raspberryPiIP, state} = req.body;
+    console.log("Raspberry Pi IP:", raspberryPiIP);
+    console.log("State of event is ", state);
     if (!title || !time || !eventType || !space_id || !roomDevices || !roomName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -32,17 +42,21 @@ const addEvent = async (req, res) => {
     }
 
     const deviceMap = await fetchDeviceMap();
-    console.log('Room devices from request:', roomDevices); // Add this line to log the room devices from the request
 
-    const validatedDevices = roomDevices.map((device) => {
-      const deviceId = deviceMap[device];
-      if (!deviceId || !mongoose.Types.ObjectId.isValid(deviceId)) {
-        throw new Error(`Invalid ObjectId: ${device}`);
+    // Derive device IDs from roomDevices in a case-insensitive manner
+    const roomDevicesID = roomDevices.map((device) => {
+      const deviceId = deviceMap[device.toLowerCase()]; // Convert device name to lower case
+      if (!deviceId) {
+        throw new Error(`Invalid device name: ${device}`);
       }
-      return new mongoose.Types.ObjectId(deviceId);
+      return deviceId;
     });
 
-    console.log('Validated devices:', validatedDevices); // Add this line to log the validated devices
+    console.log('Derived roomDevicesID:', roomDevicesID);
+
+    // Fetch room ID by room name
+    const room_id = await fetchRoomIdByName(roomName);
+    console.log('Fetched room ID:', room_id);
 
     const event = await createEvent({
       title,
@@ -51,10 +65,14 @@ const addEvent = async (req, res) => {
       user: req.user._id,
       eventType,
       space_id,
-      roomDevices: validatedDevices,
-      roomName,
+      roomDevices,
+      roomDevicesID, // Use derived deviceIDs directly
+      roomName, // Include roomName in the event
+      room_id, // Use fetched room ID
       repeat,
       repeatCount,
+      raspberryPiIP,
+      state,
     });
 
     eventsLinkedList.add(event._id.toString(), event._doc);
@@ -103,12 +121,17 @@ const updateTheEvent = async (req, res) => {
     if (updates.roomDevices) {
       const deviceMap = await fetchDeviceMap();
       updates.roomDevices = updates.roomDevices.map((device) => {
-        const deviceId = deviceMap[device];
+        const deviceId = deviceMap[device.toLowerCase()]; // Convert device name to lower case
         if (!deviceId || !mongoose.Types.ObjectId.isValid(deviceId)) {
-          throw new Error(`Invalid ObjectId: ${device}`);
+          throw new Error(`Invalid device ID: ${device}`);
         }
-        return new mongoose.Types.ObjectId(deviceId);
+        return deviceId;
       });
+    }
+
+    if (updates.roomName) {
+      const room_id = await fetchRoomIdByName(updates.roomName);
+      updates.room_id = room_id;
     }
 
     const event = await updateEvent(req.params.eventId, req.user._id, updates);
@@ -118,7 +141,7 @@ const updateTheEvent = async (req, res) => {
     res.json(event);
   } catch (error) {
     console.error('Error updating event:', error);
-    res.status500.json({ error: 'Error updating event' });
+    res.status(500).json({ error: 'Error updating event' });
   }
 };
 

@@ -27,6 +27,10 @@ const sendEventData = async (eventData) => {
       space_id: eventData.space_id,
       roomDevices: eventData.roomDevices,
       roomName: eventData.roomName,
+      room_id : eventData.room_id,
+      raspberryPiIP : eventData.raspberryPiIP,
+      roomDevicesID: eventData.roomDevicesID,
+      state: eventData.state,
     };
     
     // Log the selected data

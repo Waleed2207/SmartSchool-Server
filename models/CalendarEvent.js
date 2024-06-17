@@ -21,7 +21,7 @@ const calendarEventSchema = new mongoose.Schema({
   },
   eventType: {
     type: String,
-    enum: ['holiday', 'weekend', 'lecture'],
+    enum: ['holiday', 'weekend', 'lecture', 'Party'],
     required: true
   },
   space_id: {
@@ -42,19 +42,35 @@ const calendarEventSchema = new mongoose.Schema({
     default: Date.now
   },
   roomDevices: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Device',
+    type: String,
+    //ref: 'Device',
+    required: true
+  }],
+  roomDevicesID: [{
+    type: String,
+    //ref: 'Device',
     required: true
   }],
   roomName: {
     type: String,
     required: true
   },
-  repeatCount: {
-    type: Number,
-    default: 0, // 0 means no repetition
+  state: {
+    type: String,
+    required: true
   },
-
+  room_id: {
+    type: String,
+    required: true
+  },
+    repeatCount: {
+      type: Number,
+      default: 0, // 0 means no repetition
+    },
+    raspberryPiIP: {
+      type: String,
+      required: true
+    }, 
 });
 
 // Update the updatedAt field before saving
