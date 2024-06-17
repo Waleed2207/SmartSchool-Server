@@ -1,47 +1,38 @@
+
 const mongoose = require('mongoose');
-const { createEvent, getAllEvents, getEventById, updateEvent, deleteEvent } = require('../services/calendar.service');
+const { createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, initializeLinkedList } = require('../services/calendar.service');
 const LinkedList = require('../utils/LinkedList');
 const Timer = require('../utils/Timer');
+const Device = require('../models/Device'); // Assuming you have a Device model
 
 const eventsLinkedList = new LinkedList();
 let isLinkedListInitialized = false;
 let eventTimer = null;
 
-const deviceMap = {
-  'AC': '60d21b4667d0d8992e610c85',
-  'light': '60d21b4667d0d8992e610c86',
-  // Add more devices as needed
-};
-
-const initializeLinkedList = async () => {
-  try {
-    if (!isLinkedListInitialized) {
-      const events = await getAllEvents();
-      events.forEach(event => {
-        if (!eventsLinkedList.contains(event._id.toString())) {
-          eventsLinkedList.add(event._id.toString(), event._doc);
-        }
-      });
-      console.log('Linked list initialized from database.');
-      eventsLinkedList.print();
-      isLinkedListInitialized = true;
-
-      startEventTimer();
-    } else {
-      console.log('Linked list is already initialized.');
-    }
-  } catch (error) {
-    console.error('Error initializing linked list:', error);
-  }
+const fetchDeviceMap = async () => {
+  const devices = await Device.find({});
+  const deviceMap = {};
+  devices.forEach(device => {
+    deviceMap[device.name] = device._id.toString();
+  });
+  console.log('Device map:', deviceMap); // Add this line to log the device map
+  return deviceMap;
 };
 
 const addEvent = async (req, res) => {
   try {
-    const { title, description, time, eventType, space_id, roomName, roomDevices } = req.body;
+    const { title, description, time, eventType, space_id, roomDevices, roomName, repeat = 'none', repeatCount = 0 } = req.body;
 
-    if (!title || !time || !eventType || !space_id || !roomName) {
+    if (!title || !time || !eventType || !space_id || !roomDevices || !roomName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: 'Unauthorized: User ID missing' });
+    }
+
+    const deviceMap = await fetchDeviceMap();
+    console.log('Room devices from request:', roomDevices); // Add this line to log the room devices from the request
 
     const validatedDevices = roomDevices.map((device) => {
       const deviceId = deviceMap[device];
@@ -51,6 +42,8 @@ const addEvent = async (req, res) => {
       return new mongoose.Types.ObjectId(deviceId);
     });
 
+    console.log('Validated devices:', validatedDevices); // Add this line to log the validated devices
+
     const event = await createEvent({
       title,
       description,
@@ -58,8 +51,10 @@ const addEvent = async (req, res) => {
       user: req.user._id,
       eventType,
       space_id,
-      roomName,
       roomDevices: validatedDevices,
+      roomName,
+      repeat,
+      repeatCount,
     });
 
     eventsLinkedList.add(event._id.toString(), event._doc);
@@ -106,6 +101,7 @@ const updateTheEvent = async (req, res) => {
     }
 
     if (updates.roomDevices) {
+      const deviceMap = await fetchDeviceMap();
       updates.roomDevices = updates.roomDevices.map((device) => {
         const deviceId = deviceMap[device];
         if (!deviceId || !mongoose.Types.ObjectId.isValid(deviceId)) {
@@ -122,7 +118,7 @@ const updateTheEvent = async (req, res) => {
     res.json(event);
   } catch (error) {
     console.error('Error updating event:', error);
-    res.status(500).json({ error: 'Error updating event' });
+    res.status500.json({ error: 'Error updating event' });
   }
 };
 

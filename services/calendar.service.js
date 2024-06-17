@@ -56,8 +56,10 @@ const initializeLinkedList = async () => {
   }
 };
 
-const createEvent = async ({ title, description, time, user, eventType, space_id, roomName, roomDevices }) => {
+const createEvent = async ({ title, description, time, user, eventType, space_id, roomDevices, roomName, repeat = 'none' , repeatCount = 0}) => {
   try {
+    console.log('Creating event with data:', { title, description, time, user, eventType, space_id, roomDevices, roomName, repeat , repeatCount });
+
     const event = new CalendarEvent({
       title,
       description,
@@ -65,11 +67,21 @@ const createEvent = async ({ title, description, time, user, eventType, space_id
       user: new mongoose.Types.ObjectId(user),
       eventType,
       space_id,
+      roomDevices,
       roomName,
-      roomDevices: roomDevices.map(device => new mongoose.Types.ObjectId(device))
+      repeat,
+      repeatCount,
     });
 
     await event.save();
+    eventsLinkedList.add(event._id.toString(), event._doc);
+    eventsLinkedList.print();
+
+    const headEventTime = eventsLinkedList.head ? new Date(eventsLinkedList.head.data.time).getTime() : null;
+    if (!eventTimer || new Date(time).getTime() < headEventTime) {
+      updateEventTimer(time);
+    }
+
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
@@ -142,6 +154,22 @@ const deleteEvent = async (eventId, userId) => {
   }
 };
 
+const startEventTimer = () => {
+  const nextEventTime = eventsLinkedList.head ? eventsLinkedList.head.data.time : null;
+
+  if (nextEventTime) {
+    console.log('Next event time:', nextEventTime);
+    updateEventTimer(nextEventTime);
+  } else {
+    console.log('No events in the linked list');
+  }
+};
+
+
+
+
+
+
 const updateEventTimer = (time = null) => {
   if (eventTimer) {
     eventTimer.stop();
@@ -161,11 +189,26 @@ const updateEventTimer = (time = null) => {
 
         eventEmitter.emit('eventExpired', expiredEvent.data);
 
-        eventsLinkedList.remove(expiredEvent.id);
-        console.log('Expired event removed from linked list');
-
-        await CalendarEvent.findByIdAndDelete(expiredEvent.id);
-        console.log('Expired event removed from the database');
+        const nextOccurrence = getNextOccurrence(expiredEvent.data);
+        if (nextOccurrence) {
+          expiredEvent.data.time = nextOccurrence;
+          expiredEvent.data.repeatCount = expiredEvent.data.repeatCount - 1;
+          if (expiredEvent.data.repeatCount > 0) {
+            eventsLinkedList.update(expiredEvent.id, expiredEvent.data);
+            await CalendarEvent.findByIdAndUpdate(expiredEvent.id, { time: nextOccurrence, repeatCount: expiredEvent.data.repeatCount });
+            console.log('Scheduled next occurrence of repeating event:', nextOccurrence);
+          } else {
+            eventsLinkedList.remove(expiredEvent.id);
+            console.log('Expired event removed from linked list');
+            await CalendarEvent.findByIdAndDelete(expiredEvent.id);
+            console.log('Expired event removed from the database');
+          }
+        } else {
+          eventsLinkedList.remove(expiredEvent.id);
+          console.log('Expired event removed from linked list');
+          await CalendarEvent.findByIdAndDelete(expiredEvent.id);
+          console.log('Expired event removed from the database');
+        }
 
         startEventTimer();
       }
@@ -174,14 +217,19 @@ const updateEventTimer = (time = null) => {
   }
 };
 
-const startEventTimer = () => {
-  const nextEventTime = eventsLinkedList.head ? eventsLinkedList.head.data.time : null;
+const getNextOccurrence = (event) => {
+  const { repeat, time } = event;
+  const currentTime = new Date(time);
 
-  if (nextEventTime) {
-    console.log('Next event time:', nextEventTime);
-    updateEventTimer(nextEventTime);
-  } else {
-    console.log('No events in the linked list');
+  switch (repeat) {
+    case 'daily':
+      return new Date(currentTime.setDate(currentTime.getDate() + 1));
+    case 'weekly':
+      return new Date(currentTime.setDate(currentTime.getDate() + 7));
+    case 'monthly':
+      return new Date(currentTime.setMonth(currentTime.getMonth() + 1));
+    default:
+      return null;
   }
 };
 
@@ -193,3 +241,6 @@ module.exports = {
   deleteEvent,
   initializeLinkedList,
 };
+
+
+

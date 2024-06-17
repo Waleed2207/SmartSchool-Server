@@ -1,17 +1,46 @@
+// // services/eventService.js
+// const sendEventData = async (eventData) => {
+//     try {
+//       console.log('Sending event data:', eventData);
+//     } catch (error) {
+//       console.error('Error sending event data:', error);
+//       throw error;
+//     }
+//   };
+  
+//   module.exports = {
+//     sendEventData
+//   };
+  
+
+
+
 // services/eventService.js
 const sendEventData = async (eventData) => {
-    try {
-      // Implement your logic to send event data to another service
-      console.log('Sending event data:', eventData);
-      // Example: Sending data to an external API (replace with actual implementation)
-      // await axios.post('https://example.com/api/events', eventData);
-    } catch (error) {
-      console.error('Error sending event data:', error);
-      throw error;
-    }
-  };
-  
-  module.exports = {
-    sendEventData
-  };
-  
+  try {
+    // Select only the fields you want to send
+    const selectedData = {
+      title: eventData.title,
+      description: eventData.description,
+      time: eventData.time,
+      eventType: eventData.eventType,
+      space_id: eventData.space_id,
+      roomDevices: eventData.roomDevices,
+      roomName: eventData.roomName,
+    };
+    
+    // Log the selected data
+    console.log('Sending event data:', selectedData);
+
+    // Here you would actually send the data, e.g., with an HTTP request
+    // await axios.post('YOUR_API_ENDPOINT', selectedData);
+
+  } catch (error) {
+    console.error('Error sending event data:', error);
+    throw error;
+  }
+};
+
+module.exports = {
+  sendEventData
+};
