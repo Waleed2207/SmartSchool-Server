@@ -66,25 +66,25 @@ exports.devicescontrollers = {
 
   },
   async createDevice(req, res) {
-    const { space_id, device, room_id } = req.body;
-    console.log("Creating device with details:", device, "in room ID:", room_id);
+    const { space_id, name, device_id, roomId } = req.body;
+    console.log("Creating device with details:", { space_id, name, device_id, roomId });
 
     try {
-        const newDeviceResponse = await createNewDevice(space_id, device, room_id);
-        if (!newDeviceResponse || !newDeviceResponse.data || !newDeviceResponse.data.name) {
-            throw new Error('Device creation failed or returned invalid data');
-        }
-        const newDevice = newDeviceResponse.data;
-        console.log("New device created with name:", newDevice.name);
+      const newDeviceResponse = await createNewDevice(space_id, { name, device_id }, roomId);
+      if (!newDeviceResponse || !newDeviceResponse.data || !newDeviceResponse.data.name) {
+        throw new Error('Device creation failed or returned invalid data');
+      }
+      const newDevice = newDeviceResponse.data;
+      console.log("New device created with name:", newDevice.name);
 
-        const updatedRoom = await updateRoomDevices(space_id, room_id, newDevice.name);
-        console.log("Successfully updated room with new device:", updatedRoom);
-        return res.status(200).send({ newDevice, updatedRoom });
+      const updatedRoom = await updateRoomDevices(space_id, roomId, newDevice.name);
+      console.log("Successfully updated room with new device:", updatedRoom);
+      return res.status(200).send({ newDevice, updatedRoom });
     } catch (err) {
-        console.error("Failed to create device or update room:", err);
-        return res.status(500). send(err.message);
+      console.error("Failed to create device or update room:", err);
+      return res.status(500).send(err.message);
     }
-},
+  },
   async createDeviceTORooom(req, res) {
     const { device_id, room_id, device_state } = req.body;
     const response = await addDeviceToRoom(device_id, room_id, device_state);

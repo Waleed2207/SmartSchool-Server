@@ -10,29 +10,46 @@ const eventsLinkedList = new LinkedList();
 let isLinkedListInitialized = false;
 let eventTimer = null;
 
-const fetchDeviceMap = async () => {
-  const devices = await Device.find({});
-  const deviceMap = {};
-  devices.forEach(device => {
-    deviceMap[device.name.toLowerCase()] = device.device_id; // Convert keys to lower case
-  });
-  console.log('Device map:', deviceMap);
-  return deviceMap;
+const fetchDeviceMap = async (space_id) => {
+
+  
+  try {
+    const devices = await Device.find({space_id:space_id});
+    console.log('Fetched devices from database:', devices); // Log fetched devices
+
+    const deviceMap = {};
+    devices.forEach(device => {
+      if (device.name && device.device_id) {
+        deviceMap[device.name.toLowerCase()] = device.device_id; // Convert keys to lower case
+      }
+    });
+    console.log('Device map:', deviceMap); // Log the created device map
+    return deviceMap;
+  } catch (error) {
+    console.error('Error fetching devices:', error);
+    throw new Error('Failed to fetch devices');
+  }
 };
 
 const fetchRoomIdByName = async (roomName) => {
-  const room = await Room.findOne({ name: roomName });
-  if (!room) {
-    throw new Error(`Room not found: ${roomName}`);
+  try {
+    const room = await Room.findOne({ name: roomName });
+    if (!room) {
+      throw new Error(`Room not found: ${roomName}`);
+    }
+    return room.id;
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    throw new Error('Failed to fetch room');
   }
-  return room.id;
 };
 
 const addEvent = async (req, res) => {
   try {
-    const { title, description, time, eventType, space_id, roomDevices, roomName, repeat = 'none', repeatCount = 0, raspberryPiIP, state} = req.body;
+    const { title, description, time, eventType, space_id, roomDevices, roomName, repeat = 'none', repeatCount = 0, raspberryPiIP, state } = req.body;
     console.log("Raspberry Pi IP:", raspberryPiIP);
     console.log("State of event is ", state);
+
     if (!title || !time || !eventType || !space_id || !roomDevices || !roomName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -41,16 +58,24 @@ const addEvent = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: User ID missing' });
     }
 
-    const deviceMap = await fetchDeviceMap();
+    const deviceMap = await fetchDeviceMap(space_id);
 
     // Derive device IDs from roomDevices in a case-insensitive manner
-    const roomDevicesID = roomDevices.map((device) => {
+    const roomDevicesID = [];
+    const invalidDevices = [];
+    roomDevices.forEach((device) => {
       const deviceId = deviceMap[device.toLowerCase()]; // Convert device name to lower case
       if (!deviceId) {
-        throw new Error(`Invalid device name: ${device}`);
+        invalidDevices.push(device);
+      } else {
+        roomDevicesID.push(deviceId);
       }
-      return deviceId;
     });
+
+    if (invalidDevices.length > 0) {
+      console.error('Invalid device names:', invalidDevices);
+      return res.status(400).json({ error: `Invalid device names: ${invalidDevices.join(', ')}` });
+    }
 
     console.log('Derived roomDevicesID:', roomDevicesID);
 

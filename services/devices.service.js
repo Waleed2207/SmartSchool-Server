@@ -51,7 +51,7 @@ const getDeviceByName = async (name) => {
   }
 };
 
-const addDeviceToRoom = async (space_id,deviceId, deviceName, roomId, deviceState) => {
+const addDeviceToRoom = async (space_id, deviceId, deviceName, roomId, deviceState) => {
   try {
     const roomDeviceData = {
       space_id: space_id,
@@ -65,17 +65,21 @@ const addDeviceToRoom = async (space_id,deviceId, deviceName, roomId, deviceStat
     newRoomDevice.id = `${roomId}-${deviceId}`;
     await newRoomDevice.save();
 
+    console.log('Device successfully added to room:', roomDeviceData);
+
     return {
       statusCode: 200,
       data: "Device added successfully",
     };
   } catch (err) {
+    console.error('Error adding device to room:', err);
     return {
       statusCode: 500,
       message: err.message,
     };
   }
 };
+
 
 const getDevicesByRoomId = async (roomId) => {
   try {
@@ -227,35 +231,38 @@ const updateRoomDevices = async (space_id, roomId, deviceName) => {
 };
 const createNewDevice = async (space_id, device, roomId) => {
   try {
-    const { name } = device;
-    console.log(space_id);
-    const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
+    const { name, device_id } = device;
+    console.log("Creating new device in space:", space_id);
+
     const newDevice = new Device({
       space_id,
       name,
       state: "off",
-      device_id: newDeviceId, // Assuming you want to set a custom ID
+      device_id: device_id,
     });
 
-    // Save the new device and wait for the operation to complete
+    // Save the new device
     await newDevice.save();
+    console.log("New device saved:", newDevice);
 
-    // Ensure addDeviceToRoom is an async function or handles its promises correctly
-    await addDeviceToRoom(space_id,newDeviceId, name, roomId, "off");
+    // Add the device to the room
+    const addDeviceResult = await addDeviceToRoom(space_id, device_id, name, roomId, "off");
+    if (addDeviceResult.statusCode !== 200) {
+      throw new Error(addDeviceResult.message);
+    }
 
     return {
       statusCode: 200,
-      data: newDevice, 
+      data: newDevice,
     };
   } catch (err) {
-    console.error(err); // Log the error for debugging
+    console.error('Error creating new device:', err);
     return {
       statusCode: 500,
       message: err.message,
     };
   }
 };
-
 
 const getDeviceIdByDeviceName = async (deviceName) => {
   try{
