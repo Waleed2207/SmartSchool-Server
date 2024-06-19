@@ -2,7 +2,6 @@ const { getSensors } = require("./../services/sensors.service.js");
 const Room = require("./../models/Room");
 const Device = require("./../models/Device.js");
 const RoomDevice = require("./../models/RoomDevice");
-const eventEmitter = require('./../interpeter/src/events.js')
 const {
   switchAcState,
   getAcState,
@@ -15,14 +14,14 @@ const {
 } = require("./../api/sensibo.js");
 const _ = require("lodash");
 
-let motionState = false; // This should reflect the real motion state, possibly stored in a database
-let RoomID = ""; 
-let RoomName= "";
-let SpaceID = "";
-let DeviceID = "";
-let clientIp = "";
-let _User_Oid = "";
-let Person = "";
+// let motionState = false; // This should reflect the real motion state, possibly stored in a database
+// let RoomID = ""; 
+// let RoomName= "";
+// let SpaceID = "";
+// let DeviceID = "";
+// let clientIp = "";
+// let _User_Oid = "";
+// let Person = "";
 exports.sensorControllers={
 
     async getSensor(req, res) {
@@ -39,72 +38,72 @@ exports.sensorControllers={
             }
     },
     //-------------------------------- motion-detected by Raspberry Pi --------------------------------
-    async get_MotionState (req, res) {
-      res.status(200).json({
-          motionDetected: motionState,
-          ROOM_ID: RoomID,
-          Room_NAME: RoomName,
-          SPACE_ID: SpaceID,
-          DEVICE_ID: DeviceID,
-          CLIENT_IP: clientIp,
-          _User_Oid_: _User_Oid
-      });
-  },
+  //   async get_MotionState (req, res) {
+  //     res.status(200).json({
+  //         motionDetected: motionState,
+  //         ROOM_ID: RoomID,
+  //         Room_NAME: RoomName,
+  //         SPACE_ID: SpaceID,
+  //         DEVICE_ID: DeviceID,
+  //         CLIENT_IP: clientIp,
+  //         _User_Oid_: _User_Oid
+  //     });
+  // },
   
-  async update_Motion_DetectedState(req, res) {
-    try {
-      const { state: lightState, room_id: roomId, room_name: roomName, space_id: spaceId, device_id: deviceId, raspberry_pi_ip: raspberryPiIP, user: user_oid } = req.body;
+  // async update_Motion_DetectedState(req, res) {
+  //   try {
+  //     const { state: lightState, room_id: roomId, room_name: roomName, space_id: spaceId, device_id: deviceId, raspberry_pi_ip: raspberryPiIP, user: user_oid } = req.body;
       
-      console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'for Room Name:', roomName, 'in Space ID:', spaceId, 'using Device ID:', deviceId, 'from Raspberry Pi:', raspberryPiIP, "user:", user_oid);
+  //     console.log('Received request to turn', lightState, 'for Room ID:', roomId, 'for Room Name:', roomName, 'in Space ID:', spaceId, 'using Device ID:', deviceId, 'from Raspberry Pi:', raspberryPiIP, "user:", user_oid);
       
-      // Update the global motionState
-      motionState = lightState === 'on';
-      RoomID = roomId;
-      RoomName = roomName;
-      SpaceID = spaceId;
-      DeviceID = deviceId;
-      clientIp = raspberryPiIP;
-      _User_Oid = user_oid;
-      Person = "Joe"
-      // Validate the state before processing
-      if (lightState !== 'on' && lightState !== 'off') {
-          return res.status(400).json({ error: `Invalid light state: ${lightState}` });
-      }   
-      // console.log(`Motion state updated for room ${roomId} to ${motionState}`);
-      const event = `${Person} ${lightState} ${roomName}`;
-      console.log(`Event to be sent: ${event}`);
-      eventEmitter.emit('motionStateChange', {
-        event: `${Person} ${lightState} ${roomName}`,
-        lightState: lightState, roomId: roomId, RoomName, spaceId: spaceId, 
-        deviceId: deviceId, raspberryPiIP: raspberryPiIP, res: res, motionState: lightState === 'on',
-        _User_Oid
+  //     // Update the global motionState
+  //     motionState = lightState === 'on';
+  //     RoomID = roomId;
+  //     RoomName = roomName;
+  //     SpaceID = spaceId;
+  //     DeviceID = deviceId;
+  //     clientIp = raspberryPiIP;
+  //     _User_Oid = user_oid;
+  //     Person = "Joe"
+  //     // Validate the state before processing
+  //     if (lightState !== 'on' && lightState !== 'off') {
+  //         return res.status(400).json({ error: `Invalid light state: ${lightState}` });
+  //     }   
+  //     // console.log(`Motion state updated for room ${roomId} to ${motionState}`);
+  //     const event = `${Person} ${lightState} ${roomName}`;
+  //     console.log(`Event to be sent: ${event}`);
+  //     eventEmitter.emit('motionStateChange', {
+  //       event: `${Person} ${lightState} ${roomName}`,
+  //       lightState: lightState, roomId: roomId, RoomName, spaceId: spaceId, 
+  //       deviceId: deviceId, raspberryPiIP: raspberryPiIP, res: res, motionState: lightState === 'on',
+  //       _User_Oid
 
-      });
+  //     });
   
-      // // Update the room's 'motionDetected' field
-      // await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
-      // console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
+  //     // // Update the room's 'motionDetected' field
+  //     // await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
+  //     // console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
   
-      // // Update the specific device's state
-      // await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
-      // console.log(`Device state updated for Device ID: ${deviceId}`);
+  //     // // Update the specific device's state
+  //     // await Device.updateOne({ device_id: deviceId }, { $set: { state: lightState } });
+  //     // console.log(`Device state updated for Device ID: ${deviceId}`);
   
-      // // Additionally, update the RoomDevice state
-      // await RoomDevice.updateOne({ room_id: roomId, device_id: deviceId }, { $set: { state: lightState } });
+  //     // // Additionally, update the RoomDevice state
+  //     // await RoomDevice.updateOne({ room_id: roomId, device_id: deviceId }, { $set: { state: lightState } });
   
-      // Send final response
-      // res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
+  //     // Send final response
+  //     // res.status(200).json({ message: `Light turned ${lightState}, request received successfully`, motionState });
   
-    } catch (error) {
-      console.error('Error:', error.message);
-      res.status(500).json({ error: `Server error: ${error.message}` });
-    }
-  },
+  //   } catch (error) {
+  //     console.error('Error:', error.message);
+  //     res.status(500).json({ error: `Server error: ${error.message}` });
+  //   }
+  // },
   
     async TurnON_OFF_LIGHT(req,res) {
-      const { state, rasp_ip, id } = req.body;
+      const { state, rasp_ip, id ,Control } = req.body;
       try {
-        const switchResponse = await TurnON_OFF_LIGHT(state, rasp_ip, id);
+        const switchResponse = await TurnON_OFF_LIGHT(state, rasp_ip, id, Control);
         res.status(200).json(switchResponse); // Respond with the switchResponse data
       } catch (error) {
         res.status(500).json({ error: 'Failed to turn on/off light' });
@@ -170,9 +169,14 @@ exports.sensorControllers={
           res.status(500).json({ success: false, message: err.message || "Server error occurred." });
         }
       },
-      async get_Temperature(req, res) {
+      async get_Temperature (req, res) {
         try {
-          const data = await getSensiboSensors();
+          const raspPiIP = req.query.rasp_pi; // Assume rasp_pi is passed as a query parameter
+          if (!raspPiIP) {
+            res.status(400).send("Missing Raspberry Pi IP");
+            return;
+          }
+          const data = await getSensiboSensors(raspPiIP); // Pass raspPiIP to the function
       
           if (data) {
             res.status(200).json(data); // Send the result if data is successfully fetched

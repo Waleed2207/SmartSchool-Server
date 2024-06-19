@@ -11,6 +11,7 @@
 // const server = express();
 // const port = process.env.PORT || 3000;
 // require("dotenv").config();
+// require('./statemanager/stateManager')
 
 
 // // Certificate
@@ -91,7 +92,7 @@ const { connectToWs } = require("./ws.js");
 const server = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config();
-
+require('./statemanager/stateManager')
 // import Routers
 const {devicesRouter} = require("./routers/devicesRouter");
 const {loginRouter} = require("./routers/loginRouter");

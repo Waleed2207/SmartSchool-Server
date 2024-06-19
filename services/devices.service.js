@@ -51,18 +51,18 @@ const getDeviceByName = async (name) => {
   }
 };
 
-const addDeviceToRoom = async (space_id,deviceId, deviceName, roomId, deviceState) => {
+const addDeviceToRoom = async (space_id,device_id, deviceName, roomId, deviceState) => {
   try {
     const roomDeviceData = {
       space_id: space_id,
       room_id: roomId,
-      device_id: deviceId,
+      device_id: device_id,
       state: deviceState,
       device_name: deviceName,
     };
 
     const newRoomDevice = new RoomDevice({ ...roomDeviceData });
-    newRoomDevice.id = `${roomId}-${deviceId}`;
+    newRoomDevice.id = `${roomId}-${device_id}`;
     await newRoomDevice.save();
 
     return {
@@ -260,23 +260,23 @@ const updateRoomDevices = async (space_id, roomId, deviceName) => {
     throw err;
   }
 };
-const createNewDevice = async (space_id, device, roomId) => {
+const createNewDevice = async (space_id, device, roomId, device_id) => {
   try {
     const { name } = device;
     console.log(space_id);
-    const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
+    // const newDeviceId = Math.floor(10000000 + Math.random() * 90000000);
     const newDevice = new Device({
       space_id,
       name,
       state: "off",
-      device_id: newDeviceId, // Assuming you want to set a custom ID
+      device_id: device_id, // Assuming you want to set a custom ID
     });
 
     // Save the new device and wait for the operation to complete
     await newDevice.save();
 
     // Ensure addDeviceToRoom is an async function or handles its promises correctly
-    await addDeviceToRoom(space_id,newDeviceId, name, roomId, "off");
+    await addDeviceToRoom(space_id,device_id, name, roomId, "off");
 
     return {
       statusCode: 200,

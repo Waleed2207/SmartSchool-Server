@@ -84,21 +84,26 @@ const Device = require("../../../models/Device");
 const RoomDevice = require("../../../models/RoomDevice");
 const axios = require('axios');
 require('dotenv').config();
+const {
+    TurnON_OFF_LIGHT,
+  } = require("./../../../api/sensibo.js");
 
+  
 class TurnDeviceOnCommand extends BaseCommand {
-    constructor(deviceid, mode, temperature, device, state, apiKey = process.env.SENSIBO_API_KEY, data, res) {
+    constructor(deviceid, mode, temperature, device, state, data, res, ControlFlag) {
         super();
         this.deviceid = deviceid;
         this.device = device;
         this.state = state;
         this.mode = mode;
-        this.temperature = temperature;  // Assume temperature is already a number.
-        this.apiKey = apiKey;
+        this.temperature = temperature;
         this.data = data;
+        this.ControlFlag = ControlFlag;
         this.res = res;
     }
 
     async execute() {
+        console.log("Context" + this.ControlFlag);
         console.log(`Executing Turn ${this.state} for ${this.device} in mode ${this.mode} with value ${this.temperature}`);
 
         switch (this.device.toLowerCase()) {
@@ -178,7 +183,19 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     async turnLightOn() {
         console.log(`Executing Turn On for light`);
-        // Implementation for turning light on
+        if ( this.ControlFlag === 'manual') {
+            try {
+                const endpoint = `http://10.100.102.14:5009/on`; // Construct the endpoint URL
+                // Make a POST request to the endpoint
+                const response = await axios.post(endpoint, { Control:'manual' });
+                console.log(response.data); // Log the response data
+                return response.data; // Return the response data if needed
+            } catch (error) {
+                console.error('Error turning on/off light:', error);
+                throw error; // Throw the error to handle it in the calling function if needed
+            }
+        } 
+        
     }
 
     async turnFanOn() {
@@ -189,7 +206,7 @@ class TurnDeviceOnCommand extends BaseCommand {
 
     async turnProjectorOn() {
         console.log(`Turning projector on with details: ${this.details}`);
-        // Implementation for turning projector on
+        // Implementation for turning projecזtor on
         await this.updateDeviceState("on");
     }
 

@@ -13,6 +13,30 @@ const https = require('https');
 const querystring = require('querystring');
 require('dotenv').config();
 const agent = new https.Agent({ family: 4 }); // Force IPv4
+const fs = require('fs').promises;
+const path = require('path');
+
+
+const loadConfig = async () => {
+  try {
+    const filePath = path.resolve(__dirname, '../api/endpoint/rasp_pi.json');
+    console.log(filePath);
+    console.log(`Loading configuration from: ${filePath}`);
+
+    // Check if the file exists
+    try {
+      await fs.access(filePath);
+    } catch (err) {
+      throw new Error(`Configuration file does not exist at: ${filePath}`);
+    }
+
+    const data = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    throw new Error(`Error loading configuration: ${err.message}`);
+  }
+};
+
 
 /**
  * Fetches the devices associated with a specific gateway.
@@ -343,9 +367,19 @@ const MindolifefetchAndTransformIoTDeviceDataById = async (req, res) => {
 };
 
 const changeFeatureState = async (deviceId, state, rasp_ip) => {
+  const config = await loadConfig();
+
+  // Search for the IP address in the cached JSON data
+  const ngrokUrl = config[rasp_ip];
+
+  if (!ngrokUrl) {
+    throw new Error(`IP address ${rasp_ip} not found in the configuration file`);
+  }
+
+  const endpoint = `${ngrokUrl}`;
 
   // console.log(rasp_ip);
-  const flaskAppUrl = `http://${rasp_ip}:5009/api-mindolife/change_feature_state`;
+  const flaskAppUrl = `${endpoint}/api-mindolife/change_feature_state`;
   try {
     const valueToPost = state ? 'on' : 'off'; // Prepare the value for the external API
     // Parameters sent in the request body for a POST request
@@ -375,7 +409,7 @@ const changeFeatureState = async (deviceId, state, rasp_ip) => {
       throw new Error("Failed to change feature state via API.");
     }
   } catch (error) {
-    console.error(`Error changing feature state for device ID ${deviceId}: ${error.message}`);
+    console.error(` ${deviceId}: ${error.message}`);
     throw error; // Rethrow the error to handle it outside this function or to inform the caller.
   }
 };

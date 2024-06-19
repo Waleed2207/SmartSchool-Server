@@ -9,11 +9,12 @@ const _ = require("lodash");
 const { getSensiboSensors } = require('../api/sensibo')
 const { tokenize } = require('../interpeter/src/lexer/lexer');
 const { parse } = require('../interpeter/src/parser/parser');
-const { execute } = require('../interpeter/src/executor/executor');
+const { execute } = require('../interpeter/src/execute/execute');
 const { getCurrentActivity, getCurrentSeason } = require('./time.service'); // Import both getCurrentActivity and getCurrentSeason
 const { getRooms,getRoomById,getRoomIdByRoomName,get_Rooms_By_SpaceId,getAllRoomIds,getAllRoomNames} = require('./rooms.service');  
 const { get_MotionState, update_Motion_DetectedState} = require('../controllers/sensorController.js');
-const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/executor/executor');
+// const {GetRoomNameFromDatabase} = require('../../SmartSchool-Server/interpeter/src/interpreter/interpreter');
+
 // const { interpetermanger } = require('../../SmartSchool-Server/services/interpetermanger.js');
 
 // const { Rules } = require('../models/Rules');
@@ -371,7 +372,7 @@ async function checkInterpreterCondition() {
 updateAndProcessRules();
 checkInterpreterCondition();
 // Set an interval to run the function every 30 seconds
-setInterval(updateAndProcessRules, 30000);
+// setInterval(updateAndProcessRules, 30000);
 
 
 async function processAllRules(context) {

@@ -24,19 +24,20 @@ const axios = require('axios');
 require('dotenv').config();
 
 class TurnDeviceOnOffCommand extends BaseCommand {
-    constructor(deviceid, mode, temperature, device, state, apiKey = process.env.SENSIBO_API_KEY,data, res) {
+    constructor(deviceid, mode, temperature, device, state, data, res, ControlFlag) {
         super();
         this.deviceid = deviceid;
         this.device = device;
         this.state = state;
         this.mode = mode;
-        this.temperature = temperature;  // Assume temperature is already a number.
-        this.apiKey = apiKey;
+        this.temperature = temperature;
         this.data = data;
-        this.res  = res;
+        this.ControlFlag = ControlFlag;
+        this.res = res;
     }
 
     async execute() {
+        console.log("Context "+ this.ControlFlag);
         console.log(`Executing Turn ${this.state} for ${this.device} in mode ${this.mode} with value ${this.temperature}`);
         
         // Start switch-case to handle different device types
@@ -115,8 +116,19 @@ class TurnDeviceOnOffCommand extends BaseCommand {
     }
 
     async turnLight() {
-        console.log(`Turning light ${this.state} with details: ${this.details}`);
-        await this.updateDeviceState(this.state);
+        console.log(`Executing Turn Off for light`);
+        if( this.ControlFlag === 'manual') {
+            try {
+                const endpoint = `http://10.100.102.14:5009/off`; // Construct the endpoint URL
+                // Make a POST request to the endpoint
+                const response = await axios.post(endpoint, { Control:'manual' });
+                console.log(response.data); // Log the response data
+                return response.data; // Return the response data if needed
+            } catch (error) {
+                console.error('Error turning on/off light:', error);
+                throw error; // Throw the error to handle it in the calling function if needed
+            }
+        } 
     }
 
     async turnFan() {
@@ -138,7 +150,7 @@ class TurnDeviceOnOffCommand extends BaseCommand {
         
         const updateResultDevice = await Device.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
         const updateResultRoomDevice = await RoomDevice.updateOne({ device_id: this.deviceid }, { $set: { state, lastUpdated: new Date() }});
-        console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
+        // console.log("Database update result:", updateResultDevice, updateResultRoomDevice);
     }
 }
 

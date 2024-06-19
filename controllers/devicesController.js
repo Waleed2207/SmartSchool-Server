@@ -66,11 +66,11 @@ exports.devicescontrollers = {
 
   },
   async createDevice(req, res) {
-    const { space_id, device, room_id } = req.body;
+    const { space_id, device, room_id, device_id } = req.body;
     console.log("Creating device with details:", device, "in room ID:", room_id);
 
     try {
-        const newDeviceResponse = await createNewDevice(space_id, device, room_id);
+        const newDeviceResponse = await createNewDevice(space_id, device, room_id, device_id);
         if (!newDeviceResponse || !newDeviceResponse.data || !newDeviceResponse.data.name) {
             throw new Error('Device creation failed or returned invalid data');
         }

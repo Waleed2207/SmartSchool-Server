@@ -1,3 +1,6 @@
+
+
+// models/CalendarEvent.js
 const mongoose = require('mongoose');
 
 const calendarEventSchema = new mongoose.Schema({
@@ -8,11 +11,7 @@ const calendarEventSchema = new mongoose.Schema({
   description: {
     type: String
   },
-  start: {
-    type: Date,
-    required: true
-  },
-  end: {
+  time: {
     type: Date,
     required: true
   },
@@ -23,8 +22,17 @@ const calendarEventSchema = new mongoose.Schema({
   },
   eventType: {
     type: String,
-    enum: ['holiday', 'weekend', 'lecture'],
+    enum: ['holiday', 'weekend', 'lecture', 'party'],
     required: true
+  },
+  space_id: {
+    type: String,
+    required: true
+  },
+  repeat: {
+    type: String,
+    enum: ['none', 'daily', 'weekly', 'monthly'],
+    default: 'none'
   },
   createdAt: {
     type: Date,
@@ -34,10 +42,42 @@ const calendarEventSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  space_id: {
-    type: String, // Change this from ObjectId to String
+  roomDevices: [{
+    type: String,
+    //ref: 'Device',
     required: true
-  }
+  }],
+  roomDevicesID: [{
+    type: String,
+    //ref: 'Device',
+    required: true
+  }],
+  roomName: {
+    type: String,
+    required: true
+  },
+  state: {
+    type: String,
+    required: true
+  },
+  room_id: {
+    type: String,
+    required: true
+  },
+    repeatCount: {
+      type: Number,
+      default: 0, // 0 means no repetition
+    },
+    raspberryPiIP: {
+      type: String,
+      required: true
+    }, 
+});
+
+// Update the updatedAt field before saving
+calendarEventSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 const CalendarEvent = mongoose.model('CalendarEvent', calendarEventSchema);

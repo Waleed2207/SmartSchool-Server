@@ -74,7 +74,6 @@ const constructDeviceRegex = async () => {
     }
 };
 
-
 const searchDevicesInAction = async (action) => {
     const devicePattern = await constructDeviceRegex();
     if (devicePattern) {
@@ -90,7 +89,6 @@ const searchDevicesInAction = async (action) => {
         return [];
     }
 };
-
 
 function getDeviceIdByName(data, deviceName) {
     for (const item of data) {
@@ -109,18 +107,10 @@ function getRoomNameByDeviceName(data, deviceName) {
     return null; // Return null if no device with the given name is found
 }
 
-
-
-
 class CommandFactory {
-    static async createCommand(action, roomid, roomdevices, roomname , data ,res) {
+    static async createCommand(action, roomid, roomdevices,context, roomname, data, res) {
         console.log(`Action processing: "${action}"`);
-        // const Data = {
-        //     lightState: data.body.lightState, // Example: 'on'
-        //     motionState: data.body.motionState // Example: 'detected'
-        // };
-        // res.status(200).json({ message: `Light turned ${data.lightState}, request received successfully`, motionState: data.motionState });
-
+        console.log(context.control);
         // Validate roomdevices is an array before proceeding
         if (!Array.isArray(roomdevices)) {
             console.error("Invalid roomdevices data. Expected an array.");
@@ -144,7 +134,7 @@ class CommandFactory {
         const mode = modeMatch ? modeMatch[0].toLowerCase() : '';
         const temperature = temperatureMatch ? parseInt(temperatureMatch[0], 10) : 0;
         const deviceid = this.getDeviceIdByName(roomdevices, device);
-
+        const ControlFlag = context.control;
         console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
 
         if (deviceid === null) {
@@ -153,17 +143,17 @@ class CommandFactory {
         }
 
         if (state === 'on') {
-            const turndeviceon = new TurnDeviceOnCommand(deviceid, mode, temperature, device, state, data , res);
+            const turndeviceon = new TurnDeviceOnCommand(deviceid, mode, temperature, device, state, data, res, ControlFlag);
             if (res && !res.headersSent) {
                 res.status(200).json({
                     message: `Light turned ${data.lightState}, request received successfully`,
                     motionState: data.motionState
                 });
             }
-            this.updateDatabase(deviceid,roomid, data.motionState, data.lightState);
+            this.updateDatabase(deviceid, roomid, data.motionState, data.lightState);
             return await turndeviceon.execute();
         } else if (state === 'off') {
-            const turndeviceoff = new TurnDeviceOffCommand(deviceid, mode, temperature, device, state,data, res);
+            const turndeviceoff = new TurnDeviceOffCommand(deviceid, mode, temperature, device, state, data, res, ControlFlag);
             if (res && !res.headersSent) {
                 res.status(200).json({
                     message: `Light turned ${data.lightState}, request received successfully`,
@@ -176,12 +166,11 @@ class CommandFactory {
             console.log("Unknown command state.");
             return null;
         }
-
     }
-    static async updateDatabase(deviceid,roomId, motionState, lightState) {
+    static async updateDatabase(deviceid, roomId, motionState, lightState) {
         motionState = lightState === 'on';
         // Update the room's 'motionDetected' field
-        await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState  } });
+        await Room.updateOne({ id: roomId }, { $set: { motionDetected: motionState } });
         console.log(`Simulated light turned ${lightState} for Room ID: ${roomId}`);
 
         // Update the specific device's state
@@ -207,7 +196,5 @@ class CommandFactory {
         return device ? device.device_id : null;
     }
 }
-
-
 
 module.exports = { CommandFactory };
