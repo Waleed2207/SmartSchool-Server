@@ -37,7 +37,6 @@ class TurnDeviceOnOffCommand extends BaseCommand {
     }
 
     async execute() {
-        console.log("Context "+ this.ControlFlag);
         console.log(`Executing Turn ${this.state} for ${this.device} in mode ${this.mode} with value ${this.temperature}`);
         
         // Start switch-case to handle different device types

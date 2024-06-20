@@ -110,7 +110,6 @@ function getRoomNameByDeviceName(data, deviceName) {
 class CommandFactory {
     static async createCommand(action, roomid, roomdevices,context, roomname, data, res) {
         console.log(`Action processing: "${action}"`);
-        console.log(context.control);
         // Validate roomdevices is an array before proceeding
         if (!Array.isArray(roomdevices)) {
             console.error("Invalid roomdevices data. Expected an array.");

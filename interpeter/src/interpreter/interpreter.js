@@ -106,12 +106,7 @@ function evaluateConditionTemp(parsed, context) {
       let operator = operatorMatch[0].toLowerCase();
       let conditionValue = valueMatch[0].toLowerCase();
       let contextValue = context[variable];
-      
-      console.log("Variable:", variable);
-      console.log("Operator:", operator);
-      console.log("Condition Value:", conditionValue);
-      console.log("Context Value:", contextValue);
-
+    
       if (contextValue === undefined) {
           console.error("Context value is undefined for variable:", variable);
           results.push(false);
@@ -208,7 +203,6 @@ function evaluateConditionCalendar(parsed, context) {
         result = getContextTypeCAll(condition, context);
         if (result !== null) {
             results.push(result);
-            console.log(result);
         } else {
             let variableMatch = condition.match(structuredVariablePattern);
             let operatorMatch = condition.match(operatorPattern);
@@ -225,10 +219,10 @@ function evaluateConditionCalendar(parsed, context) {
             let conditionValue = valueMatch[0].toLowerCase();
             let contextValue = context[variable];
 
-            console.log("Variable:", variable);
-            console.log("Operator:", operator);
-            console.log("Condition Value:", conditionValue);
-            console.log("Context Value:", contextValue);
+            // console.log("Variable:", variable);
+            // console.log("Operator:", operator);
+            // console.log("Condition Value:", conditionValue);
+            // console.log("Context Value:", contextValue);
 
             if (contextValue === undefined) {
                 console.error("Context value is undefined for variable:", variable);
@@ -294,15 +288,11 @@ function evaluateCondition(parsed, context) {
       result = getContextType(condition, context);
       if (result !== null) {
           results.push(result);
-          console.log(results);
           return;
       } else {
           let variableMatch = condition.match(structuredVariablePattern);
           let operatorMatch = condition.match(operatorPattern);
           let valueMatch = condition.match(valuePattern);
-          console.log(variableMatch);
-          console.log(operatorMatch);
-          console.log(valueMatch);  
 
           if (!variableMatch || !operatorMatch || !valueMatch) {
               console.error("Invalid condition format:", condition);
@@ -315,10 +305,10 @@ function evaluateCondition(parsed, context) {
           let conditionValue = valueMatch[0].toLowerCase();
           let contextValue = context[variable];
 
-          console.log("Variable:", variable);
-          console.log("Operator:", operator);
-          console.log("Condition Value:", conditionValue);
-          console.log("Context Value:", contextValue);
+        //   console.log("Variable:", variable);
+        //   console.log("Operator:", operator);
+        //   console.log("Condition Value:", conditionValue);
+        //   console.log("Context Value:", contextValue);
 
           if (contextValue === undefined) {
               console.error("Context value is undefined for variable:", variable);
@@ -409,9 +399,9 @@ async function processData(parsed, data, res, Context) {
   
     const currentActivity = await getCurrentActivity();
     const currentSeason = await getCurrentSeason();
-    console.log(parsed.conditions);
-    console.log(parsed.specialOperators.condition_operators);
-    console.log(parsed.actions);
+    // console.log(parsed.conditions);
+    // console.log(parsed.specialOperators.condition_operators);
+    // console.log(parsed.actions);
   
     const extractMainCondition = (condition) => {
       const regex = /(\w+)(?: in | not in | is )/;
@@ -437,7 +427,7 @@ async function processData(parsed, data, res, Context) {
         };
     } else {
         if (mainContext === 'party' || mainContext === 'weekend' || mainContext === 'lecture' || mainContext === 'holiday') {
-            console.log(mainContext);
+            // console.log(mainContext);
             const parsedState = data.state === 'on' ? true : false;
             context = {
                 detection: parsedState,
@@ -447,7 +437,7 @@ async function processData(parsed, data, res, Context) {
                 space_id: data.space_id,
                 control : 'manual',
             };
-            console.log(context);
+            // console.log(context);
         } else {
             context = {
                 detection: data.motionState,
@@ -457,7 +447,7 @@ async function processData(parsed, data, res, Context) {
                 roomid: data.roomId,
                 space_id: data.spaceId,
             };
-            console.log(context);
+            // console.log(context);
         }
     }
   
@@ -484,7 +474,6 @@ async function processData(parsed, data, res, Context) {
   
     const convertedOperatorsCondition = convertOperators(parsed.specialOperators.condition_operators);
     const result = evaluateLogic(evaluationConditionResult, convertedOperatorsCondition);
-    console.log(result);
   
     if (result) {
         if (context.room_Name === roomName.toLowerCase()) {
@@ -563,8 +552,8 @@ async function interpret(ruleDescriptionQuery, data, res, Context) {
 
 async function interpretRuleByNameHumD(Condition, data, shouldSendRes = false, res = null, alreadyTried = false) {
   try {
-        console.log(Condition);
-        console.log(data.spaceId);
+        // console.log(Condition);
+        // console.log(data.spaceId);
         const regex = new RegExp(escapeRegex(Condition), 'i');
 
         let mainCondition;
@@ -611,8 +600,8 @@ async function interpretRuleByNameHumD(Condition, data, shouldSendRes = false, r
 
 async function interpretRuleByNameCalendar(Condition, data, shouldSendRes = false, res = null, Context, alreadyTried = false) {
     try {
-        console.log(Condition);
-        console.log(data.space_id);
+        // console.log(Condition);
+        // console.log(data.space_id);
         const regex = new RegExp(escapeRegex(Condition), 'i');
 
         let mainCondition;
