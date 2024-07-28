@@ -177,11 +177,11 @@ function getContextTypeCAll(sentence, context) {
     const seasons = ['spring', 'summer', 'fall', 'winter'];
     const words = sentence.toLowerCase().split(/\s+/);
 
-    if (/\bnot in\b/.test(sentence)) {
+    if (/\bend\b/.test(sentence)) {
         return context['detection'] === false;
     }
 
-    if (/\bin\b/.test(sentence) && !/\bnot in\b/.test(sentence)) {
+    if (/\bstart\b/.test(sentence) && !/\bend\b/.test(sentence)) {
         return context['detection'] === true;
     }
 
@@ -195,7 +195,7 @@ function getContextTypeCAll(sentence, context) {
 }
 function evaluateConditionCalendar(parsed, context) {
     const structuredVariablePattern = /\b(in room|detection|temperature|activity|season)\b/gi;
-    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not)\b/gi;
+    const operatorPattern = /\b(is above|is below|is equal to|is above or equal to|is below or equal to|is|in|not|start|end)\b/gi;
     const valuePattern = /\b(\d+|ON|OFF|True|False|true|false|spring|summer|fall|winter|studying|cooking|eating|playing|watching_tv|sleeping|room)\b/gi;
 
     let results = [], result = null;
@@ -399,12 +399,13 @@ async function processData(parsed, data, res, Context) {
   
     const currentActivity = await getCurrentActivity();
     const currentSeason = await getCurrentSeason();
-    // console.log(parsed.conditions);
-    // console.log(parsed.specialOperators.condition_operators);
-    // console.log(parsed.actions);
+    console.log(parsed.conditions);
+    console.log(parsed.conditions[0]);
+    console.log(parsed.specialOperators.condition_operators);
+    console.log(parsed.actions);
   
     const extractMainCondition = (condition) => {
-      const regex = /(\w+)(?: in | not in | is )/;
+      const regex = /(\w+)(?: in | not in | is | start | end)/;
       const match = condition.match(regex);
       return match ? match[1] : null;
     };
@@ -565,7 +566,7 @@ async function interpretRuleByNameHumD(Condition, data, shouldSendRes = false, r
             mainCondition = Condition; // No "in" or "not in" found, use the whole condition
         }
 
-        // console.log(mainCondition);
+        console.log(mainCondition);
         // Modify the query to include both the spaceId and the regex for the condition in the description
         const rules = await Rule.find({ 
             description: regex, 
@@ -605,13 +606,14 @@ async function interpretRuleByNameCalendar(Condition, data, shouldSendRes = fals
         const regex = new RegExp(escapeRegex(Condition), 'i');
 
         let mainCondition;
-        if (Condition.includes(' in ')) {
-            mainCondition = Condition.split(' in ')[0]; // e.g., "temperature"
-        } else if (Condition.includes(' not in ')) {
-            mainCondition = Condition.split(' not in ')[0]; // e.g., "temperature"
+        if (Condition.includes('start')) {
+            mainCondition = Condition.split('start')[0]; // e.g., "temperature"
+        } else if (Condition.includes('end')) {
+            mainCondition = Condition.split('end')[0]; // e.g., "temperature"
         } else {
             mainCondition = Condition; // No "in" or "not in" found, use the whole condition
         }
+        // console.log(mainCondition);
 
         const rules = await Rule.find({ 
             description: regex, 

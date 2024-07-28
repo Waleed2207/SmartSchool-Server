@@ -22,9 +22,17 @@ const configurations = [
     roomName: 'Living Room',
     spaceId: '61097711',
     deviceId: '4ahpAkJ9',
-    raspberryPiIP: '192.168.1.104',
+    raspberryPiIP: '192.168.1.109',
     user_oid: '65b76f020db757311fe54f38',
   },
+  // {
+  //   roomId: '67822610-8768',
+  //   roomName: 'Class246',
+  //   spaceId: '67822610',
+  //   deviceId: 'YNahUQcM',
+  //   raspberryPiIP: '10.0.0.9',
+  //   user_oid: '6648b1dd3da69ac2341e4e36',
+  // },
   // Add more configurations as needed
 ];
 
@@ -168,7 +176,7 @@ exports.handleControllers = {
           config.raspberryPiIP,
           config.user_oid
         );
-      },120000); // 40000 ms = 40 seconds
+      },300000); // 300000 ms = 5 minutes
     });
   },
 };

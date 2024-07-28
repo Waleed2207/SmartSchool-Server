@@ -121,9 +121,9 @@ function execute() {
             console.log('Event expired :', data);
             const { eventType, state, room_id, raspberryPiIP, space_id, roomName } = data;
 
-            const parsedState = state === 'on' ? 'in' : 'not in';
-            const Condition = `${eventType} ${parsedState} ${roomName}`;
-            console.log(`Parsed event data - Person: ${eventType}, Motion State: ${parsedState}, Room Name: ${roomName}`);
+            const parsedState = state === 'on' ? 'start' : 'end';
+            const Condition = `${parsedState} ${eventType} in ${roomName}`;
+            // console.log(`Parsed event data - Person: ${eventType}, Motion State: ${parsedState}, Room Name: ${roomName}`);
 
             const currentSeason = await getCurrentSeason();
             const Context = {

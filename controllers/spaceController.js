@@ -21,7 +21,7 @@ const {
     async get_Space_ByID(req, res) {
         try {
           const spaceId = req.params.spaceId;
-          console.log("Space ID: " + spaceId);
+          // console.log("Space ID: " + spaceId);
           const space = await get_Space_By_ID(spaceId);
       
           if (!space) {
@@ -37,7 +37,7 @@ const {
     async get_Space_ByName(req, res) {
       try {
         const space_name = req.params.space_name;
-        console.log("Space spaceName: " + space_name);
+        // console.log("Space spaceName: " + space_name);
         const space = await get_Space_By_Name(space_name);
     
         if (!space) {

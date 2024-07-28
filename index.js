@@ -90,9 +90,13 @@ const cors    = require('cors');
 const connectDB = require("./config");
 const { connectToWs } = require("./ws.js");
 const server = express();
+const bodyParser = require('body-parser');
+
 const port = process.env.PORT || 3000;
 require("dotenv").config();
 require('./statemanager/stateManager')
+
+
 // import Routers
 const {devicesRouter} = require("./routers/devicesRouter");
 const {loginRouter} = require("./routers/loginRouter");
@@ -104,6 +108,7 @@ const {suggestionsRouter} = require("./routers/suggestionsRouter");
 const {mindolifeRouter} = require('./routers/gatewaysRouter');
 const {activityRouter} = require('./routers/activityRouter');
 const {calendarRouter} = require('./routers/calendarRouter');
+const {endpointRouter} = require('./routers/endpointRouter');
 
 // Connect to MongoDB 
 connectDB();
@@ -113,6 +118,7 @@ connectToWs();
 server.use(cors());
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));  // hundel post reqs with body
+server.use(bodyParser.json());
 
 
 server.use('/api-login', loginRouter);
@@ -125,6 +131,7 @@ server.use('/api-suggestion', suggestionsRouter);
 server.use('/api-mindolife', mindolifeRouter);
 server.use('/api-activities', activityRouter); 
 server.use('/api-calendar', calendarRouter);
+server.use('/api-endpoint', endpointRouter);
 
 
 server.use((req, res) => {

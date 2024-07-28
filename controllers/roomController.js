@@ -41,7 +41,7 @@ exports.roomControllers={
     async  get_Rooms_By_SpaceId(req, res) {
       try {
         const space_id = req.params.space_id;
-        console.log('Fetching rooms for space ID:', space_id);
+        // console.log('Fetching rooms for space ID:', space_id);
         const rooms = await get_Rooms_By_SpaceId(space_id);
         if (!rooms.length) { // Check if the rooms array is empty
           return res.status(404).send({ message: 'Rooms not found' });

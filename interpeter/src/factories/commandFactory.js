@@ -134,7 +134,7 @@ class CommandFactory {
         const temperature = temperatureMatch ? parseInt(temperatureMatch[0], 10) : 0;
         const deviceid = this.getDeviceIdByName(roomdevices, device);
         const ControlFlag = context.control;
-        console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
+        // console.log(`Turning, Device: ${device}, State: ${state}, Mode: ${mode}, Value: ${temperature}, Device ID: ${deviceid}`);
 
         if (deviceid === null) {
             console.error("Device ID not found for the action. Action cannot be executed.");
@@ -186,7 +186,7 @@ class CommandFactory {
     static async searchDevicesInAction(action) {
         // Implementation for searching devices in action text
         // Adjust the search logic according to your application's needs
-        const devices = ['AC', 'light', 'fan', 'heater']; // Example devices
+        const devices = ['AC', 'light', 'Fan', 'Bulb', 'Projector', 'TV']; // Example devices
         return devices.filter(device => action.toLowerCase().includes(device.toLowerCase()));
     }
 
