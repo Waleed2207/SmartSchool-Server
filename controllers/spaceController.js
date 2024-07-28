@@ -6,6 +6,7 @@ const {
     get_Space,
     createNewSpace,
     get_Space_By_ID,
+    get_Space_By_Name,
     updateDeviceModeInDatabase,
     create_Space,
     create_Space_TORoom,
@@ -20,7 +21,7 @@ const {
     async get_Space_ByID(req, res) {
         try {
           const spaceId = req.params.spaceId;
-          console.log("Space ID: " + spaceId);
+          // console.log("Space ID: " + spaceId);
           const space = await get_Space_By_ID(spaceId);
       
           if (!space) {
@@ -32,7 +33,23 @@ const {
           console.error("Server error when fetching space:", err);
           return res.status(500).send({ message: err.message });
         }
-      },      
+      },  
+    async get_Space_ByName(req, res) {
+      try {
+        const space_name = req.params.space_name;
+        // console.log("Space spaceName: " + space_name);
+        const space = await get_Space_By_Name(space_name);
+    
+        if (!space) {
+          return res.status(404).send({ message: 'Space not found' });
+        }
+    
+        return res.status(200).send(space);
+      } catch (err) {
+        console.error("Server error when fetching space:", err);
+        return res.status(500).send({ message: err.message });
+      }
+    },     
     async create_Space(req, res) {
         try {
           const { spaceDetails } = req.body; // Assuming the request body has space details directly

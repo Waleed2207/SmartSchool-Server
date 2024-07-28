@@ -11,6 +11,7 @@
 // const server = express();
 // const port = process.env.PORT || 3000;
 // require("dotenv").config();
+// require('./statemanager/stateManager')
 
 
 // // Certificate
@@ -26,14 +27,15 @@
 
 
 
-// // import Routers
-// const {devicesRouter} = require("./routers/devicesRouter");
-// const {loginRouter} = require("./routers/loginRouter");
-// const {sensorRouter} = require("./routers/sensorRouter");
-// const {ruleRouter} = require("./routers/ruleRouter");
-// const {roomRouter} = require("./routers/roomRouter");
-// const {suggestionsRouter} = require("./routers/suggestionsRouter");
-// const {mindolifeRouter} = require('./routers/gatewaysRouter');
+// // // import Routers
+//     const {devicesRouter} = require("./routers/devicesRouter");
+//     const {loginRouter} = require("./routers/loginRouter");
+//     const {sensorRouter} = require("./routers/sensorRouter");
+//     const {ruleRouter} = require("./routers/ruleRouter");
+//     const {roomRouter} = require("./routers/roomRouter");
+//     const {spacesRouter} = require("./routers/spacesRouter");
+//     const {suggestionsRouter} = require("./routers/suggestionsRouter");
+//     const {mindolifeRouter} = require('./routers/gatewaysRouter');
 
 // // Connect to MongoDB 
 // connectDB();
@@ -51,6 +53,7 @@
 // server.use('/api-sensors', sensorRouter);
 // server.use('/api-rule', ruleRouter);
 // server.use('/api-room', roomRouter);
+// server.use('/api-space', spacesRouter);
 // server.use('/api-suggestion', suggestionsRouter);
 // server.use('/api-mindolife', mindolifeRouter);
 
@@ -77,7 +80,7 @@
 
 
 
-// // server.listen(port, () => console.log(`listening on port ${port}`));
+// server.listen(port, () => console.log(`listening on port ${port}`));
 
 
 
@@ -87,8 +90,12 @@ const cors    = require('cors');
 const connectDB = require("./config");
 const { connectToWs } = require("./ws.js");
 const server = express();
+const bodyParser = require('body-parser');
+
 const port = process.env.PORT || 3000;
 require("dotenv").config();
+require('./statemanager/stateManager')
+
 
 // import Routers
 const {devicesRouter} = require("./routers/devicesRouter");
@@ -99,6 +106,9 @@ const {roomRouter} = require("./routers/roomRouter");
 const {spacesRouter} = require("./routers/spacesRouter");
 const {suggestionsRouter} = require("./routers/suggestionsRouter");
 const {mindolifeRouter} = require('./routers/gatewaysRouter');
+const {activityRouter} = require('./routers/activityRouter');
+const {calendarRouter} = require('./routers/calendarRouter');
+const {endpointRouter} = require('./routers/endpointRouter');
 
 // Connect to MongoDB 
 connectDB();
@@ -108,6 +118,7 @@ connectToWs();
 server.use(cors());
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));  // hundel post reqs with body
+server.use(bodyParser.json());
 
 
 server.use('/api-login', loginRouter);
@@ -118,6 +129,10 @@ server.use('/api-room', roomRouter);
 server.use('/api-space', spacesRouter);
 server.use('/api-suggestion', suggestionsRouter);
 server.use('/api-mindolife', mindolifeRouter);
+server.use('/api-activities', activityRouter); 
+server.use('/api-calendar', calendarRouter);
+server.use('/api-endpoint', endpointRouter);
+
 
 server.use((req, res) => {
     res.status(400).send('Something is broken!');

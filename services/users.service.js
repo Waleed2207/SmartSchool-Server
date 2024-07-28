@@ -12,28 +12,31 @@ const signInUser = async (email, password) => {
     return { status: 400, message: 'Invalid password' };
   }
 
-  const token = jwt.sign({ _id: user._id, role: user.role, space_id: user.space_id }, process.env.JWT_SECRET_KEY, {
-    expiresIn: '1h',
+  const token = jwt.sign({ _id: user._id, role: user.role, space_name: user.space_name, space_id: user.space_id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: '3h',
   });
-
+  user.tokens = [{ token }];
+  await user.save();
+  
   const userData = {
     _id: user._id,
     fullName: user.fullName,
     email: user.email,
     role: user.role,
+    space_name: user.space_name,
     space_id: user.space_id,
   };
 
   return { status: 200, message: 'Sign in successful', token, user: userData };
 };
 
-const registerUser = async (fullName, email, password, role, space_id) => {
+const registerUser = async (fullName, email, password, role, space_name, space_id) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     return { status: 400, message: 'User with this email already exists' };
   }
 
-  const user = new User({ fullName, email, password, role, space_id });
+  const user = new User({ fullName, email, password, role, space_name, space_id });
   await user.save();
   return { status: 201, message: 'User created successfully' };
 };
