@@ -1,11 +1,17 @@
 # SmartSpaces
+
+## THE ARCHITECTURE
 <p align="center">
   <img width="1726" alt="Screenshot 2024-10-16 at 2 29 04" src="https://github.com/user-attachments/assets/3780f53f-898f-44a3-af8e-c96ed5fea874">
 </p>
 
-## THE ARCHITECTURE
 The architecture of the SmartSpace project It is designed to facilitate SmartSpace automation effectively and efficiently. The architecture is divided into four main layers: Generic Control Manager, Concrete Control Manager, Space Management, and Home State & Action Repository. The idea behind these layers is to separate the abstraction of rules, which are quite general, from the details of implementation in the system. This layered approach ensures a clear separation of responsibilities, making it easy to transfer the system to other spaces because the high-level rules do not depend on specific details of the space.
 SmartSpaces is an innovative platform for automatically managing electrical devices in various spaces, such as homes and schools. It creates an environment using predefined rules and schedules, which enhances convenience, power efficiency, safety, and sustainability. Developed in collaboration with the Israeli Electricity Company (IEC) and Ramat Gan Municipality, SmartSpaces ensures compliance with industry standards and is optimized for maximum effectiveness.
+
+<p align="center">
+  <img width="1727" alt="Screenshot 2024-10-16 at 2 34 52" src="https://github.com/user-attachments/assets/2896fc8b-556e-4a21-b932-3eb48d4e1744">
+</p>
+
 
 ## Features
 
