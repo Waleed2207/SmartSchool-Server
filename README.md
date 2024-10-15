@@ -1,5 +1,7 @@
 # SmartSpaces
-
+<p align="center">
+  <img width="1726" alt="Screenshot 2024-10-16 at 2 29 04" src="https://github.com/user-attachments/assets/3780f53f-898f-44a3-af8e-c96ed5fea874">
+</p>
 ## Overview
 
 SmartSpaces is an innovative platform for automatically managing electrical devices in various spaces, such as homes and schools. It creates an environment using predefined rules and schedules, which enhances convenience, power efficiency, safety, and sustainability. Developed in collaboration with the Israeli Electricity Company (IEC) and Ramat Gan Municipality, SmartSpaces ensures compliance with industry standards and is optimized for maximum effectiveness.
