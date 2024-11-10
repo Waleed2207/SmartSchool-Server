@@ -97,7 +97,12 @@ require("dotenv").config();
 require('./statemanager/stateManager')
 
 
+const testRouter = require('./routers/testRouter');  // Import the test router
+
+
 // import Routers
+const anomalyRouter = require('./routers/anomalyRouter');  // Import the anomaly router
+
 const {devicesRouter} = require("./routers/devicesRouter");
 const {loginRouter} = require("./routers/loginRouter");
 const {sensorRouter} = require("./routers/sensorRouter");
@@ -120,6 +125,7 @@ server.use(express.json());
 server.use(express.urlencoded({extended: true}));  // hundel post reqs with body
 server.use(bodyParser.json());
 
+server.use('/api-test', testRouter);  // Add the test route
 
 server.use('/api-login', loginRouter);
 server.use('/api-device', devicesRouter);
@@ -132,6 +138,11 @@ server.use('/api-mindolife', mindolifeRouter);
 server.use('/api-activities', activityRouter); 
 server.use('/api-calendar', calendarRouter);
 server.use('/api-endpoint', endpointRouter);
+server.use('/api-anomaly', anomalyRouter); // Add the anomaly route
+
+// Test API endpoint
+
+
 
 
 server.use((req, res) => {
